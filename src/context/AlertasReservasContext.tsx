@@ -3,7 +3,11 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { obtenerReservasPorDiaAction } from '@/app/actions/reservas';
 import { DiaSemana, ReservaMatriz } from '@/lib/types/database.types';
+import { createClient } from '@/lib/supabase/client';
 import { Bell, X } from 'lucide-react';
+
+// Avisos antes del inicio de cada reserva, de mayor a menor
+const AVISOS_MINUTOS = [15, 10, 5];
 
 interface AlertaItem {
   id: string;
@@ -28,6 +32,7 @@ const AlertasReservasContext = createContext<AlertasContextType>({
 export function AlertasReservasProvider({ children }: { children: React.ReactNode }) {
   const [alertaModal, setAlertaModal] = useState<AlertaItem | null>(null);
   const alertasMostradasRef = useRef<Record<string, boolean>>({});
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
   const pedirPermisoNotificaciones = () => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -72,10 +77,15 @@ export function AlertasReservasProvider({ children }: { children: React.ReactNod
 
       const minutos = calcularMinutosFaltantes(r.hora_inicio, ahora);
 
-      if ([15, 10, 5].includes(minutos)) {
-        const clave = `${r.id}-${minutos}`;
+      // Ventanas en lugar de minutos exactos: si una revisión se atrasa no se
+      // pierde el aviso de 15, 10 o 5 minutos.
+      const ventana = AVISOS_MINUTOS.find((v, i) => minutos <= v && minutos > (AVISOS_MINUTOS[i + 1] ?? 0));
+
+      if (ventana !== undefined) {
+        const clave = `${r.id}-${ventana}`;
         if (!alertasMostradasRef.current[clave]) {
           alertasMostradasRef.current[clave] = true;
+          sonarAviso();
 
           const texto = `${r.profesor_nombre} - ${r.aula} / ${r.recurso} comienza en ${minutos} minutos`;
 
@@ -104,15 +114,58 @@ export function AlertasReservasProvider({ children }: { children: React.ReactNod
     }
   };
 
+  // Dos tonos cortos con Web Audio (sin archivos). El navegador solo permite
+  // sonido después de una interacción, por eso el contexto se crea en el primer clic.
+  const sonarAviso = () => {
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    [0, 0.25].forEach((inicio, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = i === 0 ? 880 : 1175;
+      const t = ctx.currentTime + inicio;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.22);
+    });
+  };
+
   useEffect(() => {
     pedirPermisoNotificaciones();
     revisarAlertas();
 
+    const habilitarAudio = () => {
+      if (!audioCtxRef.current && typeof window !== 'undefined' && 'AudioContext' in window) {
+        audioCtxRef.current = new AudioContext();
+      }
+    };
+    window.addEventListener('pointerdown', habilitarAudio, { once: true });
+    window.addEventListener('keydown', habilitarAudio, { once: true });
+
     const intervalo = setInterval(() => {
       revisarAlertas();
-    }, 60000); // Cada 1 minuto
+    }, 30000); // Cada 30 segundos
 
-    return () => clearInterval(intervalo);
+    // Reservas nuevas o modificadas se revisan al instante (Supabase Realtime)
+    const supabase = createClient();
+    const channel = supabase
+      .channel('realtime_alertas_reservas')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservas_matriz' }, () => {
+        revisarAlertas();
+      })
+      .subscribe();
+
+    return () => {
+      clearInterval(intervalo);
+      window.removeEventListener('pointerdown', habilitarAudio);
+      window.removeEventListener('keydown', habilitarAudio);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const cerrarModalAlerta = () => {

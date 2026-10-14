@@ -112,3 +112,22 @@ export function rangoMes(anio: number, mes: number): { inicio: string; fin: stri
   const dd = diasDelMes(anio, mes);
   return { inicio: `${anio}-${mm}-01`, fin: `${anio}-${mm}-${dd < 10 ? '0' + dd : dd}` };
 }
+
+/** "2026-10-31" + 1 -> "2026-11-01" (aritmética en UTC, sin corrimientos). */
+export function sumarDias(fecha: string, dias: number): string {
+  const [a, m, d] = fecha.split('-').map(Number);
+  return new Date(Date.UTC(a, m - 1, d + dias)).toISOString().slice(0, 10);
+}
+
+/**
+ * Turnos de un rango pactado: "07:30 - 11:30" o "07:30 - 11:30 / 14:00 - 16:00".
+ * Toma las horas en orden: las dos primeras son el turno 1 y las siguientes el turno 2.
+ */
+export function parsearRangoPactado(rango: string): { e1: string; s1: string; e2: string; s2: string } | null {
+  const horas = (rango.match(/\d{1,2}[:.]\d{2}/g) || []).map((h) => {
+    const [hh, mm] = h.replace('.', ':').split(':');
+    return `${hh.padStart(2, '0')}:${mm}`;
+  });
+  if (horas.length < 2) return null;
+  return { e1: horas[0], s1: horas[1], e2: horas[2] || '', s2: horas[3] || '' };
+}

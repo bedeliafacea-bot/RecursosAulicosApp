@@ -125,10 +125,32 @@ export async function registrarJornadasBatchAction(
     entrada_2?: string | null;
     salida_2?: string | null;
     observacion?: string | null;
-  }>
-): Promise<{ ok: boolean; error?: string }> {
+  }>,
+  permitirDuplicados = false
+): Promise<{ ok: boolean; error?: string; fechasDuplicadas?: string[] }> {
   try {
     const supabase = await createClient();
+
+    // Avisar si alguna fecha ya tiene jornada cargada o se repite en el lote
+    if (!permitirDuplicados && jornadas.length > 0) {
+      const fechas = jornadas.map((j) => j.fecha);
+      const { data: existentes, error: errExist } = await supabase
+        .from('jornadas_becuap')
+        .select('fecha')
+        .eq('alumno_id', alumnoId)
+        .in('fecha', fechas);
+
+      if (errExist) return { ok: false, error: errExist.message };
+
+      const repetidas = new Set<string>((existentes || []).map((e: { fecha: string }) => e.fecha));
+      fechas.forEach((f, i) => {
+        if (fechas.indexOf(f) !== i) repetidas.add(f);
+      });
+
+      if (repetidas.size > 0) {
+        return { ok: false, fechasDuplicadas: Array.from(repetidas).sort() };
+      }
+    }
 
     const inserts = jornadas.map((j) => {
       const totalDecimal = calcularHorasDecimales(

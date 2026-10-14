@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -45,6 +45,8 @@ import {
 import {
   diasDelMes,
   fechaHoyAR,
+  parsearRangoPactado,
+  sumarDias,
   formatearMinutos,
   mesAnioActualAR,
   metaHorasMensual,
@@ -94,8 +96,12 @@ export default function AlumnosPage() {
       e2: string;
       s2: string;
       obs: string;
+      pactado: string; // rango pactado para esa fecha (informativo)
     }>
-  >([{ fecha: fechaHoy, e1: '07:30', s1: '11:30', e2: '', s2: '', obs: '' }]);
+  >([{ fecha: fechaHoy, e1: '07:30', s1: '11:30', e2: '', s2: '', obs: '', pactado: '' }]);
+  // Horarios pactados del alumno validado: fecha -> rango, y meses ya consultados
+  const pactadosCargaRef = useRef<Record<string, string>>({});
+  const mesesPactadosRef = useRef<Set<string>>(new Set());
   const [guardandoCarga, setGuardandoCarga] = useState(false);
   const [msgCarga, setMsgCarga] = useState('');
 
@@ -218,10 +224,48 @@ export default function AlumnosPage() {
     Math.round((totalMinutosFicha / (metaHoras * 60)) * 100),
     100
   );
+  const minutosRestantesMeta = metaHoras * 60 - totalMinutosFicha;
+
+  // Al cambiar mes/año, recargar lo que ya estaba consultado (antes había que volver a "Consultar")
+  const primerRenderMesRef = useRef(true);
+  useEffect(() => {
+    if (primerRenderMesRef.current) {
+      primerRenderMesRef.current = false;
+      return;
+    }
+    if (alumnoFicha) handleBuscarFicha(alumnoFicha.id);
+    if (alumnoInforme) {
+      listarJornadasAlumnoAction(alumnoInforme.id, mesActual, anioActual).then((res) =>
+        setJornadasInforme(res.ok && res.data ? res.data : [])
+      );
+    }
+    if (legajoEditar.trim() && tab === 'editar') handleBuscarEditar();
+  }, [mesActual, anioActual]);
 
   // ============================================================================
   // HANDLERS: CARGA DE JORNADAS
   // ============================================================================
+  type FilaJornada = (typeof jornadasInput)[number];
+
+  // Trae (una sola vez por mes) los horarios pactados del alumno para esa fecha
+  const cargarPactadosDelMes = async (alumnoId: string, fecha: string) => {
+    const [anio, mes] = fecha.split('-').map(Number);
+    const clave = `${alumnoId}-${anio}-${mes}`;
+    if (!anio || !mes || mesesPactadosRef.current.has(clave)) return;
+    mesesPactadosRef.current.add(clave);
+    const res = await obtenerHorariosPactadosAction(alumnoId, mes, anio);
+    if (res.ok && res.data) {
+      for (const h of res.data) pactadosCargaRef.current[h.fecha] = h.rango_horario;
+    }
+  };
+
+  // Si la fecha tiene horario pactado, completa los turnos con ese horario
+  const aplicarPactado = (fila: FilaJornada): FilaJornada => {
+    const rango = pactadosCargaRef.current[fila.fecha] || '';
+    const turnos = rango ? parsearRangoPactado(rango) : null;
+    return turnos ? { ...fila, ...turnos, pactado: rango } : { ...fila, pactado: rango };
+  };
+
   const handleValidarLegajoCarga = async () => {
     if (!legajoCarga.trim()) return;
     setValidandoCarga(true);
@@ -230,6 +274,11 @@ export default function AlumnosPage() {
 
     const res = await buscarInfoAlumnoAction(legajoCarga);
     if (res.ok && res.data) {
+      const alumnoId = res.data.id;
+      pactadosCargaRef.current = {};
+      mesesPactadosRef.current = new Set();
+      await Promise.all(jornadasInput.map((j) => cargarPactadosDelMes(alumnoId, j.fecha)));
+      setJornadasInput((prev) => prev.map(aplicarPactado));
       setAlumnoCarga(res.data);
     } else {
       setErrorValidarCarga('Legajo no encontrado en base de datos.');
@@ -237,11 +286,29 @@ export default function AlumnosPage() {
     setValidandoCarga(false);
   };
 
-  const handleAgregarFilaJornada = () => {
-    setJornadasInput([
-      ...jornadasInput,
-      { fecha: fechaHoy, e1: '07:30', s1: '11:30', e2: '', s2: '', obs: '' },
-    ]);
+  // Nueva fila = copia de la anterior con el día siguiente (o su horario pactado)
+  const handleAgregarFilaJornada = async () => {
+    const ultima = jornadasInput[jornadasInput.length - 1];
+    const base: FilaJornada = ultima
+      ? { ...ultima, fecha: ultima.fecha ? sumarDias(ultima.fecha, 1) : fechaHoy, obs: '' }
+      : { fecha: fechaHoy, e1: '07:30', s1: '11:30', e2: '', s2: '', obs: '', pactado: '' };
+    if (alumnoCarga) await cargarPactadosDelMes(alumnoCarga.id, base.fecha);
+    const nuevaFila = aplicarPactado(base);
+    setJornadasInput((prev) => [...prev, nuevaFila]);
+    // Foco en la fecha de la fila nueva para seguir cargando con el teclado
+    setTimeout(() => {
+      const inputs = document.querySelectorAll<HTMLInputElement>('[data-fecha-jornada]');
+      inputs[inputs.length - 1]?.focus();
+    }, 0);
+  };
+
+  const handleCambioFechaJornada = async (idx: number, fecha: string) => {
+    setJornadasInput((prev) => prev.map((j, i) => (i === idx ? { ...j, fecha } : j)));
+    if (!alumnoCarga || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return;
+    await cargarPactadosDelMes(alumnoCarga.id, fecha);
+    setJornadasInput((prev) =>
+      prev.map((j, i) => (i === idx && j.fecha === fecha ? aplicarPactado(j) : j))
+    );
   };
 
   const handleEliminarFilaJornada = (index: number) => {
@@ -257,22 +324,36 @@ export default function AlumnosPage() {
     setGuardandoCarga(true);
     setMsgCarga('');
 
-    const res = await registrarJornadasBatchAction(
-      alumnoCarga.id,
-      jornadasInput.map((j) => ({
-        fecha: j.fecha,
-        entrada_1: j.e1 || null,
-        salida_1: j.s1 || null,
-        entrada_2: j.e2 || null,
-        salida_2: j.s2 || null,
-        observacion: j.obs || null,
-      }))
-    );
+    const payload = jornadasInput.map((j) => ({
+      fecha: j.fecha,
+      entrada_1: j.e1 || null,
+      salida_1: j.s1 || null,
+      entrada_2: j.e2 || null,
+      salida_2: j.s2 || null,
+      observacion: j.obs || null,
+    }));
+
+    let res = await registrarJornadasBatchAction(alumnoCarga.id, payload);
+
+    if (!res.ok && res.fechasDuplicadas) {
+      const lista = res.fechasDuplicadas
+        .map((f) => f.split('-').reverse().join('/'))
+        .join(', ');
+      if (
+        !confirm(
+          `${alumnoCarga.nombre} ya tiene jornada cargada (o repetida en esta carga) el: ${lista}.\n\n¿Guardar igual?`
+        )
+      ) {
+        setGuardandoCarga(false);
+        return;
+      }
+      res = await registrarJornadasBatchAction(alumnoCarga.id, payload, true);
+    }
 
     if (res.ok) {
       setMsgCarga('✅ ¡Jornadas registradas exitosamente!');
       setJornadasInput([
-        { fecha: fechaHoy, e1: '07:30', s1: '11:30', e2: '', s2: '', obs: '' },
+        aplicarPactado({ fecha: fechaHoy, e1: '07:30', s1: '11:30', e2: '', s2: '', obs: '', pactado: '' }),
       ]);
     } else {
       alert(res.error || 'Error al guardar jornadas.');
@@ -827,6 +908,20 @@ export default function AlumnosPage() {
                       style={{ width: `${porcentajeAvance}%` }}
                     />
                   </div>
+
+                  <p
+                    className={`text-[11px] font-extrabold ${
+                      minutosRestantesMeta > 0 ? 'text-amber-600' : 'text-emerald-600'
+                    }`}
+                  >
+                    {minutosRestantesMeta > 0
+                      ? `Faltan ${formatearMinutos(minutosRestantesMeta)} hs para la meta del mes`
+                      : `Meta cumplida${
+                          minutosRestantesMeta < 0
+                            ? ` (+${formatearMinutos(-minutosRestantesMeta)} hs)`
+                            : ''
+                        }`}
+                  </p>
                 </div>
               </div>
 
@@ -967,14 +1062,16 @@ export default function AlumnosPage() {
                       </label>
                       <input
                         type="date"
+                        data-fecha-jornada
                         value={j.fecha}
-                        onChange={(e) => {
-                          const copia = [...jornadasInput];
-                          copia[idx].fecha = e.target.value;
-                          setJornadasInput(copia);
-                        }}
+                        onChange={(e) => handleCambioFechaJornada(idx, e.target.value)}
                         className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold"
                       />
+                      {j.pactado && (
+                        <span className="mt-1 inline-block text-[10px] font-bold text-uap-azul-medio">
+                          Pactado: {j.pactado}
+                        </span>
+                      )}
                     </div>
 
                     <div>
@@ -1045,7 +1142,13 @@ export default function AlumnosPage() {
                         copia[idx].obs = e.target.value;
                         setJornadasInput(copia);
                       }}
-                      placeholder="Tarea realizada (opcional)..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && idx === jornadasInput.length - 1) {
+                          e.preventDefault();
+                          handleAgregarFilaJornada();
+                        }
+                      }}
+                      placeholder="Tarea realizada (opcional) — Enter agrega otro día..."
                       className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs"
                     />
                   </div>
