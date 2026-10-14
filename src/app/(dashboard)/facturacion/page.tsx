@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { fechaHoyAR } from '@/lib/horas';
 import {
   guardarCierreCajaAction,
   obtenerHistorialCierresAction,
@@ -33,7 +34,7 @@ import {
 
 export default function FacturacionPage() {
   const { rol, perfil } = useAuth();
-  const fechaHoy = new Date().toISOString().split('T')[0];
+  const fechaHoy = fechaHoyAR();
 
   // 1. GENERADOR DE RECIBOS
   const [desdeRecibo, setDesdeRecibo] = useState<number>(1001);
@@ -63,6 +64,7 @@ export default function FacturacionPage() {
 
   // Referencias para navegación rápida por Enter
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const mpMontoRef = useRef<HTMLInputElement | null>(null);
 
   // Generar recibos iniciales
   const generarRecibos = () => {
@@ -178,10 +180,12 @@ export default function FacturacionPage() {
           if (nextInput) {
             nextInput.focus();
             nextInput.select();
-            break;
+            return;
           }
         }
       }
+      // Último recibo: pasar a Mercado Pago, como en Facturacion.html
+      mpMontoRef.current?.focus();
     }
   };
 
@@ -502,6 +506,7 @@ export default function FacturacionPage() {
                 type="number"
                 step="0.01"
                 placeholder="Monto $"
+                ref={mpMontoRef}
                 value={mpMonto}
                 onChange={(e) => setMpMonto(e.target.value ? Number(e.target.value) : '')}
                 className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold"

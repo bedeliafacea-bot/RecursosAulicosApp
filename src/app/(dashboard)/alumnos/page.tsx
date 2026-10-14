@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/context/AuthContext';
 import {
   buscarInfoAlumnoAction,
@@ -41,15 +42,25 @@ import {
   ShieldCheck,
   Award,
 } from 'lucide-react';
+import {
+  diasDelMes,
+  fechaHoyAR,
+  formatearMinutos,
+  mesAnioActualAR,
+  metaHorasMensual,
+  minutosDeRegistro,
+  totalMinutosJornadas,
+} from '@/lib/horas';
+import './planillas.css';
 
 export default function AlumnosPage() {
   const { rol, user, perfil } = useAuth();
-  const fechaHoy = new Date().toISOString().split('T')[0];
+  // Fecha en hora argentina: toISOString() daba el día siguiente después de las 21:00
+  const fechaHoy = fechaHoyAR();
 
   // Mes y Año dinámico (sin hardcodeo de 2026)
-  const ahora = new Date();
-  const [mesActual, setMesActual] = useState(ahora.getMonth() + 1);
-  const [anioActual, setAnioActual] = useState(ahora.getFullYear());
+  const [mesActual, setMesActual] = useState(() => mesAnioActualAR().mes);
+  const [anioActual, setAnioActual] = useState(() => mesAnioActualAR().anio);
 
   // Navegación de pestañas
   const [tab, setTab] = useState<
@@ -198,27 +209,13 @@ export default function AlumnosPage() {
     setCargandoFicha(false);
   };
 
-  // Calcular horas acumuladas y meta según plan
-  const diasEnMes = new Date(anioActual, mesActual, 0).getDate();
-  const metaHoras =
-    alumnoFicha?.plan === '10hs'
-      ? diasEnMes === 31
-        ? 45
-        : 43
-      : diasEnMes === 31
-      ? 89
-      : 86;
-
-  const totalHorasDecimalesAcumuladas = jornadasFicha.reduce(
-    (acc, cur) => acc + (Number(cur.total_decimal) || 0),
-    0
-  );
-
-  const horasEnteras = Math.floor(totalHorasDecimalesAcumuladas);
-  const minutosEnteros = Math.round((totalHorasDecimalesAcumuladas - horasEnteras) * 60);
-  const totalHorasHHMM = `${horasEnteras}:${minutosEnteros < 10 ? '0' + minutosEnteros : minutosEnteros}`;
+  // Calcular horas acumuladas y meta según plan.
+  // Se suman minutos enteros (no decimales redondeados a 2 cifras: 3 × 0.33 h ≠ 1 h).
+  const metaHoras = metaHorasMensual(alumnoFicha?.plan, anioActual, mesActual);
+  const totalMinutosFicha = totalMinutosJornadas(jornadasFicha);
+  const totalHorasHHMM = formatearMinutos(totalMinutosFicha);
   const porcentajeAvance = Math.min(
-    Math.round((totalHorasDecimalesAcumuladas / metaHoras) * 100),
+    Math.round((totalMinutosFicha / (metaHoras * 60)) * 100),
     100
   );
 
@@ -530,6 +527,66 @@ export default function AlumnosPage() {
     }
     setGuardandoEval(false);
   };
+
+  // ============================================================================
+  // IMPRESIÓN DE PLANILLAS (A4 vertical / A4 apaisado)
+  // ============================================================================
+  // Datos que se imprimen en la evaluación: lo guardado + lo que está en el
+  // formulario del mes actual aunque todavía no se haya guardado (igual que el legacy).
+  const datosMesesEval: Record<string, MesEvaluacionData | null> = {};
+  for (const m of mesesCuatrimestre) {
+    datosMesesEval[m] =
+      m === mesEval
+        ? {
+            notas: notasInputs.map((n) => (n === '' || isNaN(Number(n)) ? null : Number(n))),
+            observacion: obsMesInput,
+          }
+        : evalData
+        ? ((evalData as any)[m] as MesEvaluacionData | null)
+        : null;
+  }
+
+  const modoImpresion: 'horas' | 'eval' | null =
+    tab === 'informe' && alumnoInforme
+      ? 'horas'
+      : tab === 'evaluacion' && alumnoEval
+      ? 'eval'
+      : null;
+
+  // Marca el <body> y la regla @page según la planilla visible, así también
+  // funciona Ctrl+P sin pasar por el botón.
+  useEffect(() => {
+    if (!modoImpresion) return;
+    const style = document.createElement('style');
+    style.id = 'uap-page-style';
+    style.textContent =
+      modoImpresion === 'horas'
+        ? '@media print { @page { size: A4 portrait; margin: 3mm; } }'
+        : '@media print { @page { size: A4 landscape; margin: 5mm; } }';
+    document.head.appendChild(style);
+    document.body.dataset.impresion = modoImpresion;
+    return () => {
+      delete document.body.dataset.impresion;
+      style.remove();
+    };
+  }, [modoImpresion]);
+
+  const imprimirPlanilla = () => {
+    setTimeout(() => window.print(), 150);
+  };
+
+  const planillaEval = alumnoEval ? (
+    <PlanillaEvaluacion
+      alumno={alumnoEval}
+      anio={anioActual}
+      inicioPlan={inicioPlanEval}
+      promedio={evalData?.promedio ?? null}
+      meses={mesesCuatrimestre}
+      criterios={criteriosEvaluacion}
+      datosMeses={datosMesesEval}
+      obsGeneral={obsGeneralInput}
+    />
+  ) : null;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -1071,7 +1128,7 @@ export default function AlumnosPage() {
                         {j.entrada_2 ? `${j.entrada_2.slice(0, 5)} - ${j.salida_2?.slice(0, 5)}` : '—'}
                       </td>
                       <td className="py-2.5 px-3 text-center font-extrabold text-emerald-700">
-                        {j.total_decimal} hs
+                        {formatearMinutos(minutosDeRegistro(j))} hs
                       </td>
                       <td className="py-2.5 px-3 text-slate-500 italic max-w-xs truncate">
                         {j.observacion || '—'}
@@ -1446,7 +1503,7 @@ export default function AlumnosPage() {
 
             {alumnoInforme && (
               <button
-                onClick={() => window.print()}
+                onClick={() => imprimirPlanilla()}
                 className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase rounded-xl shadow-md"
               >
                 <Printer className="w-4 h-4" />
@@ -1456,114 +1513,25 @@ export default function AlumnosPage() {
           </div>
 
           {alumnoInforme && (
-            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-uap border border-uap-borde print:shadow-none print:border-none print:p-0">
-              {/* Formato Oficial de Impresión A4 Portrait */}
-              <div className="print-page-portrait space-y-4">
-                <table className="w-full border-collapse border border-black text-center text-xs">
-                  <tbody>
-                    <tr>
-                      <td className="w-20 p-2 border-r border-black">
-                        <img
-                          src="https://i.postimg.cc/fyMcjMcn/logo-uap.png"
-                          alt="UAP"
-                          className="w-14 mx-auto"
-                        />
-                      </td>
-                      <td className="p-2 border-r border-black font-extrabold text-sm uppercase">
-                        VICERRECTORÍA BIENESTAR ESTUDIANTIL<br />
-                        <span className="text-xs font-semibold">UNIVERSIDAD ADVENTISTA DEL PLATA</span>
-                      </td>
-                      <td className="w-36 p-2 font-black text-xs uppercase bg-slate-50">
-                        CONTROL DE HORAS<br />
-                        MENSUALES {anioActual}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                {/* Metadatos */}
-                <div className="grid grid-cols-4 gap-2 text-xs border border-black p-2 bg-slate-50 font-semibold">
-                  <div>Alumno: <b>{alumnoInforme.nombre}</b></div>
-                  <div>Mes: <b>{nombresMeses[mesActual - 1]} / {anioActual}</b></div>
-                  <div>Legajo: <b>{alumnoInforme.id}</b></div>
-                  <div>Departamento: <b>Recursos Áulicos</b></div>
-                </div>
-
-                {/* Tabla de 31 días */}
-                <table className="w-full border-collapse border border-black text-xs text-center">
-                  <thead>
-                    <tr className="bg-slate-100 border-b border-black font-black">
-                      <th className="p-1 border-r border-black w-10">Día</th>
-                      <th className="p-1 border-r border-black">Entrada 1</th>
-                      <th className="p-1 border-r border-black">Salida 1</th>
-                      <th className="p-1 border-r border-black">Entrada 2</th>
-                      <th className="p-1 border-r border-black">Salida 2</th>
-                      <th className="p-1 border-r border-black w-16">Total</th>
-                      <th className="p-1 border-r border-black text-left pl-2">Observación</th>
-                      <th className="p-1 w-24">Firma</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => {
-                      const diaStr = dia < 10 ? `0${dia}` : `${dia}`;
-                      const mesStr = mesActual < 10 ? `0${mesActual}` : `${mesActual}`;
-                      const fechaComparar = `${anioActual}-${mesStr}-${diaStr}`;
-                      const jornadaDia = jornadasInforme.find((j) => j.fecha === fechaComparar);
-
-                      return (
-                        <tr key={dia} className="border-b border-black/30 h-6">
-                          <td className="border-r border-black font-bold bg-slate-50">{dia}</td>
-                          <td className="border-r border-black font-mono">
-                            {jornadaDia?.entrada_1?.slice(0, 5) || ''}
-                          </td>
-                          <td className="border-r border-black font-mono">
-                            {jornadaDia?.salida_1?.slice(0, 5) || ''}
-                          </td>
-                          <td className="border-r border-black font-mono">
-                            {jornadaDia?.entrada_2?.slice(0, 5) || ''}
-                          </td>
-                          <td className="border-r border-black font-mono">
-                            {jornadaDia?.salida_2?.slice(0, 5) || ''}
-                          </td>
-                          <td className="border-r border-black font-mono font-bold">
-                            {jornadaDia ? `${jornadaDia.total_decimal} hs` : ''}
-                          </td>
-                          <td className="border-r border-black text-left pl-2 italic text-[11px] truncate max-w-[140px]">
-                            {jornadaDia?.observacion || ''}
-                          </td>
-                          <td className="border-black"></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                  <tfoot>
-                    <tr className="border-t-2 border-black bg-slate-100 font-black">
-                      <td colSpan={5} className="p-2 border-r border-black text-right pr-4">
-                        Total del Mes:
-                      </td>
-                      <td className="p-2 border-r border-black font-mono text-sm">
-                        {jornadasInforme
-                          .reduce((acc, cur) => acc + (Number(cur.total_decimal) || 0), 0)
-                          .toFixed(2)}{' '}
-                        hs
-                      </td>
-                      <td className="border-r border-black"></td>
-                      <td></td>
-                    </tr>
-                  </tfoot>
-                </table>
-
-                {/* Pie de Firma Oficial */}
-                <div className="pt-8 flex justify-end">
-                  <div className="text-center w-64 border-t border-black pt-2">
-                    <p className="font-black text-sm">Rafael Carro</p>
-                    <p className="text-xs uppercase font-extrabold text-slate-600">
-                      RECURSOS ÁULICOS
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="no-print bg-white rounded-3xl p-6 shadow-uap border border-uap-borde overflow-x-auto">
+              <PlanillaHorasMensual
+                alumno={alumnoInforme}
+                jornadas={jornadasInforme}
+                mes={mesActual}
+                anio={anioActual}
+              />
             </div>
+          )}
+
+          {alumnoInforme && (
+            <PortalImpresion tipo="horas">
+              <PlanillaHorasMensual
+                alumno={alumnoInforme}
+                jornadas={jornadasInforme}
+                mes={mesActual}
+                anio={anioActual}
+              />
+            </PortalImpresion>
           )}
         </div>
       )}
@@ -1657,7 +1625,7 @@ export default function AlumnosPage() {
                   </div>
 
                   <button
-                    onClick={() => window.print()}
+                    onClick={() => imprimirPlanilla()}
                     className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-uap-azul text-xs font-bold rounded-xl"
                   >
                     <Printer className="w-4 h-4" />
@@ -1741,136 +1709,313 @@ export default function AlumnosPage() {
                 </button>
               </div>
 
-              {/* Planilla de Impresión Oficial A4 Landscape */}
-              <div className="print-page-landscape bg-white p-4 border border-black space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b-2 border-black">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src="https://i.postimg.cc/fyMcjMcn/logo-uap.png"
-                      alt="UAP"
-                      className="w-12 h-auto"
-                    />
-                    <div className="text-left">
-                      <b className="text-xs uppercase block">Vicerrectoría Bienestar Estudiantil</b>
-                      <i className="text-[11px] text-slate-700">Universidad Adventista del Plata</i>
-                    </div>
-                  </div>
-
-                  <div className="text-center font-black text-sm uppercase tracking-wide">
-                    EVALUACIÓN - PLAN BECUAP - {anioActual}
-                  </div>
-
-                  <div className="text-right text-[11px]">
-                    DEPARTAMENTO: <b>Recursos Áulicos</b>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2 text-xs border border-black p-1.5 bg-slate-50 font-bold">
-                  <div>Alumno: <u>{alumnoEval.nombre}</u></div>
-                  <div>N° Legajo: <u>{alumnoEval.id}</u></div>
-                  <div>Inicio Plan: <u>{inicioPlanEval}</u></div>
-                  <div>Promedio: <u>{evalData?.promedio || '.../.../...'}</u></div>
-                </div>
-
-                {/* Tabla Dinámica con Subcolumnas (Excelente, Muy Bueno, Bueno, Regular) */}
-                <table className="w-full border-collapse border border-black text-[10px] text-center">
-                  <thead>
-                    <tr className="border-b border-black bg-slate-100 font-black">
-                      <th rowSpan={2} className="border-r border-black p-1 text-left w-56">
-                        CRITERIOS DE EVALUACIÓN
-                      </th>
-                      {mesesCuatrimestre.map((m) => (
-                        <th key={m} colSpan={4} className="border-r border-black p-1 uppercase">
-                          {m}
-                        </th>
-                      ))}
-                    </tr>
-                    <tr className="border-b border-black text-[8px] font-bold bg-slate-50">
-                      {mesesCuatrimestre.map((m) => (
-                        <React.Fragment key={m}>
-                          <th className="border-r border-black p-0.5">EXCELENTE<br />(10)</th>
-                          <th className="border-r border-black p-0.5">MUY BUENO<br />(9-8)</th>
-                          <th className="border-r border-black p-0.5">BUENO<br />(6-7)</th>
-                          <th className="border-r border-black p-0.5">REGULAR<br />(&le;5)</th>
-                        </React.Fragment>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {criteriosEvaluacion.map((criterio, critIdx) => (
-                      <tr key={critIdx} className="border-b border-black h-5">
-                        <td className="border-r border-black text-left pl-1 font-semibold">
-                          {criterio}
-                        </td>
-                        {mesesCuatrimestre.map((m) => {
-                          const mesData = evalData
-                            ? ((evalData as any)[m] as MesEvaluacionData | null)
-                            : null;
-                          const nota =
-                            mesData && Array.isArray(mesData.notas) ? mesData.notas[critIdx] : null;
-
-                          return (
-                            <React.Fragment key={m}>
-                              <td className="border-r border-black font-black text-xs">
-                                {nota === 10 ? 10 : ''}
-                              </td>
-                              <td className="border-r border-black font-black text-xs">
-                                {nota === 9 || nota === 8 ? nota : ''}
-                              </td>
-                              <td className="border-r border-black font-black text-xs">
-                                {nota === 7 || nota === 6 ? nota : ''}
-                              </td>
-                              <td className="border-r border-black font-black text-xs">
-                                {nota !== null && nota <= 5 ? nota : ''}
-                              </td>
-                            </React.Fragment>
-                          );
-                        })}
-                      </tr>
-                    ))}
-
-                    <tr className="border-b border-black h-5">
-                      <td className="border-r border-black text-left pl-1">Informe IASD:</td>
-                      <td colSpan={mesesCuatrimestre.length * 4} className="border-black"></td>
-                    </tr>
-                    <tr className="border-b border-black h-5">
-                      <td className="border-r border-black text-left pl-1">Informe académico:</td>
-                      <td colSpan={mesesCuatrimestre.length * 4} className="border-black"></td>
-                    </tr>
-                    <tr className="border-b border-black h-5">
-                      <td className="border-r border-black text-left pl-1">Informe de conducta:</td>
-                      <td colSpan={mesesCuatrimestre.length * 4} className="border-black"></td>
-                    </tr>
-
-                    <tr className="border-b border-black text-[9px] align-top">
-                      <td className="border-r border-black text-left p-1">
-                        <b>OBSERVACIONES GENERALES:</b><br />
-                        <span>{evalData?.obs_general || obsGeneralInput || ''}</span>
-                      </td>
-                      {mesesCuatrimestre.map((m) => {
-                        const mesData = evalData
-                          ? ((evalData as any)[m] as MesEvaluacionData | null)
-                          : null;
-                        return (
-                          <td
-                            key={m}
-                            colSpan={4}
-                            className="border-r border-black p-1 text-left text-[8px]"
-                          >
-                            <i>Firma jefe:</i><br /><br />
-                            <i>Firma alumno:</i><br /><br />
-                            <i>Obs:</i> {mesData?.observacion || ''}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  </tbody>
-                </table>
+              {/* Vista previa de la planilla oficial A4 apaisada */}
+              <div className="no-print bg-white rounded-3xl p-6 shadow-uap border border-uap-borde overflow-x-auto">
+                {planillaEval}
               </div>
+
+              <PortalImpresion tipo="eval">
+                {planillaEval}
+              </PortalImpresion>
             </div>
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ==============================================================================
+// PLANILLAS INSTITUCIONALES (réplica de proyectoviejo/Alumnos.html)
+// Estilos en ./planillas.css
+// ==============================================================================
+
+const MESES_MAYUSCULA = [
+  'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+  'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE',
+];
+
+const LOGO_UAP = 'https://i.postimg.cc/fyMcjMcn/logo-uap.png';
+
+/** Copia de la planilla montada directo en <body>: es lo único que se imprime. */
+function PortalImpresion({ tipo, children }: { tipo: 'horas' | 'eval'; children: React.ReactNode }) {
+  const [montado, setMontado] = useState(false);
+  useEffect(() => setMontado(true), []);
+  if (!montado) return null;
+  return createPortal(
+    <div className="print-portal" data-tipo={tipo}>
+      {children}
+    </div>,
+    document.body
+  );
+}
+
+function PlanillaHorasMensual({
+  alumno,
+  jornadas,
+  mes,
+  anio,
+}: {
+  alumno: Alumno;
+  jornadas: JornadaBecuap[];
+  mes: number;
+  anio: number;
+}) {
+  const ultimoDia = diasDelMes(anio, mes);
+  const prefijoMes = `${anio}-${mes < 10 ? '0' + mes : mes}-`;
+  const hora = (t: string | null | undefined) => (t ? t.slice(0, 5) : '');
+
+  // Si hubiera dos registros el mismo día, se muestran los horarios del primero
+  // pero el total y la observación incluyen ambos (el legacy descartaba el segundo).
+  const porDia = new Map<number, JornadaBecuap[]>();
+  for (const j of jornadas) {
+    if (!j.fecha.startsWith(prefijoMes)) continue;
+    const dia = parseInt(j.fecha.slice(8, 10), 10);
+    porDia.set(dia, [...(porDia.get(dia) || []), j]);
+  }
+
+  return (
+    <div className="planilla-horas">
+      <table className="uap-header-table">
+        <tbody>
+          <tr>
+            <td className="header-logo">
+              <img src={LOGO_UAP} alt="UAP" />
+            </td>
+            <td className="header-title">
+              VICERRECTORÍA BIENESTAR ESTUDIANTIL
+              <br />
+              UNIVERSIDAD ADVENTISTA DEL PLATA
+            </td>
+            <td className="header-control">
+              CONTROL DE HORAS
+              <br />
+              MENSUALES {anio}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div className="info-line">
+        <span>
+          Alumno: <b>{alumno.nombre}</b>
+        </span>
+        <span>
+          Mes: <b>{MESES_MAYUSCULA[mes - 1]}</b> / {anio}
+        </span>
+        <span>
+          Legajo: <b>{alumno.id}</b>
+        </span>
+        <span>
+          Departamento: <b>Recursos Áulicos</b>
+        </span>
+      </div>
+
+      <table className="horas-table">
+        <thead>
+          <tr>
+            <th className="col-dia">Día</th>
+            <th className="col-hora">Entrada.</th>
+            <th className="col-hora">Salida</th>
+            <th className="col-hora">Entrada</th>
+            <th className="col-hora">Salida</th>
+            <th className="col-total">Total</th>
+            <th>Observación</th>
+            <th className="col-firma">Firma</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* 31 filas fijas para que la hoja mida siempre lo mismo; los días
+              que no existen en el mes quedan en blanco. */}
+          {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => {
+            const registros = dia <= ultimoDia ? porDia.get(dia) || [] : [];
+            const r = registros[0];
+            return (
+              <tr key={dia}>
+                <td>{dia <= ultimoDia ? dia : ''}</td>
+                <td>{hora(r?.entrada_1)}</td>
+                <td>{hora(r?.salida_1)}</td>
+                <td>{hora(r?.entrada_2)}</td>
+                <td>{hora(r?.salida_2)}</td>
+                <td>{r ? formatearMinutos(totalMinutosJornadas(registros)) : ''}</td>
+                <td className="col-obs">
+                  {registros.map((x) => x.observacion).filter(Boolean).join(' / ')}
+                </td>
+                <td></td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={5} className="total-label">
+              Total del Mes:
+            </td>
+            <td>{formatearMinutos(totalMinutosJornadas(jornadas))}</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div className="bloque-firma-impresion">
+        <div className="linea-firma"></div>
+        <p className="nombre-firma">Rafael Carro</p>
+        <p className="cargo-firma">RECURSOS ÁULICOS</p>
+      </div>
+    </div>
+  );
+}
+
+const SUBCOLUMNAS_EVAL: Array<[string, string]> = [
+  ['EXCELENTE', '(10)'],
+  ['MUY BUENO', '(9-8)'],
+  ['BUENO', '(6-7)'],
+  ['REGULAR', '(5 o menos)'],
+];
+
+/** 10 -> EXCELENTE, 9-8 -> MUY BUENO, 7-6 -> BUENO, <=5 -> REGULAR. */
+function subcolumnaNota(nota: number): number {
+  if (nota === 10) return 0;
+  if (nota >= 8) return 1;
+  if (nota >= 6) return 2;
+  return 3;
+}
+
+function PlanillaEvaluacion({
+  alumno,
+  anio,
+  inicioPlan,
+  promedio,
+  meses,
+  criterios,
+  datosMeses,
+  obsGeneral,
+}: {
+  alumno: Alumno;
+  anio: number;
+  inicioPlan: string;
+  promedio: number | string | null;
+  meses: string[];
+  criterios: string[];
+  datosMeses: Record<string, MesEvaluacionData | null>;
+  obsGeneral: string;
+}) {
+  const columnasInforme = meses.length * 4;
+
+  return (
+    <div className="planilla-eval">
+      <div className="eval-header">
+        <div className="eval-logo">
+          <img src={LOGO_UAP} alt="UAP" />
+          <div>
+            <b>Vicerrectoría Bienestar Estudiantil</b>
+            <br />
+            <i>Universidad Adventista del Plata</i>
+          </div>
+        </div>
+        <div className="eval-titulo">EVALUACIÓN - PLAN BECUAP - {anio}</div>
+      </div>
+
+      <div className="eval-datos-alumno">
+        <div>
+          DEPARTAMENTO: <span className="linea-punto">Recursos Áulicos</span>
+        </div>
+        <div>
+          Nombre del alumno: <span className="linea-punto">{alumno.nombre}</span> Nº:{' '}
+          <span className="linea-punto">{alumno.id}</span>
+        </div>
+        <div>
+          Fecha de inicio en el Plan: <span className="linea-punto">{inicioPlan}</span>
+        </div>
+        <div>
+          Asistencia/horas: <span className="linea-punto"></span>
+        </div>
+        <div>
+          Promedio: <span className="linea-punto">{promedio ?? '...../...../.....'}</span>
+        </div>
+      </div>
+
+      <table className="tabla-evaluacion">
+        <thead>
+          <tr>
+            <th rowSpan={2}>CRITERIOS DE EVALUACIÓN</th>
+            {meses.map((m) => (
+              <th key={m} colSpan={4}>
+                {m.toUpperCase()}
+              </th>
+            ))}
+          </tr>
+          <tr className="sub-headers">
+            {meses.map((m) => (
+              <React.Fragment key={m}>
+                {SUBCOLUMNAS_EVAL.map(([nombre, rango]) => (
+                  <th key={nombre}>
+                    {nombre}
+                    <br />
+                    {rango}
+                  </th>
+                ))}
+              </React.Fragment>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {criterios.map((criterio, i) => (
+            <tr key={criterio}>
+              <td className="text-left">{criterio}</td>
+              {meses.map((m) => {
+                const nota = datosMeses[m]?.notas?.[i];
+                const col = typeof nota === 'number' && nota > 0 ? subcolumnaNota(nota) : -1;
+                return (
+                  <React.Fragment key={m}>
+                    {[0, 1, 2, 3].map((k) => (
+                      <td key={k} className={k === col ? 'nota' : undefined}>
+                        {k === col ? nota : ''}
+                      </td>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
+            </tr>
+          ))}
+          <tr>
+            <td className="text-left">Informe IASD:</td>
+            <td colSpan={columnasInforme}></td>
+          </tr>
+          <tr>
+            <td className="text-left">Informe académico:</td>
+            <td colSpan={columnasInforme}></td>
+          </tr>
+          <tr>
+            <td className="text-left">Informe de conducta:</td>
+            <td colSpan={columnasInforme}></td>
+          </tr>
+          <tr className="fila-firmas">
+            <td className="text-left">
+              <b>OBSERVACIONES GENERALES:</b>
+              <br />
+              <br />
+              <span>{obsGeneral}</span>
+            </td>
+            {meses.map((m) => (
+              <td key={m} colSpan={4}>
+                <i>Firma del jefe:</i>
+                <br />
+                <br />
+                <br />
+                <i>Firma del alumno:</i>
+                <br />
+                <br />
+                <br />
+                <i>Obs:</i>
+                <br />
+                <span>{datosMeses[m]?.observacion || ''}</span>
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }

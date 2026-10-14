@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { fechaHoyAR } from '@/lib/horas';
 
 export interface Cumpleanero {
   id: string;
@@ -33,8 +34,9 @@ export async function obtenerCumpleanosProximosAction(): Promise<{
       return { ok: true, data: [] };
     }
 
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
+    // "Hoy" en Argentina: el servidor corre en UTC y a las 21:00 ART ya sería mañana
+    const [anioHoy, mesHoy, diaHoy] = fechaHoyAR().split('-').map(Number);
+    const hoy = new Date(anioHoy, mesHoy - 1, diaHoy);
 
     const fechaLimite = new Date(hoy);
     fechaLimite.setDate(hoy.getDate() + 15);

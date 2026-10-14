@@ -1,0 +1,96 @@
+/* ==========================================================================
+   PLANILLAS INSTITUCIONALES BECUAP
+   Réplica de proyectoviejo/Alumnos.html:
+   - <style id="restaurar-planilla-original-aprobada">  (Control de horas, A4 vertical)
+   - <style id="estilos-evaluacion">                     (Evaluación, A4 apaisado)
+   Cada planilla se dibuja dos veces: una vista previa en pantalla y una copia
+   en un portal directo de <body> (.print-portal) que es lo único que se imprime.
+   ========================================================================== */
+
+.print-portal { display: none; }
+
+/* ---------- CONTROL DE HORAS MENSUALES (pantalla) ---------- */
+.planilla-horas { background: white; width: 180mm; margin: 0 auto; color: black; padding: 10mm; font-family: Arial, sans-serif; box-sizing: border-box; }
+.planilla-horas .uap-header-table { width: 100%; border-collapse: collapse; border: 1.5px solid black; margin-bottom: 10px; background-color: white; color: black; }
+.planilla-horas .uap-header-table td { border: 1.5px solid black; padding: 8px; text-align: center; vertical-align: middle; color: black; }
+.planilla-horas .header-logo { width: 80px; }
+.planilla-horas .header-logo img { width: 60px; max-width: 60px; display: inline-block; }
+.planilla-horas .header-title { font-size: 13px; font-weight: bold; text-transform: uppercase; line-height: 1.2; }
+.planilla-horas .header-control { font-size: 11px; font-weight: bold; width: 180px; }
+.planilla-horas .info-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 10px; padding: 5px 0; color: black; border: none; }
+.planilla-horas .info-line b { text-decoration: underline; margin-left: 5px; text-transform: uppercase; }
+.planilla-horas .horas-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 5px; background-color: white; border: 1px solid black; }
+.planilla-horas .horas-table th, .planilla-horas .horas-table td { border: 1px solid black; padding: 2px; text-align: center; color: black; }
+.planilla-horas .horas-table th { background: #f2f2f2; font-size: 8px; font-weight: bold; text-transform: uppercase; height: auto; line-height: normal; }
+.planilla-horas .horas-table td { font-size: 9px; height: 22px; line-height: normal; }
+.planilla-horas .horas-table td.col-obs { text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.planilla-horas .horas-table tfoot tr { background-color: #f8f9fa; }
+.planilla-horas .horas-table tfoot td { font-weight: bold; }
+.planilla-horas .horas-table tfoot td.total-label { text-align: right; padding-right: 10px; }
+.planilla-horas .col-dia { width: 32px; }
+.planilla-horas .col-hora { width: 42px; }
+.planilla-horas .col-total { width: 48px; }
+.planilla-horas .col-firma { width: 80px; }
+.planilla-horas .bloque-firma-impresion { margin-top: 50px; text-align: center; width: 100%; color: black; }
+.planilla-horas .linea-firma { width: 250px; border-top: 1.5px solid black; margin: 0 auto; }
+.planilla-horas .nombre-firma { font-size: 16px; font-weight: bold; margin: 8px 0 2px 0; }
+.planilla-horas .cargo-firma { font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ---------- EVALUACIÓN PLAN BECUAP (pantalla) ---------- */
+.planilla-eval { display: flex; flex-direction: column; width: 277mm; min-height: 190mm; margin: 0 auto; padding: 5mm; background: white; font-family: Arial, sans-serif; color: black; box-sizing: border-box; }
+.planilla-eval .eval-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; flex-shrink: 0; }
+.planilla-eval .eval-logo { display: flex; align-items: center; gap: 15px; font-size: 15px; line-height: 1.1; color: #003C71; }
+.planilla-eval .eval-logo img { width: 90px; }
+.planilla-eval .eval-titulo { font-size: 26px; font-weight: bold; text-transform: uppercase; margin-right: 20px; }
+.planilla-eval .eval-datos-alumno { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 15px; margin-bottom: 15px; flex-shrink: 0; }
+.planilla-eval .linea-punto { border-bottom: 1px dotted black; display: inline-block; min-width: 150px; font-weight: bold; }
+.planilla-eval .tabla-evaluacion { width: 100%; flex-grow: 1; border-collapse: collapse; font-size: 12px; text-align: center; table-layout: fixed; }
+.planilla-eval .tabla-evaluacion th, .planilla-eval .tabla-evaluacion td { border: 1px solid black; padding: 5px; overflow: hidden; }
+.planilla-eval .tabla-evaluacion th:first-child, .planilla-eval .tabla-evaluacion td:first-child { width: 32%; }
+.planilla-eval .tabla-evaluacion th { font-weight: bold; font-size: 13px; }
+.planilla-eval .tabla-evaluacion .sub-headers th { font-size: 9.5px; writing-mode: vertical-rl; transform: rotate(180deg); height: 110px; vertical-align: middle; text-align: left; padding-left: 2px; width: auto; }
+.planilla-eval .tabla-evaluacion .text-left { text-align: left; font-weight: bold; padding-left: 10px; font-size: 12.5px; }
+.planilla-eval .tabla-evaluacion td.nota { font-weight: bold; font-size: 14px; }
+.planilla-eval .fila-firmas td { vertical-align: top; height: 36mm; text-align: left; font-size: 12px; }
+
+/* ---------- IMPRESIÓN ---------- */
+@media print {
+  /* Solo el portal de la planilla pedida; nada del dashboard ocupa espacio. */
+  body[data-impresion] > *:not(.print-portal) { display: none !important; }
+  body[data-impresion="horas"] .print-portal[data-tipo="horas"],
+  body[data-impresion="eval"] .print-portal[data-tipo="eval"] { display: block !important; }
+  body[data-impresion] { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+
+  /* Control de horas: 1 sola hoja A4 vertical (@page margin 3mm). */
+  .print-portal .planilla-horas {
+    width: 204mm !important; max-width: 204mm !important; max-height: 290mm !important;
+    margin: 0 !important; padding: 0 !important; background: #fff !important; color: #000 !important;
+    overflow: hidden !important; break-inside: avoid; page-break-inside: avoid;
+  }
+  .print-portal .planilla-horas .uap-header-table { margin: 0 0 4px 0 !important; }
+  .print-portal .planilla-horas .uap-header-table td { padding: 5px !important; }
+  .print-portal .planilla-horas .header-logo { width: 72px !important; }
+  .print-portal .planilla-horas .header-logo img { width: 55px !important; }
+  .print-portal .planilla-horas .header-title { font-size: 11.5px !important; }
+  .print-portal .planilla-horas .header-control { width: 160px !important; font-size: 10px !important; }
+  .print-portal .planilla-horas .info-line { font-size: 11px !important; margin: 0 0 4px 0 !important; padding: 2px 0 !important; }
+  .print-portal .planilla-horas .horas-table th { font-size: 7.3px !important; height: 4.2mm !important; }
+  .print-portal .planilla-horas .horas-table tbody tr,
+  .print-portal .planilla-horas .horas-table tbody td { height: 7.15mm !important; min-height: 7.15mm !important; max-height: 7.15mm !important; font-size: 8.4px !important; }
+  .print-portal .planilla-horas .horas-table tfoot tr,
+  .print-portal .planilla-horas .horas-table tfoot td { height: 5.2mm !important; font-size: 8.5px !important; }
+  .print-portal .planilla-horas .col-dia { width: 30px !important; }
+  .print-portal .planilla-horas .col-hora { width: 41px !important; }
+  .print-portal .planilla-horas .col-total { width: 48px !important; }
+  .print-portal .planilla-horas .col-firma { width: 85px !important; }
+  .print-portal .planilla-horas .bloque-firma-impresion { margin-top: 9mm !important; }
+
+  /* Evaluación: 1 sola hoja A4 apaisada (@page margin 5mm). */
+  .print-portal .planilla-eval {
+    width: 100vw !important; max-width: 100vw !important; height: 97vh !important; min-height: 0 !important;
+    padding: 0 !important; overflow: hidden !important; break-inside: avoid; page-break-inside: avoid;
+  }
+  .print-portal .planilla-eval .fila-firmas td { height: 18vh; }
+
+  .planilla-horas *, .planilla-eval * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

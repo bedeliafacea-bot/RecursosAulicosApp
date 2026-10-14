@@ -20,6 +20,7 @@ import {
   EstadoReserva,
 } from '@/lib/types/database.types';
 import { useAuth } from '@/context/AuthContext';
+import { fechaHoyAR } from '@/lib/horas';
 import {
   Calendar,
   Clock,
@@ -93,7 +94,7 @@ export default function ReservasPage() {
 
   // Modal Nueva Reserva Especial
   const [modalEspecialOpen, setModalEspecialOpen] = useState(false);
-  const [espFecha, setEspFecha] = useState(new Date().toISOString().split('T')[0]);
+  const [espFecha, setEspFecha] = useState(() => fechaHoyAR());
   const [espDepto, setEspDepto] = useState('');
   const [espEquipo, setEspEquipo] = useState('');
   const [espHorario, setEspHorario] = useState('');

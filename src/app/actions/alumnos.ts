@@ -8,6 +8,7 @@ import {
   EvaluacionBecuap,
   MesEvaluacionData,
 } from '@/lib/types/database.types';
+import { calcularHorasDecimales, diasDelMes, rangoMes } from '@/lib/horas';
 
 // ==============================================================================
 // 1. GESTIÓN DE ALUMNOS (CONSULTA Y ALTA)
@@ -115,18 +116,6 @@ export async function guardarNuevoAlumnoAction(datos: {
 // 2. JORNADAS DIARIAS (CARGA, EDICIÓN, ELIMINACIÓN)
 // ==============================================================================
 
-function calcularHorasDecimales(e1?: string | null, s1?: string | null, e2?: string | null, s2?: string | null): number {
-  const aMin = (t?: string | null): number => {
-    if (!t || !t.includes(':')) return 0;
-    const [h, m] = t.split(':').map(Number);
-    return (h || 0) * 60 + (m || 0);
-  };
-
-  const min1 = e1 && s1 ? Math.max(0, aMin(s1) - aMin(e1)) : 0;
-  const min2 = e2 && s2 ? Math.max(0, aMin(s2) - aMin(e2)) : 0;
-  return parseFloat(((min1 + min2) / 60).toFixed(2));
-}
-
 export async function registrarJornadasBatchAction(
   alumnoId: string,
   jornadas: Array<{
@@ -178,9 +167,7 @@ export async function listarJornadasAlumnoAction(
   try {
     const supabase = await createClient();
 
-    const inicioMes = `${anio}-${mes < 10 ? '0' + mes : mes}-01`;
-    const finDia = new Date(anio, mes, 0).getDate();
-    const finMes = `${anio}-${mes < 10 ? '0' + mes : mes}-${finDia}`;
+    const { inicio: inicioMes, fin: finMes } = rangoMes(anio, mes);
 
     const { data, error } = await supabase
       .from('jornadas_becuap')
@@ -265,9 +252,7 @@ export async function obtenerHorariosPactadosAction(
   try {
     const supabase = await createClient();
 
-    const inicioMes = `${anio}-${mes < 10 ? '0' + mes : mes}-01`;
-    const finDia = new Date(anio, mes, 0).getDate();
-    const finMes = `${anio}-${mes < 10 ? '0' + mes : mes}-${finDia}`;
+    const { inicio: inicioMes, fin: finMes } = rangoMes(anio, mes);
 
     const { data, error } = await supabase
       .from('horarios_pactados')
@@ -300,7 +285,7 @@ export async function registrarHorariosPactadosMasivosAction(datos: {
       const dias = b.diasTexto
         .split(',')
         .map((d) => parseInt(d.trim(), 10))
-        .filter((d) => !isNaN(d) && d >= 1 && d <= 31);
+        .filter((d) => !isNaN(d) && d >= 1 && d <= diasDelMes(datos.anio, datos.mes));
 
       for (const d of dias) {
         const diaStr = d < 10 ? `0${d}` : `${d}`;

@@ -11,6 +11,7 @@ import {
 } from '@/app/actions/oficina';
 import { Departamento } from '@/lib/types/database.types';
 import { useAuth } from '@/context/AuthContext';
+import { fechaHoyAR, mesAnioActualAR } from '@/lib/horas';
 import {
   FileText,
   DollarSign,
@@ -30,13 +31,12 @@ import {
 
 export default function OficinaPage() {
   const { rol } = useAuth();
-  const fechaHoy = new Date().toISOString().split('T')[0];
+  const fechaHoy = fechaHoyAR();
   const [tabActiva, setTabActiva] = useState<'depto' | 'efectivo' | 'informe'>('depto');
 
   // Mes y Año dinámico (default hoy)
-  const fechaActual = new Date();
-  const [mesSeleccionado, setMesSeleccionado] = useState(fechaActual.getMonth() + 1);
-  const [anioSeleccionado, setAnioSeleccionado] = useState(fechaActual.getFullYear());
+  const [mesSeleccionado, setMesSeleccionado] = useState(() => mesAnioActualAR().mes);
+  const [anioSeleccionado, setAnioSeleccionado] = useState(() => mesAnioActualAR().anio);
 
   // Datos
   const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
