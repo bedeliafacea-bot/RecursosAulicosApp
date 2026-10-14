@@ -1,0 +1,2662 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Styles'); ?>
+
+  <style>
+    :root {
+      --uap-azul: #003C71;
+      --uap-azul-2: #005ba8;
+      --uap-celeste: #eaf6ff;
+      --uap-fondo: #eff7ff;
+      --uap-borde: #d3e2f0;
+      --uap-texto: #14345a;
+      --uap-sombra: 0 14px 30px rgba(4, 39, 79, .13);
+      --verde: #25a64a;
+      --naranja: #f97316;
+      --violeta: #6f42c1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--uap-texto);
+      background: linear-gradient(180deg, #dff3ff 0%, #eff7ff 38%, #f7fbff 100%);
+    }
+
+    .reservas-hero {
+      position: relative;
+      min-height: 240px;
+      overflow: hidden;
+      background-image: url("https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg");
+      background-size: cover;
+      background-position: center;
+      box-shadow: inset 0 -55px 80px rgba(0,0,0,.10);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0,60,113,.98) 0%, rgba(0,60,113,.74) 38%, rgba(234,246,255,.76) 100%),
+        linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.02));
+    }
+
+    .hero-contenido {
+      position: relative;
+      z-index: 1;
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 18px 22px 24px;
+    }
+
+    .hero-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .hero-brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: #fff;
+    }
+
+    .hero-logo {
+      width: 86px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 5px 10px rgba(0,0,0,.20));
+    }
+
+    .hero-separador {
+      width: 2px;
+      height: 58px;
+      background: rgba(255,255,255,.65);
+    }
+
+    .hero-nombre {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .hero-nombre strong {
+      font-size: 44px;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+
+    .hero-nombre span {
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.08;
+    }
+
+    .hero-usuario {
+      background: rgba(255,255,255,.92);
+      color: var(--uap-azul);
+      border: 1px solid rgba(255,255,255,.55);
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+    }
+
+    .hero-titulo {
+      text-align: center;
+      margin-top: 4px;
+      color: var(--uap-azul);
+      text-shadow: 0 1px 0 rgba(255,255,255,.30);
+    }
+
+    .hero-titulo h1 {
+      margin: 0;
+      font-size: 54px;
+      font-weight: 1000;
+      letter-spacing: -.7px;
+    }
+
+    .hero-titulo p {
+      margin: 4px 0 0;
+      font-size: 21px;
+      font-weight: 700;
+    }
+
+    .nav-reservas {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1.05fr 1.25fr 1.25fr 1.35fr 1.25fr 1.1fr;
+      gap: 14px;
+      background: rgba(255,255,255,.74);
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: var(--uap-sombra);
+    }
+
+    .btn-reserva-nav {
+      border: 0;
+      min-height: 56px;
+      border-radius: 12px;
+      color: #fff !important;
+      font-size: 14px;
+      font-weight: 1000;
+      text-decoration: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.16);
+      transition: transform .12s ease, filter .12s ease;
+    }
+
+    .btn-reserva-nav:hover { transform: translateY(-1px); filter: brightness(1.05); }
+
+    .btn-nav-1 { background: linear-gradient(180deg, #07599b 0%, #003C71 100%) !important; }
+    .btn-nav-2 { background: linear-gradient(180deg, #2f80ed 0%, #1357b7 100%) !important; }
+    .btn-nav-3 { background: linear-gradient(180deg, #8e6be8 0%, #6244bd 100%) !important; }
+    .btn-nav-4 { background: linear-gradient(180deg, #20a4b8 0%, #087b8c 100%) !important; }
+    .btn-nav-5 { background: linear-gradient(180deg, #64c466 0%, #2c9c42 100%) !important; }
+    .btn-nav-6 { background: linear-gradient(180deg, #ff9a3d 0%, #f26a00 100%) !important; }
+
+    .reservas-page {
+      max-width: 1480px;
+      margin: -22px auto 32px;
+      padding: 0 22px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) 420px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .bloque-horario,
+    .reservas-especiales-panel,
+    .mini-card {
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--uap-borde);
+      border-radius: 20px;
+      box-shadow: var(--uap-sombra);
+    }
+
+    .bloque-horario {
+      padding: 14px;
+    }
+
+    .reservas-tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+
+    .tab-reserva {
+      height: 48px;
+      border-radius: 12px;
+      border: 1px solid #d6e3ef;
+      background: linear-gradient(180deg, #ffffff 0%, #f2f7fb 100%);
+      color: var(--uap-azul);
+      font-size: 15px;
+      font-weight: 1000;
+      cursor: pointer;
+    }
+
+    .tab-reserva.activo {
+      background: linear-gradient(180deg, #0e6ec0 0%, #003C71 100%);
+      color: #fff;
+      box-shadow: 0 7px 16px rgba(0,60,113,.22);
+    }
+
+    .estado-reservas-card {
+      color: var(--uap-azul) !important;
+      background: #eef7ff;
+      border: 1px solid #cfe2f4;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-weight: 800;
+      text-align: left !important;
+      margin: 0 0 12px !important;
+    }
+
+    .reservas-matriz-wrapper,
+    .contenedor-scroll-reservas {
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid #dce7f1;
+      background: #fff;
+    }
+
+    .tabla-reservas-matriz,
+    .tabla-tradicional {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    .tabla-reservas-matriz th,
+    .tabla-reservas-matriz td,
+    .tabla-tradicional th,
+    .tabla-tradicional td {
+      border: 1px solid #dce7f1;
+      padding: 9px 10px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .tabla-reservas-matriz th,
+    .tabla-tradicional th {
+      background: linear-gradient(180deg, #0e6ec0 0%, #003C71 100%);
+      color: #fff;
+      font-weight: 1000;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tabla-reservas-matriz td.profesor-cell {
+      background: #eef7ff !important;
+      color: #003C71 !important;
+      font-weight: 1000 !important;
+      text-align: left !important;
+      min-width: 155px !important;
+      border-right: 2px solid #cfe0f1 !important;
+    }
+
+    .tabla-reservas-matriz th.profesor-header {
+      background: linear-gradient(180deg, #87d84f 0%, #5dae31 100%) !important;
+      color: #001f3f !important;
+      font-weight: 1000 !important;
+    }
+
+    .tabla-reservas-matriz td.celda-vacia {
+      background: #f8fbff !important;
+    }
+
+    .tabla-reservas-matriz td.reserva-cell {
+      background: #ffffff !important;
+      color: #1d3759 !important;
+      font-weight: 700 !important;
+    }
+
+    .reserva-aula { font-weight: 1000; color: var(--uap-azul); }
+    .reserva-recurso { color: #1d3759; }
+
+    .acciones-reserva {
+      margin-top: 4px;
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .acciones-reserva button,
+    .btn-estado {
+      border: 1px solid #cfddeb;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 4px 6px;
+      font-size: 12px;
+    }
+
+    .panel-reservas-lateral {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .mini-card {
+      padding: 16px;
+    }
+
+    .mini-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--uap-azul);
+      font-size: 20px;
+      font-weight: 1000;
+      margin-bottom: 12px;
+    }
+
+    .mini-icono {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #eef4ff;
+      box-shadow: inset 0 0 0 1px #d9e5f5;
+    }
+
+    .mini-card-proxima { background: linear-gradient(180deg, #ffffff 0%, #f7f0ff 100%); border-color: #dcccf7; }
+    .mini-card-resumen { background: linear-gradient(180deg, #ffffff 0%, #f4faff 100%); }
+    .mini-card-accesos { background: linear-gradient(180deg, #ffffff 0%, #f1fff5 100%); border-color: #cfead7; }
+
+    .proxima-layout {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 14px;
+      align-items: center;
+      border: 1px solid #ddcdf5;
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,.74);
+    }
+
+    .proxima-hora {
+      color: #6f42c1;
+      font-size: 23px;
+      font-weight: 1000;
+      text-align: center;
+      line-height: 1.2;
+      background: #f3eaff;
+      border-radius: 12px;
+      padding: 12px 8px;
+    }
+
+    .proxima-hora span { font-size: 23px; }
+
+    .proxima-info p {
+      margin: 7px 0;
+      color: #253a58;
+      font-size: 14px;
+    }
+
+    .resumen-dia-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .resumen-dia-box {
+      border-radius: 12px;
+      padding: 14px 8px;
+      text-align: center;
+      border: 1px solid #d8e6f2;
+    }
+
+    .resumen-dia-box strong {
+      display: block;
+      font-size: 30px;
+      font-weight: 1000;
+      margin-bottom: 4px;
+    }
+
+    .resumen-dia-box span {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .resumen-azul { background: #eef7ff; color: #0e4f99; }
+    .resumen-naranja { background: #fff3e7; color: #c66011; }
+    .resumen-verde { background: #ecfaef; color: #237a39; }
+
+    .accesos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .accesos-grid button {
+      min-height: 42px;
+      border: 1px solid #d8e6f2;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--uap-azul);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .reservas-especiales-panel {
+      margin-top: 18px;
+      padding: 14px;
+    }
+
+    .especiales-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .especiales-header h3 {
+      margin: 0;
+      color: var(--uap-azul);
+      font-size: 22px;
+      font-weight: 1000;
+    }
+
+    .especiales-header button {
+      border: 1px solid #cfddeb;
+      background: #fff;
+      color: var(--uap-azul);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .card-info {
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--uap-borde);
+      border-radius: 20px;
+      box-shadow: var(--uap-sombra);
+      padding: 22px;
+    }
+
+    input, select, button { font-family: inherit; }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    select {
+      width: 100%;
+      height: 46px;
+      padding: 0 12px;
+      border: 1px solid #c9d6e2;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--uap-texto);
+      margin-bottom: 10px;
+    }
+
+    .btn-g, .btn-b {
+      width: 100%;
+      min-height: 44px;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .btn-g { background: linear-gradient(180deg, #27c667 0%, #169e4d 100%) !important; }
+    .btn-b { background: linear-gradient(180deg, #245a98 0%, #003C71 100%) !important; }
+
+    .panel-alertas-reservas {
+      margin-bottom: 14px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--uap-borde);
+      border-left: 6px solid #f39c12;
+      border-radius: 14px;
+      padding: 12px 16px;
+      box-shadow: var(--uap-sombra);
+      color: var(--uap-texto);
+    }
+
+    .modal-alerta-reserva {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 25, 45, .55);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-alerta-contenido {
+      width: 100%;
+      max-width: 430px;
+      background: white;
+      border-radius: 22px;
+      padding: 28px 24px;
+      box-shadow: 0 22px 46px rgba(0,0,0,.20);
+      text-align: center;
+    }
+
+    .modal-alerta-icono { font-size: 42px; margin-bottom: 10px; }
+
+    .modal-alerta-contenido h2 {
+      margin: 0 0 10px;
+      color: var(--uap-azul);
+    }
+
+    .modal-alerta-contenido button {
+      min-width: 180px;
+      height: 46px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #0e6ec0 0%, #003C71 100%);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    @media (max-width: 1150px) {
+      .nav-reservas { grid-template-columns: repeat(3, 1fr); }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .panel-reservas-lateral { display: grid; grid-template-columns: repeat(3, 1fr); }
+      .hero-titulo h1 { font-size: 42px; }
+    }
+
+    @media (max-width: 760px) {
+      .hero-header { align-items: flex-start; flex-direction: column; }
+      .hero-nombre strong { font-size: 34px; }
+      .hero-titulo { text-align: left; }
+      .hero-titulo h1 { font-size: 34px; }
+      .hero-titulo p { font-size: 16px; }
+      .nav-reservas { grid-template-columns: 1fr; }
+      .reservas-tabs { grid-template-columns: 1fr; }
+      .panel-reservas-lateral { grid-template-columns: 1fr; }
+      .resumen-dia-grid, .accesos-grid { grid-template-columns: 1fr; }
+      .reservas-page { padding: 0 12px; }
+    }
+
+    @media print {
+      .reservas-hero,
+      .panel-reservas-lateral,
+      .panel-alertas-reservas,
+      #form-nueva-reserva-matriz,
+      #form-nueva-reserva-especial {
+        display: none !important;
+      }
+
+      .reservas-page {
+        margin: 0;
+        padding: 0;
+      }
+
+      .bloque-horario,
+      .reservas-especiales-panel,
+      .reservas-matriz-wrapper,
+      .contenedor-scroll-reservas {
+        box-shadow: none !important;
+      }
+    }
+  </style>
+
+  <style id="ajuste-columna-derecha-mas-afuera">
+    /* ==========================================================
+       AJUSTE: COLUMNA DERECHA MÁS A LA DERECHA
+       La tabla queda más ancha, pero conserva el panel lateral.
+    ========================================================== */
+
+    html,
+    body {
+      width: 100% !important;
+      max-width: none !important;
+      overflow-x: hidden !important;
+    }
+
+    .reservas-hero {
+      width: calc(100vw - 28px) !important;
+      max-width: none !important;
+      margin: 10px 14px 0 !important;
+      border-radius: 18px !important;
+    }
+
+    .hero-contenido {
+      width: 100% !important;
+      max-width: none !important;
+      padding-left: 20px !important;
+      padding-right: 20px !important;
+    }
+
+    .reservas-page {
+      width: calc(100vw - 28px) !important;
+      max-width: none !important;
+      margin: -18px 14px 32px !important;
+      padding: 0 !important;
+    }
+
+    .dashboard-grid {
+      width: 100% !important;
+      max-width: none !important;
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 330px !important;
+      gap: 14px !important;
+      align-items: start !important;
+    }
+
+    .bloque-horario {
+      width: 100% !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      padding: 12px !important;
+    }
+
+    .panel-reservas-lateral {
+      width: 330px !important;
+      min-width: 330px !important;
+      max-width: 330px !important;
+    }
+
+    .reservas-tabs {
+      width: 100% !important;
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 8px !important;
+    }
+
+    .tab-reserva {
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .reservas-matriz-wrapper {
+      width: 100% !important;
+      max-width: none !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+    }
+
+    .tabla-reservas-matriz {
+      width: 100% !important;
+      min-width: 1080px !important;
+      table-layout: fixed !important;
+    }
+
+    .tabla-reservas-matriz th,
+    .tabla-reservas-matriz td {
+      padding: 7px 5px !important;
+      font-size: 12px !important;
+      white-space: nowrap !important;
+    }
+
+    .tabla-reservas-matriz td.profesor-cell,
+    .tabla-reservas-matriz th.profesor-header,
+    .tabla-reservas-matriz .iap-header {
+      width: 165px !important;
+      min-width: 165px !important;
+      max-width: 165px !important;
+    }
+
+    .reserva-aula {
+      font-size: 12px !important;
+      font-weight: 1000 !important;
+    }
+
+    .reserva-recurso {
+      font-size: 11px !important;
+    }
+
+    .acciones-reserva button,
+    .btn-estado {
+      padding: 3px 5px !important;
+      font-size: 11px !important;
+    }
+
+    .mini-card {
+      padding: 13px !important;
+    }
+
+    .mini-card-title {
+      font-size: 18px !important;
+      margin-bottom: 10px !important;
+    }
+
+    .proxima-layout {
+      grid-template-columns: 86px 1fr !important;
+      gap: 9px !important;
+    }
+
+    .proxima-hora {
+      font-size: 18px !important;
+      padding: 10px 5px !important;
+    }
+
+    .proxima-hora span {
+      font-size: 18px !important;
+    }
+
+    .proxima-info p {
+      font-size: 12px !important;
+      margin: 5px 0 !important;
+    }
+
+    .resumen-dia-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 7px !important;
+    }
+
+    .resumen-dia-box {
+      padding: 9px 5px !important;
+    }
+
+    .resumen-dia-box strong {
+      font-size: 23px !important;
+    }
+
+    .resumen-dia-box span {
+      font-size: 10px !important;
+    }
+
+    .accesos-grid {
+      grid-template-columns: 1fr !important;
+      gap: 7px !important;
+    }
+
+    .reservas-especiales-panel {
+      width: 100% !important;
+      max-width: none !important;
+    }
+
+    @media (min-width: 1550px) {
+      .dashboard-grid {
+        grid-template-columns: minmax(0, 1fr) 350px !important;
+        gap: 16px !important;
+      }
+
+      .panel-reservas-lateral {
+        width: 350px !important;
+        min-width: 350px !important;
+        max-width: 350px !important;
+      }
+
+      .tabla-reservas-matriz {
+        min-width: 0 !important;
+      }
+
+      .tabla-reservas-matriz th,
+      .tabla-reservas-matriz td {
+        font-size: 12px !important;
+        padding: 8px 6px !important;
+      }
+    }
+
+    @media (max-width: 1300px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .panel-reservas-lateral {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 12px !important;
+      }
+
+      .tabla-reservas-matriz {
+        min-width: 1120px !important;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .panel-reservas-lateral {
+        grid-template-columns: 1fr !important;
+      }
+
+      .reservas-tabs {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+
+
+  <style id="ajuste-final-panel-derecha-borde">
+    /* ==========================================================
+       AJUSTE FINAL:
+       - Mantiene la columna derecha al costado
+       - La empuja bien contra el borde derecho
+       - Libera más ancho para la matriz de horarios
+       - Pisa max-width viejos de Styles y estilos inline
+    ========================================================== */
+
+    html,
+    body {
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      overflow-x: hidden !important;
+    }
+
+    /* Evita que cualquier estilo viejo limite la vista */
+    #vista-horario,
+    #vista-horario.dashboard-reservas,
+    .vista-reservas,
+    .dashboard-reservas,
+    .reservas-page {
+      width: 100% !important;
+      max-width: none !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
+    /* Hero ancho completo */
+    .reservas-hero {
+      width: calc(100vw - 16px) !important;
+      max-width: none !important;
+      margin: 8px 8px 0 8px !important;
+      border-radius: 18px !important;
+    }
+
+    .hero-contenido {
+      width: 100% !important;
+      max-width: none !important;
+      padding-left: 18px !important;
+      padding-right: 18px !important;
+    }
+
+    /* Página completa, sin centrado */
+    .reservas-page {
+      width: calc(100vw - 16px) !important;
+      max-width: none !important;
+      margin: -18px 8px 32px 8px !important;
+      padding: 0 !important;
+    }
+
+    /* La grilla usa todo el ancho:
+       izquierda se expande, derecha queda fija y pegada al borde */
+    .dashboard-grid {
+      width: 100% !important;
+      max-width: none !important;
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 320px !important;
+      gap: 14px !important;
+      align-items: start !important;
+    }
+
+    .bloque-horario {
+      width: 100% !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      padding: 12px !important;
+    }
+
+    .panel-reservas-lateral {
+      width: 320px !important;
+      min-width: 320px !important;
+      max-width: 320px !important;
+      justify-self: end !important;
+    }
+
+    /* Tabs de días ocupan todo el bloque izquierdo */
+    .reservas-tabs {
+      width: 100% !important;
+      max-width: none !important;
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 8px !important;
+      margin: 0 0 12px 0 !important;
+    }
+
+    .tab-reserva {
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    /* La matriz ocupa todo el ancho disponible del bloque izquierdo */
+    .reservas-matriz-wrapper {
+      width: 100% !important;
+      max-width: none !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+    }
+
+    .tabla-reservas-matriz {
+      width: 100% !important;
+      min-width: 1160px !important;
+      table-layout: fixed !important;
+    }
+
+    .tabla-reservas-matriz th,
+    .tabla-reservas-matriz td {
+      padding: 7px 5px !important;
+      font-size: 12px !important;
+      white-space: nowrap !important;
+    }
+
+    .tabla-reservas-matriz td.profesor-cell,
+    .tabla-reservas-matriz th.profesor-header,
+    .tabla-reservas-matriz .iap-header {
+      width: 165px !important;
+      min-width: 165px !important;
+      max-width: 165px !important;
+    }
+
+    .reserva-aula {
+      font-size: 12px !important;
+      font-weight: 1000 !important;
+    }
+
+    .reserva-recurso {
+      font-size: 11px !important;
+    }
+
+    .acciones-reserva button,
+    .btn-estado {
+      padding: 3px 5px !important;
+      font-size: 11px !important;
+    }
+
+    /* Columna derecha compacta, pero conservando el diseño */
+    .mini-card {
+      padding: 13px !important;
+    }
+
+    .mini-card-title {
+      font-size: 18px !important;
+      margin-bottom: 10px !important;
+    }
+
+    .proxima-layout {
+      grid-template-columns: 84px 1fr !important;
+      gap: 8px !important;
+    }
+
+    .proxima-hora {
+      font-size: 18px !important;
+      padding: 10px 5px !important;
+    }
+
+    .proxima-hora span {
+      font-size: 18px !important;
+    }
+
+    .proxima-info p {
+      font-size: 12px !important;
+      margin: 5px 0 !important;
+    }
+
+    .resumen-dia-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 7px !important;
+    }
+
+    .resumen-dia-box {
+      padding: 9px 5px !important;
+    }
+
+    .resumen-dia-box strong {
+      font-size: 23px !important;
+    }
+
+    .resumen-dia-box span {
+      font-size: 10px !important;
+    }
+
+    .accesos-grid {
+      grid-template-columns: 1fr !important;
+      gap: 7px !important;
+    }
+
+    .reservas-especiales-panel {
+      width: 100% !important;
+      max-width: none !important;
+    }
+
+    /* En tu pantalla grande, intentamos que no haya scroll horizontal */
+    @media (min-width: 1500px) {
+      .dashboard-grid {
+        grid-template-columns: minmax(0, 1fr) 320px !important;
+      }
+
+      .tabla-reservas-matriz {
+        min-width: 0 !important;
+      }
+
+      .tabla-reservas-matriz th,
+      .tabla-reservas-matriz td {
+        font-size: 12px !important;
+        padding: 7px 5px !important;
+      }
+    }
+
+    /* Si la pantalla se achica, el panel baja abajo */
+    @media (max-width: 1250px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .panel-reservas-lateral {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 12px !important;
+      }
+
+      .tabla-reservas-matriz {
+        min-width: 1120px !important;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .panel-reservas-lateral {
+        grid-template-columns: 1fr !important;
+      }
+
+      .reservas-tabs {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+
+
+  <style id="nav-reservas-textual-portada">
+    /* =========================================
+       MENÚ TEXTUAL EN PORTADA - RESERVAS
+       Mismo estilo del dashboard de oficina
+    ========================================= */
+
+    .nav-reservas.nav-reservas-texto {
+      margin-top: 26px !important;
+      padding: 16px 0 0 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      display: flex !important;
+      grid-template-columns: unset !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 30px !important;
+      border-top: 1px solid rgba(255,255,255,.26) !important;
+      border-radius: 0 !important;
+    }
+
+    .nav-reservas-texto .nav-link-reserva {
+      appearance: none !important;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      color: rgba(255,255,255,.88) !important;
+      text-decoration: none !important;
+      min-height: 0 !important;
+      height: auto !important;
+      min-width: 0 !important;
+      width: auto !important;
+      padding: 8px 0 !important;
+      border-radius: 0 !important;
+      font-size: 15px !important;
+      font-weight: 900 !important;
+      letter-spacing: .15px !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      position: relative !important;
+      text-shadow: 0 2px 8px rgba(0,0,0,.24) !important;
+      transition: color .12s ease, transform .12s ease !important;
+    }
+
+    .nav-reservas-texto .nav-link-reserva::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      height: 3px;
+      border-radius: 999px;
+      background: #4aa3ff;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform .16s ease;
+    }
+
+    .nav-reservas-texto .nav-link-reserva:hover {
+      color: #ffffff !important;
+      transform: translateY(-1px);
+      filter: none !important;
+    }
+
+    .nav-reservas-texto .nav-link-reserva:hover::after,
+    .nav-reservas-texto .nav-link-reserva.activo::after {
+      transform: scaleX(1);
+    }
+
+    .nav-reservas-texto .nav-link-reserva.activo {
+      color: #ffffff !important;
+    }
+
+    /* un poco más de aire abajo del hero, porque ya no están los botones grandes */
+    .reservas-page {
+      margin-top: -12px !important;
+    }
+
+    @media (max-width: 1050px) {
+      .nav-reservas.nav-reservas-texto {
+        flex-wrap: wrap !important;
+        gap: 12px 22px !important;
+        justify-content: center !important;
+      }
+
+      .nav-reservas-texto .nav-link-reserva {
+        font-size: 14px !important;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .nav-reservas.nav-reservas-texto {
+        justify-content: flex-start !important;
+      }
+    }
+  </style>
+
+
+  <style id="responsive-reservas-secretario-final">
+    /* ==========================================================
+       RESPONSIVE FINAL RESERVAS
+       Corrige pantallas más angostas / notebooks:
+       - La tabla queda arriba.
+       - Reserva próxima, resumen del día y accesos bajan abajo.
+       - Evita que el panel derecho quede cortado.
+       - La tabla mantiene scroll horizontal interno.
+    ========================================================== */
+
+    html,
+    body {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow-x: hidden !important;
+    }
+
+    .reservas-hero {
+      max-width: none !important;
+    }
+
+    .reservas-page {
+      max-width: none !important;
+    }
+
+    .dashboard-grid {
+      min-width: 0 !important;
+    }
+
+    .bloque-horario {
+      min-width: 0 !important;
+    }
+
+    .reservas-matriz-wrapper,
+    .contenedor-scroll-reservas {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+    }
+
+    .tabla-reservas-matriz {
+      table-layout: fixed !important;
+    }
+
+    /* Pantallas tipo notebook / monitor más chico */
+    @media (max-width: 1500px) {
+      .reservas-hero {
+        width: calc(100vw - 16px) !important;
+        margin: 8px 8px 0 8px !important;
+        border-radius: 18px !important;
+      }
+
+      .reservas-page {
+        width: calc(100vw - 16px) !important;
+        margin: -12px 8px 32px 8px !important;
+        padding: 0 !important;
+      }
+
+      .dashboard-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .bloque-horario {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .panel-reservas-lateral {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(250px, 1fr)) !important;
+        gap: 14px !important;
+        align-items: stretch !important;
+      }
+
+      .panel-reservas-lateral .mini-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+      }
+
+      .tabla-reservas-matriz {
+        min-width: 1120px !important;
+        width: 100% !important;
+      }
+
+      .nav-reservas.nav-reservas-texto {
+        flex-wrap: wrap !important;
+        gap: 12px 22px !important;
+        justify-content: center !important;
+      }
+    }
+
+    /* Pantallas medianas: paneles debajo, de a dos */
+    @media (max-width: 1150px) {
+      .hero-contenido {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
+
+      .hero-header {
+        gap: 12px !important;
+      }
+
+      .hero-logo {
+        width: 76px !important;
+      }
+
+      .hero-nombre span {
+        font-size: 16px !important;
+      }
+
+      .hero-titulo h1 {
+        font-size: 40px !important;
+      }
+
+      .hero-titulo p {
+        font-size: 17px !important;
+      }
+
+      .panel-reservas-lateral {
+        grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+      }
+
+      .reservas-tabs {
+        grid-template-columns: repeat(5, minmax(110px, 1fr)) !important;
+        overflow-x: auto !important;
+        padding-bottom: 2px !important;
+      }
+
+      .tab-reserva {
+        min-width: 110px !important;
+      }
+    }
+
+    /* Pantallas chicas: todo en una columna */
+    @media (max-width: 850px) {
+      .reservas-hero {
+        width: calc(100vw - 12px) !important;
+        margin: 6px 6px 0 6px !important;
+        border-radius: 14px !important;
+      }
+
+      .reservas-page {
+        width: calc(100vw - 12px) !important;
+        margin: -8px 6px 24px 6px !important;
+      }
+
+      .hero-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+
+      .hero-usuario {
+        align-self: flex-end !important;
+      }
+
+      .hero-titulo {
+        text-align: left !important;
+        margin-top: 18px !important;
+      }
+
+      .hero-titulo h1 {
+        font-size: 32px !important;
+      }
+
+      .hero-titulo p {
+        font-size: 15px !important;
+      }
+
+      .nav-reservas.nav-reservas-texto {
+        justify-content: flex-start !important;
+        gap: 8px 18px !important;
+      }
+
+      .nav-reservas-texto .nav-link-reserva {
+        font-size: 13px !important;
+      }
+
+      .panel-reservas-lateral {
+        grid-template-columns: 1fr !important;
+      }
+
+      .reservas-tabs {
+        grid-template-columns: 1fr !important;
+        overflow-x: visible !important;
+      }
+
+      .tab-reserva {
+        min-width: 0 !important;
+      }
+
+      .proxima-layout {
+        grid-template-columns: 90px 1fr !important;
+      }
+
+      .resumen-dia-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .accesos-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+
+
+  <style id="quitar-tarjetas-laterales-reservas">
+    /* ==========================================================
+       QUITAR TARJETAS LATERALES
+       Oculta Reserva próxima, Resumen del día y Accesos rápidos.
+       La tabla de horarios pasa a ocupar todo el ancho.
+    ========================================================== */
+
+    .panel-reservas-lateral {
+      display: none !important;
+    }
+
+    .dashboard-grid {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      gap: 0 !important;
+    }
+
+    .bloque-horario {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .reservas-matriz-wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow-x: auto !important;
+    }
+
+    .tabla-reservas-matriz {
+      width: 100% !important;
+      min-width: 1120px !important;
+      table-layout: fixed !important;
+    }
+
+    @media (min-width: 1500px) {
+      .tabla-reservas-matriz {
+        min-width: 0 !important;
+      }
+    }
+  </style>
+
+
+<style id="usuario-activo-chip-uap">
+  .uap-user-chip {
+    position: fixed;
+    top: 18px;
+    right: 22px;
+    z-index: 99999;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 0 15px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.94);
+    color: #003C71;
+    border: 1px solid rgba(255,255,255,.72);
+    box-shadow: 0 12px 26px rgba(7,30,58,.18);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    backdrop-filter: blur(8px);
+  }
+
+  .uap-user-chip-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #55318f;
+    font-size: 14px;
+    font-weight: 1000;
+  }
+
+  .uap-user-chip strong {
+    color: #003C71;
+    font-weight: 1000;
+  }
+
+  .uap-user-chip button {
+    border: 0;
+    background: transparent;
+    color: #003C71;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 1000;
+    padding: 0 0 0 2px;
+  }
+
+  .uap-user-menu {
+    position: fixed;
+    top: 66px;
+    right: 22px;
+    z-index: 100000;
+    width: 220px;
+    display: none;
+    background: #ffffff;
+    color: #173b68;
+    border: 1px solid #d8e3ef;
+    border-radius: 14px;
+    box-shadow: 0 18px 38px rgba(7,30,58,.20);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+
+  .uap-user-menu.show {
+    display: block;
+  }
+
+  .uap-user-menu-info {
+    padding: 13px 15px;
+    border-bottom: 1px solid #e5edf6;
+    background: #f6faff;
+  }
+
+  .uap-user-menu-info b {
+    display: block;
+    color: #003C71;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+
+  .uap-user-menu-info span {
+    display: block;
+    color: #6d7e92;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  .uap-user-menu button {
+    width: 100%;
+    min-height: 42px;
+    border: 0;
+    background: #ffffff;
+    color: #003C71;
+    text-align: left;
+    padding: 0 15px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 900;
+    font-family: Arial, sans-serif;
+  }
+
+  .uap-user-menu button:hover {
+    background: #eef7ff;
+  }
+
+  @media print {
+    .uap-user-chip,
+    .uap-user-menu {
+      display: none !important;
+    }
+  }
+</style>
+
+</head>
+
+<body onload="iniciarReservas()">
+
+<div class="uap-user-chip no-print-zone">
+  <span class="uap-user-chip-icon">♟</span>
+  <span>Bienvenido, <strong><?= nombreUsuarioActivo ?></strong></span>
+  <button type="button" onclick="toggleMenuUsuarioUap()">▼</button>
+</div>
+
+<div id="uap-user-menu" class="uap-user-menu no-print-zone">
+  <div class="uap-user-menu-info">
+    <b><?= nombreUsuarioActivo ?></b>
+    <span><?= rolUsuarioActivo ?></span>
+  </div>
+
+  <button type="button" onclick="cambiarUsuarioUap()">Cambiar usuario</button>
+</div>
+
+
+
+  <div class="reservas-hero no-print-zone">
+    <div class="hero-bg"></div>
+
+    <div class="hero-contenido">
+      <div class="hero-header">
+        <div class="hero-brand">
+          <img src="https://i.postimg.cc/fyMcjMcn/logo-uap.png" class="hero-logo" alt="Logo UAP">
+          <div class="hero-separador"></div>
+          <div class="hero-nombre">
+            
+            <span>UNIVERSIDAD<br>ADVENTISTA<br>DEL PLATA</span>
+          </div>
+        </div>
+
+        
+      </div>
+
+      <div class="hero-titulo">
+        <h1>Reserva de Equipos</h1>
+        <p>Sistema de Reservas de Aulas y Equipamiento</p>
+      </div>
+
+      <div class="nav-bar nav-reservas nav-reservas-texto">
+        <a href="<?= getUrlConToken('Index', token) ?>" target="_top" class="nav-link-reserva activo">Inicio</a>
+        <button type="button" onclick="activarNavReservas(this, 'vista-horario')" class="nav-link-reserva">Horario semanal</button>
+        <button type="button" onclick="activarNavReservas(this, 'vista-especiales')" class="nav-link-reserva">Reservas especiales</button>
+        <button type="button" onclick="activarNavReservas(this, 'form-matriz')" class="nav-link-reserva">Reserva diaria IAP/UAP</button>
+        <button type="button" onclick="activarNavReservas(this, 'form-especial')" class="nav-link-reserva">Reserva UAP</button>
+        <button type="button" onclick="imprimirHorarioDia()" class="nav-link-reserva">Imprimir día</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="reservas-page">
+  <div id="panel-alertas-reservas" class="panel-alertas-reservas no-print-zone" style="display:none;">
+  <div id="texto-alertas-reservas"></div>
+  <div id="modal-alerta-reserva" class="modal-alerta-reserva" style="display:none;">
+    <div class="modal-alerta-contenido">
+      <div class="modal-alerta-icono">🔔</div>
+      <h2>Reserva próxima</h2>
+      <p id="modal-alerta-texto"></p>
+
+      <button onclick="cerrarModalAlertaReserva()">Entendido</button>
+    </div>
+  </div>
+  </div>
+
+  <!-- =========================
+       FORM NUEVA RESERVA MATRIZ
+  ========================== -->
+  <div id="form-nueva-reserva-matriz" class="no-print-zone" style="display:none;max-width:650px;margin:0 auto 20px;">
+    <div class="card-info">
+      <h3>Nueva Reserva en Horario Semanal</h3>
+      <input type="hidden" id="res_filaOriginal">
+      <input type="hidden" id="res_modo" value="nuevo">
+
+      <select id="res_dia">
+        <option value="">Seleccionar día...</option>
+        <option value="Lunes">Lunes</option>
+        <option value="Martes">Martes</option>
+        <option value="Miércoles">Miércoles</option>
+        <option value="Jueves">Jueves</option>
+        <option value="Viernes">Viernes</option>
+      </select>
+
+      <select id="res_profesor">
+        <option value="">Seleccionar profesor...</option>
+      </select>
+
+      <div style="display:flex;gap:10px;">
+        <input type="time" id="res_inicio">
+        <input type="time" id="res_fin">
+      </div>
+
+      <input type="text" id="res_aula" placeholder="Aula. Ej: Aula 13">
+      <select id="res_recurso">
+        <option value="">Seleccionar recurso...</option>
+        <option value="Proyector">Proyector</option>
+        <option value="Audio">Audio</option>
+        <option value="Proyector + Audio">Proyector + Audio</option>
+        <option value="Notebook ASSUS">Notebook ASSUS</option>
+      </select>
+      <div id="tramos-extra"></div>
+
+      <button type="button"
+              class="btn-b"
+              onclick="agregarTramoExtra()"
+              style="background:#003C71;margin-top:8px;">
+        ➕ Agregar otro horario
+      </button>
+      <button class="btn-g" onclick="guardarNuevaReservaMatriz()">💾 Guardar Reserva</button>
+      <button class="btn-b" onclick="cerrarFormulariosReservas()" style="background:#6c757d;margin-top:5px;">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- =========================
+       FORM NUEVA RESERVA ESPECIAL
+  ========================== -->
+  <div id="form-nueva-reserva-especial" class="no-print-zone" style="display:none;max-width:650px;margin:0 auto 20px;">
+    <div class="card-info">
+      <h3>Nueva Reserva Especial</h3>
+
+      <input type="date" id="esp_fecha">
+      <input type="text" id="esp_depto" placeholder="Departamento">
+      <input type="text" id="esp_equipo" placeholder="Equipo">
+      <input type="text" id="esp_horario" placeholder="Horario. Ej: 08:00 a 10:00">
+      <input type="text" id="esp_tel" placeholder="Teléfono de contacto">
+      <input type="text" id="esp_obs" placeholder="Observaciones">
+
+      <button class="btn-g" onclick="guardarNuevaReservaEspecial()">💾 Guardar Reserva Especial</button>
+      <button class="btn-b" onclick="cerrarFormulariosReservas()" style="background:#6c757d;margin-top:5px;">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- =========================
+       DASHBOARD RESERVAS
+  ========================== -->
+  <div id="vista-horario" class="vista-reservas no-print-zone dashboard-reservas">
+    <div class="dashboard-grid">
+
+      <div class="bloque-horario">
+        <div class="reservas-tabs">
+          <button class="tab-reserva" onclick="cargarDiaReservas('Lunes', this)">Lunes</button>
+          <button class="tab-reserva" onclick="cargarDiaReservas('Martes', this)">Martes</button>
+          <button class="tab-reserva" onclick="cargarDiaReservas('Miércoles', this)">Miércoles</button>
+          <button class="tab-reserva" onclick="cargarDiaReservas('Jueves', this)">Jueves</button>
+          <button class="tab-reserva" onclick="cargarDiaReservas('Viernes', this)">Viernes</button>
+        </div>
+
+        <div id="estado-reservas" class="estado-reservas-card">
+          Cargando reservas...
+        </div>
+
+        <div class="reservas-matriz-wrapper" id="tabla-reservas-wrapper" style="display:none;">
+          <table class="tabla-reservas-matriz" id="tablaReservasMatriz"></table>
+        </div>
+      </div>
+
+      <aside class="panel-reservas-lateral">
+        <div class="mini-card mini-card-proxima">
+          <div class="mini-card-title">
+            <span class="mini-icono">🔔</span>
+            <strong>Reserva próxima</strong>
+          </div>
+
+          <div class="proxima-layout">
+            <div class="proxima-hora" id="proxima-horario">--:--<br><span>--:--</span></div>
+            <div class="proxima-info">
+              <p><b>Profesor:</b> <span id="proxima-profesor">Sin reservas próximas</span></p>
+              <p><b>Aula:</b> <span id="proxima-aula">—</span></p>
+              <p><b>Recurso:</b> <span id="proxima-recurso">—</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mini-card mini-card-resumen">
+          <div class="mini-card-title">
+            <span class="mini-icono">📊</span>
+            <strong>Resumen del día</strong>
+          </div>
+
+          <div class="resumen-dia-grid">
+            <div class="resumen-dia-box resumen-azul">
+              <strong id="resumen-dia-reservas">0</strong>
+              <span>Reservas del día</span>
+            </div>
+            <div class="resumen-dia-box resumen-naranja">
+              <strong id="resumen-dia-equipos">0</strong>
+              <span>Equipos en uso</span>
+            </div>
+            <div class="resumen-dia-box resumen-verde">
+              <strong id="resumen-dia-disponibles">0</strong>
+              <span>Disponibles</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mini-card mini-card-accesos">
+          <div class="mini-card-title">
+            <span class="mini-icono">⚡</span>
+            <strong>Accesos rápidos</strong>
+          </div>
+
+          <div class="accesos-grid">
+            <button type="button" onclick="mostrarFormReservaMatriz()">➕ Nueva reserva</button>
+            <button type="button" onclick="recargarDiaActual()">🔄 Actualizar</button>
+            <button type="button" onclick="mostrarSeccionEspeciales()">⭐ Ver especiales</button>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+    <div id="vista-especiales" class="reservas-especiales-panel">
+      <div class="especiales-header">
+        <h3>⭐ Reservas Especiales</h3>
+        <button type="button" onclick="cargarTablaReservasEspeciales()">Ver todas ❯</button>
+      </div>
+
+      <div class="contenedor-scroll-reservas">
+        <table class="tabla-tradicional">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Depto</th>
+              <th>Equipo</th>
+              <th>Horario</th>
+              <th>Obs</th>
+              <th>Tel.</th>
+              <th>Ent.</th>
+              <th>Dev.</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-reservas-especiales"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const BLOQUES_MANANA = [
+  { inicio: "07:30", fin: "08:10", label: "07:30 - 08:10" },
+  { inicio: "08:15", fin: "08:55", label: "08:15 - 08:55" },
+  { inicio: "08:55", fin: "09:35", label: "08:55 - 09:35" },
+  { inicio: "09:50", fin: "10:30", label: "09:50 - 10:30" },
+  { inicio: "10:30", fin: "11:10", label: "10:30 - 11:10" },
+  { inicio: "11:20", fin: "12:00", label: "11:20 - 12:00" },
+  { inicio: "12:00", fin: "12:40", label: "12:00 - 12:40" },
+  { inicio: "12:40", fin: "13:20", label: "12:40 - 13:20" }
+];
+const BLOQUES_TARDE = [
+  { inicio: "13:30", fin: "14:20", label: "13:30 - 14:20" },
+  { inicio: "14:30", fin: "15:20", label: "14:30 - 15:20" },
+  { inicio: "15:30", fin: "16:20", label: "15:30 - 16:20" },
+  { inicio: "16:30", fin: "17:20", label: "16:30 - 17:20" },
+  { inicio: "17:30", fin: "18:20", label: "17:30 - 18:20" },
+  { inicio: "18:30", fin: "19:20", label: "18:30 - 19:20" },
+  { inicio: "19:30", fin: "20:20", label: "19:30 - 20:20" },
+  { inicio: "20:30", fin: "21:20", label: "20:30 - 21:20" }
+];
+
+let reservasActuales = [];
+
+function iniciarReservas() {
+  cargarProfesoresSelect();  
+  mostrarVistaReservas('vista-horario');
+
+  const dia = obtenerDiaActual();
+  const botones = document.querySelectorAll(".tab-reserva");
+  const boton = Array.from(botones).find(b => b.innerText === dia) || botones[0];
+
+  cargarDiaReservas(dia, boton);
+  cargarTablaReservasEspeciales();
+}
+
+function mostrarVistaReservas(idVista) {
+  document.querySelectorAll(".vista-reservas").forEach(v => v.style.display = "none");
+
+  const vistaHorario = document.getElementById("vista-horario");
+  if (vistaHorario) {
+    vistaHorario.style.display = "block";
+  }
+
+  cerrarFormulariosReservas();
+
+  if (idVista === "vista-especiales") {
+    cargarTablaReservasEspeciales();
+    setTimeout(() => {
+      const panel = document.getElementById("vista-especiales");
+      if (panel) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+  }
+}
+
+function mostrarSeccionEspeciales() {
+  mostrarVistaReservas("vista-especiales");
+}
+
+function activarNavReservas(boton, accion) {
+  document.querySelectorAll(".nav-link-reserva").forEach(b => b.classList.remove("activo"));
+  if (boton) boton.classList.add("activo");
+
+  if (accion === "vista-horario") {
+    mostrarVistaReservas("vista-horario");
+    return;
+  }
+
+  if (accion === "vista-especiales") {
+    mostrarSeccionEspeciales();
+    return;
+  }
+
+  if (accion === "form-matriz") {
+    mostrarFormReservaMatriz();
+    return;
+  }
+
+  if (accion === "form-especial") {
+    mostrarFormReservaEspecial();
+    return;
+  }
+}
+
+function cerrarFormulariosReservas() {
+  document.getElementById("form-nueva-reserva-matriz").style.display = "none";
+  document.getElementById("form-nueva-reserva-especial").style.display = "none";
+}
+
+function obtenerDiaActual() {
+  const diaSemana = new Date().getDay();
+
+  const mapa = {
+    1: "Lunes",
+    2: "Martes",
+    3: "Miércoles",
+    4: "Jueves",
+    5: "Viernes"
+  };
+
+  return mapa[diaSemana] || "Lunes";
+}
+
+/* =========================
+   HORARIO MATRIZ
+========================= */
+
+function cargarDiaReservas(dia, boton) {
+  diaActualReservas = dia;
+
+  document.querySelectorAll(".tab-reserva").forEach(b => b.classList.remove("activo"));
+  if (boton) boton.classList.add("activo");
+
+  document.getElementById("estado-reservas").style.display = "block";
+  document.getElementById("estado-reservas").innerText = "Cargando reservas...";
+  document.getElementById("tabla-reservas-wrapper").style.display = "none";
+
+  google.script.run
+    .withSuccessHandler(res => {
+      if (!res.ok) {
+        document.getElementById("estado-reservas").innerText = res.mensaje;
+        return;
+      }
+
+      construirTablaReservas(dia, res.datos);
+    })
+    .withFailureHandler(err => {
+      document.getElementById("estado-reservas").innerText = "Error: " + err.message;
+    })
+    .obtenerReservasPorDia(dia);
+}
+
+function recargarDiaActual() {
+  const boton = Array.from(document.querySelectorAll(".tab-reserva"))
+    .find(b => b.innerText === diaActualReservas);
+
+  cargarDiaReservas(diaActualReservas, boton);
+  cargarTablaReservasEspeciales();
+}
+
+function construirTablaReservas(dia, reservas) {
+  const tabla = document.getElementById("tablaReservasMatriz");
+  reservasActuales = reservas || [];
+
+  if (!reservas || reservas.length === 0) {
+    document.getElementById("estado-reservas").innerText = "No hay reservas cargadas para " + dia;
+    document.getElementById("tabla-reservas-wrapper").style.display = "none";
+    actualizarPanelDashboardReservas(dia, []);
+    return;
+  }
+
+  let html = "";
+
+  html += construirMatrizPorTurno(dia, reservas, BLOQUES_MANANA, "IAP - MAÑANA");
+  html += `<div style="height:18px;"></div>`;
+  html += construirMatrizPorTurno(dia, reservas, BLOQUES_TARDE, "UAP - TARDE");
+
+  tabla.innerHTML = html;
+
+  document.getElementById("estado-reservas").style.display = "none";
+  document.getElementById("tabla-reservas-wrapper").style.display = "block";
+  actualizarPanelDashboardReservas(dia, reservas);
+  iniciarSistemaAlertasReservas();
+}
+function construirMatrizPorTurno(dia, reservas, bloques, tituloTurno) {
+  const reservasTurno = reservas.filter(r => reservaTocaTurno(r, bloques));
+
+  if (reservasTurno.length === 0) {
+    return `
+      <table class="tabla-reservas-matriz">
+        <thead>
+          <tr class="fila-header-principal">
+            <th class="iap-header">${tituloTurno}</th>
+            <th colspan="${bloques.length}" class="dia-header">${dia.toUpperCase()}</th>
+          </tr>
+          <tr class="fila-horarios">
+            <th class="profesor-header">PROFESOR</th>
+            ${bloques.map(b => `<th>${b.label}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="${bloques.length + 1}" style="background:white;color:#555;padding:14px;">
+              Sin reservas para este turno.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  const profesores = obtenerProfesoresUnicos(reservasTurno);
+
+  let html = `
+    <table class="tabla-reservas-matriz">
+      <thead>
+        <tr class="fila-header-principal">
+          <th class="iap-header">${tituloTurno}</th>
+          <th colspan="${bloques.length}" class="dia-header">${dia.toUpperCase()}</th>
+        </tr>
+
+        <tr class="fila-horarios">
+          <th class="profesor-header">PROFESOR</th>
+          ${bloques.map(b => `<th>${b.label}</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  profesores.forEach(profesor => {
+    const reservasProfesor = reservasTurno
+      .filter(r => normalizarProfesor(r.profesor) === normalizarProfesor(profesor))
+      .sort((a, b) => horaAMinutos(a.horaInicio) - horaAMinutos(b.horaInicio));
+
+    html += `<tr>`;
+    html += `<td class="profesor-cell">${profesor}</td>`;
+
+    let col = 0;
+
+    while (col < bloques.length) {
+      const reserva = reservasProfesor.find(r => obtenerIndiceInicioReserva(r, bloques) === col);
+
+      if (reserva) {
+        const colspan = calcularColspan(reserva, bloques);
+        const claseEstado = obtenerClaseEstado(reserva.estado);
+
+        html += `
+          <td class="reserva-cell ${claseEstado}" colspan="${colspan}">
+            <div>
+              <span class="reserva-aula">${reserva.aula}</span>
+              <span class="reserva-recurso"> / ${reserva.recurso}</span>
+            </div>
+
+            <div class="acciones-reserva">
+              <button onclick="editarReservaMatriz(${reserva.filaOriginal})">✏️</button>
+              <button onclick="cambiarEstadoMatriz(${reserva.filaOriginal}, 'Pausado')">⏸️</button>
+              <button onclick="cambiarEstadoMatriz(${reserva.filaOriginal}, 'Finalizado')">✅</button>
+              <button onclick="eliminarReservaMatrizFront(${reserva.filaOriginal})">🗑️</button>
+            </div>
+          </td>
+        `;
+
+        col += colspan;
+      } else {
+        html += `<td class="celda-vacia"></td>`;
+        col++;
+      }
+    }
+
+    html += `</tr>`;
+  });
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  return html;
+}
+
+
+function actualizarPanelDashboardReservas(dia, reservas) {
+  const lista = Array.isArray(reservas) ? reservas : [];
+  const activas = lista.filter(r => r.estado !== "Finalizado" && r.estado !== "Pausado");
+
+  const totalReservas = activas.length;
+  const recursosUnicos = new Set(activas.map(r => String(r.recurso || "").trim()).filter(Boolean)).size;
+  const totalBloques = BLOQUES_MANANA.length + BLOQUES_TARDE.length;
+  const disponibles = Math.max(totalBloques - totalReservas, 0);
+
+  const elReservas = document.getElementById("resumen-dia-reservas");
+  const elEquipos = document.getElementById("resumen-dia-equipos");
+  const elDisponibles = document.getElementById("resumen-dia-disponibles");
+
+  if (elReservas) elReservas.innerText = totalReservas;
+  if (elEquipos) elEquipos.innerText = recursosUnicos;
+  if (elDisponibles) elDisponibles.innerText = disponibles;
+
+  const proxima = obtenerProximaReservaDashboard(dia, activas);
+
+  const horario = document.getElementById("proxima-horario");
+  const profesor = document.getElementById("proxima-profesor");
+  const aula = document.getElementById("proxima-aula");
+  const recurso = document.getElementById("proxima-recurso");
+
+  if (!proxima) {
+    if (horario) horario.innerHTML = "--:--<br><span>--:--</span>";
+    if (profesor) profesor.innerText = "Sin reservas próximas";
+    if (aula) aula.innerText = "—";
+    if (recurso) recurso.innerText = "—";
+    return;
+  }
+
+  if (horario) {
+    horario.innerHTML = `${normalizarHora(proxima.horaInicio)}<br><span>${normalizarHora(proxima.horaFin)}</span>`;
+  }
+
+  if (profesor) profesor.innerText = proxima.profesor || "—";
+  if (aula) aula.innerText = proxima.aula || "—";
+  if (recurso) recurso.innerText = proxima.recurso || "—";
+}
+
+function obtenerProximaReservaDashboard(dia, reservas) {
+  if (!reservas || reservas.length === 0) return null;
+
+  const ahora = new Date();
+  const diaActual = obtenerDiaActual();
+  const mismoDia = normalizarTextoJS(dia) === normalizarTextoJS(diaActual);
+
+  const ordenadas = reservas
+    .slice()
+    .sort((a, b) => horaAMinutos(a.horaInicio) - horaAMinutos(b.horaInicio));
+
+  if (!mismoDia) return ordenadas[0] || null;
+
+  const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+
+  return ordenadas.find(r => horaAMinutos(r.horaInicio) >= minutosActuales) || ordenadas[0] || null;
+}
+
+function reservaTocaTurno(reserva, bloques) {
+  return obtenerIndiceInicioReserva(reserva, bloques) !== -1;
+}
+
+function obtenerClaseEstado(estado) {
+  if (estado === "Pausado") return "estado-pausado";
+  if (estado === "Finalizado") return "estado-finalizado";
+  return "";
+}
+function obtenerProfesoresUnicos(reservas) {
+  const mapa = {};
+  const resultado = [];
+
+  reservas.forEach(r => {
+    const clave = normalizarProfesor(r.profesor);
+
+    if (!mapa[clave]) {
+      mapa[clave] = true;
+      resultado.push(r.profesor.trim());
+    }
+  });
+
+  return resultado.sort();
+}
+
+function normalizarProfesor(nombre) {
+  return String(nombre || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+function calcularColspan(reserva, bloques) {
+  const inicio = obtenerIndiceInicioReserva(reserva, bloques);
+  const fin = obtenerIndiceFinReserva(reserva, bloques);
+
+  if (inicio === -1 || fin === -1) return 1;
+
+  return Math.max(fin - inicio + 1, 1);
+}
+
+function obtenerIndiceInicioReserva(reserva, bloques) {
+  const inicioReserva = horaAMinutos(reserva.horaInicio);
+  const finReserva = horaAMinutos(reserva.horaFin);
+
+  for (let i = 0; i < bloques.length; i++) {
+    const inicioBloque = horaAMinutos(bloques[i].inicio);
+    const finBloque = horaAMinutos(bloques[i].fin);
+
+    if (inicioReserva < finBloque && finReserva > inicioBloque) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+function obtenerIndiceFinReserva(reserva, bloques) {
+  const inicioReserva = horaAMinutos(reserva.horaInicio);
+  const finReserva = horaAMinutos(reserva.horaFin);
+
+  let ultimoIndice = -1;
+
+  for (let i = 0; i < bloques.length; i++) {
+    const inicioBloque = horaAMinutos(bloques[i].inicio);
+    const finBloque = horaAMinutos(bloques[i].fin);
+
+    if (inicioReserva < finBloque && finReserva > inicioBloque) {
+      ultimoIndice = i;
+    }
+  }
+
+  return ultimoIndice;
+}
+
+function horaAMinutos(hora) {
+  const p = String(hora).split(":");
+  return Number(p[0]) * 60 + Number(p[1]);
+}
+
+function normalizarHora(hora) {
+  return String(hora || "").trim();
+}
+
+function mostrarFormReservaMatriz() {
+  cerrarFormulariosReservas();
+  mostrarVistaReservas("vista-horario");
+
+  prepararFormularioNuevaReserva();
+
+  document.getElementById("form-nueva-reserva-matriz").style.display = "block";
+  document.getElementById("res_dia").value = diaActualReservas;
+}
+
+function editarReservaMatriz(filaOriginal) {
+  const reserva = reservasActuales.find(r => Number(r.filaOriginal) === Number(filaOriginal));
+
+  if (!reserva) {
+    alert("No se encontró la reserva.");
+    return;
+  }
+
+  cerrarFormulariosReservas();
+  mostrarVistaReservas("vista-horario");
+
+  document.getElementById("form-nueva-reserva-matriz").style.display = "block";
+  document.getElementById("tramos-extra").innerHTML = "";
+
+  document.getElementById("res_modo").value = "editar";
+  document.getElementById("res_filaOriginal").value = reserva.filaOriginal;
+
+  document.getElementById("res_dia").value = reserva.dia;
+  document.getElementById("res_profesor").value = reserva.profesor;
+
+  document.getElementById("res_inicio").value = normalizarHoraInput(reserva.horaInicio);
+  document.getElementById("res_fin").value = normalizarHoraInput(reserva.horaFin);
+
+  document.getElementById("res_aula").value = reserva.aula;
+
+  document.getElementById("res_recurso").value = reserva.recurso || "";
+}
+
+function cambiarEstadoMatriz(filaOriginal, estado) {
+  google.script.run.withSuccessHandler(res => {
+    if (res === "OK") {
+      recargarDiaActual();
+    } else {
+      alert(res);
+    }
+  }).cambiarEstadoReservaMatriz(filaOriginal, estado);
+}
+
+function prepararFormularioNuevaReserva() {
+  document.getElementById("res_modo").value = "nuevo";
+  document.getElementById("res_filaOriginal").value = "";
+  document.getElementById("res_profesor").value = "";
+  document.getElementById("res_inicio").value = "";
+  document.getElementById("res_fin").value = "";
+  document.getElementById("res_aula").value = "";
+  document.getElementById("res_recurso").value = "";
+  document.getElementById("tramos-extra").innerHTML = "";
+}
+
+function guardarNuevaReservaMatriz() {
+  const modo = document.getElementById("res_modo").value;
+
+  const reservaPrincipal = {
+    filaOriginal: document.getElementById("res_filaOriginal").value,
+    dia: document.getElementById("res_dia").value,
+    profesor: document.getElementById("res_profesor").value,
+    horaInicio: document.getElementById("res_inicio").value,
+    horaFin: document.getElementById("res_fin").value,
+    aula: document.getElementById("res_aula").value,
+    recurso: document.getElementById("res_recurso").value,
+    estado: "Pendiente"
+  };
+
+  if (!reservaPrincipal.dia || !reservaPrincipal.profesor || !reservaPrincipal.horaInicio || !reservaPrincipal.horaFin || !reservaPrincipal.aula || !reservaPrincipal.recurso) {
+    return alert("Completá todos los campos principales.");
+  }
+
+  if (modo === "editar") {
+    google.script.run.withSuccessHandler(res => {
+      manejarGuardadoMatriz(res);
+    }).actualizarReservaMatriz(reservaPrincipal);
+
+    return;
+  }
+
+  const reservas = [reservaPrincipal];
+
+  document.querySelectorAll(".tramo-extra").forEach(div => {
+    const inicio = div.querySelector(".extra-inicio").value;
+    const fin = div.querySelector(".extra-fin").value;
+    const aula = div.querySelector(".extra-aula").value;
+    const recurso = div.querySelector(".extra-recurso").value;
+
+    if (inicio && fin && aula && recurso) {
+      reservas.push({
+        dia: reservaPrincipal.dia,
+        profesor: reservaPrincipal.profesor,
+        horaInicio: inicio,
+        horaFin: fin,
+        aula: aula,
+        recurso: recurso,
+        estado: "Pendiente"
+      });
+    }
+  });
+
+  guardarReservasMultiples(reservas, 0);
+}
+function manejarGuardadoMatriz(res) {
+  if (res === "OK") {
+    alert("✅ Reserva guardada");
+
+    document.getElementById("form-nueva-reserva-matriz").style.display = "none";
+
+    document.getElementById("res_modo").value = "nuevo";
+    document.getElementById("res_filaOriginal").value = "";
+    document.getElementById("res_profesor").value = "";
+    document.getElementById("res_inicio").value = "";
+    document.getElementById("res_fin").value = "";
+    document.getElementById("res_aula").value = "";
+    document.getElementById("res_recurso").value = "";
+    document.getElementById("tramos-extra").innerHTML = "";
+
+    recargarDiaActual();
+  } else {
+    alert(res);
+  }
+}
+function guardarReservasMultiples(reservas, index) {
+  if (index >= reservas.length) {
+    manejarGuardadoMatriz("OK");
+    return;
+  }
+
+  google.script.run.withSuccessHandler(res => {
+    if (res !== "OK") {
+      alert(res);
+      return;
+    }
+
+    guardarReservasMultiples(reservas, index + 1);
+  }).registrarNuevaReservaMatriz(reservas[index]);
+}
+/* =========================
+   RESERVAS ESPECIALES
+========================= */
+
+function cargarTablaReservasEspeciales() {
+  const cuerpo = document.getElementById('cuerpo-reservas-especiales');
+  if (!cuerpo) return;
+
+  cuerpo.innerHTML = "<tr><td colspan='8'>Cargando...</td></tr>";
+
+  google.script.run.withSuccessHandler(datos => {
+    let filasConIndice = datos.map((f, index) => ({
+      contenido: f,
+      filaOriginal: index + 2
+    }));
+
+    filasConIndice.sort((a, b) => {
+      const parsearFecha = str => {
+        if (!str || !str.includes('/')) return 0;
+        const p = str.split('/');
+        return parseInt(p[2] + p[1].padStart(2, '0') + p[0].padStart(2, '0'));
+      };
+
+      return parsearFecha(b.contenido[0]) - parsearFecha(a.contenido[0]);
+    });
+
+    const html = filasConIndice.map(item => {
+      const f = item.contenido;
+
+      return `<tr>
+        <td>${f[0]}</td>
+        <td>${f[1]}</td>
+        <td>${f[2]}</td>
+        <td>${f[3]}</td>
+        <td>${f[4]}</td>
+        <td>${f[5]}</td>
+        <td><button class="btn-estado" onclick="toggleEstadoEspecial(${item.filaOriginal}, 7)">${f[6] == "TRUE" ? "✅" : "❌"}</button></td>
+        <td><button class="btn-estado" onclick="toggleEstadoEspecial(${item.filaOriginal}, 8)">${f[7] == "TRUE" ? "✅" : "❌"}</button></td>
+      </tr>`;
+    }).join('');
+
+    cuerpo.innerHTML = html || "<tr><td colspan='8'>Sin datos</td></tr>";
+  }).obtenerReservas();
+}
+
+function toggleEstadoEspecial(fila, col) {
+  google.script.run.withSuccessHandler(() => {
+    cargarTablaReservasEspeciales();
+  }).cambiarEstadoReserva(fila, col);
+}
+
+function mostrarFormReservaEspecial() {
+  cerrarFormulariosReservas();
+  mostrarVistaReservas("vista-especiales");
+  document.getElementById("form-nueva-reserva-especial").style.display = "block";
+  document.getElementById("esp_fecha").valueAsDate = new Date();
+}
+
+function guardarNuevaReservaEspecial() {
+  const fechaInput = document.getElementById('esp_fecha').value;
+  let fechaFormateada = "";
+
+  if (fechaInput) {
+    const p = fechaInput.split('-');
+    fechaFormateada = `${p[2]}/${p[1]}/${p[0]}`;
+  }
+
+  const r = {
+    fecha: fechaFormateada,
+    depto: document.getElementById('esp_depto').value,
+    equipo: document.getElementById('esp_equipo').value,
+    horario: document.getElementById('esp_horario').value,
+    tel: document.getElementById('esp_tel').value,
+    obs: document.getElementById('esp_obs').value
+  };
+
+  if (!r.fecha || !r.depto || !r.equipo) {
+    return alert("Completá fecha, departamento y equipo.");
+  }
+
+  google.script.run.withSuccessHandler(res => {
+    if (res === "OK") {
+      alert("✅ Reserva especial guardada");
+      document.getElementById("form-nueva-reserva-especial").style.display = "none";
+
+      document.getElementById('esp_depto').value = "";
+      document.getElementById('esp_equipo').value = "";
+      document.getElementById('esp_horario').value = "";
+      document.getElementById('esp_tel').value = "";
+      document.getElementById('esp_obs').value = "";
+
+      cargarTablaReservasEspeciales();
+    } else {
+      alert(res);
+    }
+  }).registrarNuevaReserva(r);
+}
+let intervaloAlertasReservas = null;
+let alertasYaMostradas = {};
+
+function iniciarSistemaAlertasReservas() {
+  pedirPermisoNotificaciones();
+
+  if (intervaloAlertasReservas) {
+    clearInterval(intervaloAlertasReservas);
+  }
+
+  revisarAlertasReservas();
+
+  intervaloAlertasReservas = setInterval(() => {
+    revisarAlertasReservas();
+  }, 60000);
+}
+
+function pedirPermisoNotificaciones() {
+  if (!("Notification" in window)) return;
+
+  if (Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function revisarAlertasReservas() {
+  if (!reservasActuales || reservasActuales.length === 0) return;
+
+  const ahora = new Date();
+  const diaActual = obtenerDiaActual();
+
+  const alertas = [];
+
+  reservasActuales.forEach(reserva => {
+    if (reserva.estado === "Finalizado" || reserva.estado === "Pausado") return;
+    if (normalizarTextoJS(reserva.dia) !== normalizarTextoJS(diaActual)) return;
+
+    const minutosRestantes = calcularMinutosHasta(reserva.horaInicio, ahora);
+
+    if ([15, 10, 5].includes(minutosRestantes)) {
+      const clave = `${reserva.filaOriginal}-${minutosRestantes}`;
+
+      if (!alertasYaMostradas[clave]) {
+        alertasYaMostradas[clave] = true;
+
+        const mensaje = `${reserva.profesor} - ${reserva.aula} / ${reserva.recurso} comienza en ${minutosRestantes} minutos`;
+
+        alertas.push({
+          minutos: minutosRestantes,
+          mensaje
+        });
+
+        mostrarNotificacionReserva(mensaje);
+      }
+    }
+  });
+
+  if (alertas.length > 0) {
+    mostrarPanelAlertas(alertas);
+  }
+}
+
+function calcularMinutosHasta(horaInicio, ahora) {
+  const partes = String(horaInicio).split(":");
+  const fechaReserva = new Date();
+
+  fechaReserva.setHours(Number(partes[0]), Number(partes[1]), 0, 0);
+
+  const diferenciaMs = fechaReserva.getTime() - ahora.getTime();
+
+  return Math.round(diferenciaMs / 60000);
+}
+
+function mostrarPanelAlertas(alertas) {
+  const panel = document.getElementById("panel-alertas-reservas");
+  const texto = document.getElementById("texto-alertas-reservas");
+
+  texto.innerHTML = alertas.map(a => {
+    return `
+      <div class="alerta-item alerta-${a.minutos}">
+        🔔 ${a.mensaje}
+      </div>
+    `;
+  }).join("");
+
+  panel.style.display = "block";
+
+  mostrarModalAlertaReserva(alertas[0].mensaje);
+}
+
+function mostrarModalAlertaReserva(mensaje) {
+  const modal = document.getElementById("modal-alerta-reserva");
+  const texto = document.getElementById("modal-alerta-texto");
+
+  texto.innerText = mensaje;
+  modal.style.display = "flex";
+}
+
+function cerrarModalAlertaReserva() {
+  document.getElementById("modal-alerta-reserva").style.display = "none";
+}
+
+function mostrarNotificacionReserva(mensaje) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  new Notification("Reserva próxima", {
+    body: mensaje
+  });
+}
+
+function normalizarTextoJS(texto) {
+  return String(texto || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+function imprimirHorarioDia() {
+
+  const estiloLandscape = document.createElement("style");
+
+  estiloLandscape.id = "landscape-reservas";
+
+  estiloLandscape.innerHTML = `
+    @page {
+      size: A4 landscape;
+      margin: 8mm;
+    }
+  `;
+
+  document.head.appendChild(estiloLandscape);
+
+  document.body.classList.add("modo-impresion-reservas");
+
+  window.print();
+
+  setTimeout(() => {
+
+    document.body.classList.remove("modo-impresion-reservas");
+
+    const estilo = document.getElementById("landscape-reservas");
+
+    if (estilo) estilo.remove();
+
+  }, 1000);
+}
+
+function cargarProfesoresSelect() {
+  const select = document.getElementById("res_profesor");
+  if (!select) return;
+
+  select.innerHTML = `<option value="">Cargando profesores...</option>`;
+
+  google.script.run.withSuccessHandler(profesores => {
+    select.innerHTML = `<option value="">Seleccionar profesor...</option>`;
+
+    profesores.forEach(p => {
+      select.innerHTML += `
+        <option value="${p.nombre}">${p.nombre}</option>
+      `;
+    });
+  }).obtenerProfesoresActivos();
+}
+function agregarTramoExtra() {
+  const cont = document.getElementById("tramos-extra");
+
+  const div = document.createElement("div");
+  div.className = "tramo-extra";
+  div.style = "border:1px solid #ccc;padding:10px;margin-top:10px;border-radius:8px;background:#f8f9fa;";
+
+  div.innerHTML = `
+    <div style="display:flex;gap:10px;">
+      <input type="time" class="extra-inicio">
+      <input type="time" class="extra-fin">
+    </div>
+
+    <input type="text" class="extra-aula" placeholder="Aula">
+    <select class="extra-recurso">
+      <option value="">Seleccionar recurso...</option>
+      <option value="Proyector">Proyector</option>
+      <option value="Audio">Audio</option>
+      <option value="Proyector + Audio">Proyector + Audio</option>
+      <option value="Notebook ASSUS">Notebook ASSUS</option>
+    </select>
+
+    <button type="button"
+            onclick="this.parentElement.remove()"
+            style="background:#dc3545;color:white;border:none;border-radius:6px;padding:6px 10px;">
+      🗑️ Quitar horario
+    </button>
+  `;
+
+  cont.appendChild(div);
+}
+function eliminarReservaMatrizFront(filaOriginal) {
+  if (!confirm("¿Seguro que querés eliminar esta reserva?")) return;
+
+  google.script.run.withSuccessHandler(res => {
+    if (res === "OK") {
+      recargarDiaActual();
+    } else {
+      alert(res);
+    }
+  }).eliminarReservaMatriz(filaOriginal);
+}
+function normalizarHoraInput(hora) {
+  if (!hora) return "";
+
+  const partes = String(hora).split(":");
+
+  return `${partes[0].padStart(2, "0")}:${partes[1].padStart(2, "0")}`;
+}
+</script>
+
+<script id="usuario-activo-script-uap">
+  function toggleMenuUsuarioUap() {
+    const menu = document.getElementById("uap-user-menu");
+    if (!menu) return;
+    menu.classList.toggle("show");
+  }
+
+  function cerrarMenuUsuarioUap(e) {
+    const chip = document.querySelector(".uap-user-chip");
+    const menu = document.getElementById("uap-user-menu");
+
+    if (!menu || !chip) return;
+
+    if (!chip.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.remove("show");
+    }
+  }
+
+  function cambiarUsuarioUap() {
+    const token = "<?= token ?>";
+
+    localStorage.removeItem("uap_token");
+    localStorage.removeItem("uap_usuario");
+    localStorage.removeItem("uap_nombre");
+    localStorage.removeItem("uap_rol");
+
+    google.script.run
+      .withSuccessHandler(function(url) {
+        window.top.location.href = url;
+      })
+      .withFailureHandler(function(err) {
+        alert("No se pudo cerrar sesión: " + (err.message || err));
+      })
+      .cerrarSesion(token);
+  }
+
+  document.addEventListener("click", cerrarMenuUsuarioUap);
+</script>
+
+</body>
+</html>

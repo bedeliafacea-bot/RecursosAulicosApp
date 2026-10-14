@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  
+  <style>
+    .contenedor-plano {
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 12px;
+      max-width: 1280px;
+      margin: 0 auto;
+      color: #333;
+      font-family: Arial, sans-serif;
+    }
+
+    .titulo-plano {
+      color: #003C71;
+      text-align: center;
+      margin: 0 0 15px 0;
+      font-size: 18px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .plano-flex {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .bloque-planta {
+      border: 2px solid #003C71;
+      padding: 10px;
+      border-radius: 8px;
+      background: #f8f9fa;
+      flex: 1;
+    }
+
+    .bloque-planta h4 {
+      text-align: center;
+      margin: 0 0 10px 0;
+      color: #003C71;
+      border-bottom: 2px solid #003C71;
+      padding-bottom: 4px;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+
+    /* GRID PLANTA BAJA (7 columnas x 6 filas) */
+    .grid-pb {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(6, auto);
+      gap: 4px;
+    }
+
+    /* GRID PLANTA ALTA (6 columnas x 6 filas) */
+    .grid-pa {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(6, auto);
+      gap: 4px;
+    }
+
+    /* ESTILO GENERAL DE CADA CELDA */
+    .celda {
+      border: 1px solid #333;
+      background: #ffffff;
+      min-height: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      padding: 2px;
+      box-sizing: border-box;
+      line-height: 1.1;
+    }
+
+    .celda span {
+      font-size: 8px;
+      font-weight: normal;
+      color: #555;
+      margin-top: 2px;
+    }
+
+    /* ELEMENTOS ESTÁTICOS */
+    .fijo {
+      background: #eaeaea;
+      color: #666;
+      border: 1px dashed #888;
+      font-weight: normal;
+    }
+
+    .espacio-vacio {
+      border: none !important;
+      background: transparent !important;
+    }
+
+    /* AULAS INTERACTIVAS */
+    .aula-btn {
+      cursor: pointer;
+      background: #ffffff;
+      transition: all 0.2s ease-in-out;
+      user-select: none;
+    }
+
+    .aula-btn:hover {
+      border-color: #003C71;
+      box-shadow: inset 0 0 4px rgba(0,60,113,0.3);
+    }
+
+    /* ESTADO ACTIVO (VERDE REAL-TIME) */
+    .aula-btn.estado-verde {
+      background-color: #28a745 !important;
+      color: white !important;
+      border-color: #1e7e34 !important;
+      box-shadow: 0 0 8px rgba(40, 167, 69, 0.8);
+    }
+
+    .aula-btn.estado-verde span {
+      color: #e2fbe8 !important;
+    }
+
+    /* SPANS DE GRID ESPACIALES */
+    .span-col-2 { grid-column: span 2; }
+    .span-col-3 { grid-column: span 3; }
+    .span-col-4 { grid-column: span 4; }
+    .span-col-5 { grid-column: span 5; }
+  </style>
+</head>
+<body>
+
+  <div class="contenedor-plano">
+    <h2 class="titulo-plano">Vista de controles de televisores entregados</h2>
+
+    <div class="plano-flex">
+      
+      <!-- PLANTA BAJA -->
+      <div class="bloque-planta">
+        <h4>PLANTA BAJA</h4>
+        <div class="grid-pb">
+          <!-- Fila 1 -->
+          <div class="celda fijo">BAÑOS</div>
+          <div class="celda aula-btn" data-aula="Aula 15">Aula 15<span id="tv-Aula 15"></span></div>
+          <div class="celda aula-btn" data-aula="Aula 14">Aula 14<span id="tv-Aula 14"></span></div>
+          <div class="celda aula-btn" data-aula="Aula 13">Aula 13<span id="tv-Aula 13"></span></div>
+          <div class="celda aula-btn" data-aula="Aula 12">Aula 12<span id="tv-Aula 12"></span></div>
+          <div class="celda fijo">BEDELIA</div>
+          <div class="celda aula-btn" data-aula="Aula 11">Aula 11<span id="tv-Aula 11"></span></div>
+
+          <!-- Fila 2 -->
+          <div class="celda aula-btn" data-aula="Aula 17">Aula 17<span id="tv-Aula 17"></span></div>
+          <div class="espacio-vacio span-col-5"></div>
+          <div class="celda fijo">Archivos</div>
+
+          <!-- Fila 3 -->
+          <div class="celda aula-btn" data-aula="Aula 18">Aula 18<span id="tv-Aula 18"></span></div>
+          <div class="espacio-vacio span-col-5"></div>
+          <div class="celda fijo">Baños</div>
+
+          <!-- Fila 4 -->
+          <div class="celda aula-btn" data-aula="Aula 19">Aula 19<span id="tv-Aula 19"></span></div>
+          <div class="espacio-vacio span-col-5"></div>
+          <div class="celda fijo">Baños</div>
+
+          <!-- Fila 5 -->
+          <div class="celda aula-btn" data-aula="Aula 20">Aula 20<br><span>ARTES VISUALES</span><span id="tv-Aula 20"></span></div>
+          <div class="espacio-vacio span-col-5"></div>
+          <div class="celda fijo">Biblioteca</div>
+
+          <!-- Fila 6 Base -->
+          <div class="celda fijo">Sala profesores<br><small>Galicia</small></div>
+          <div class="celda fijo">Hall de entrada</div>
+          <div class="celda fijo">Bedelia sec.</div>
+          <div class="celda fijo">Oficinas sec.</div>
+          <div class="celda aula-btn span-col-2" data-aula="Aula 5">Aula 5<span id="tv-Aula 5"></span></div>
+          <div class="celda fijo">Lab. Física</div>
+        </div>
+      </div>
+
+      <!-- PLANTA ALTA -->
+      <div class="bloque-planta">
+        <h4>PLANTA ALTA</h4>
+        <div class="grid-pa">
+          <!-- Fila 1 -->
+          <div class="celda fijo" style="grid-row: 1; grid-column: 1;">BAÑOS</div>
+          <div class="celda aula-btn span-col-2" data-aula="Aula 32" style="grid-row: 1; grid-column: 2 / span 2;">Aula 32<span id="tv-Aula 32"></span></div>
+          <div class="celda aula-btn span-col-2" data-aula="Aula 33" style="grid-row: 1; grid-column: 4 / span 2;">Aula 33<span id="tv-Aula 33"></span></div>
+
+          <!-- Fila 2 -->
+          <div class="celda aula-btn" data-aula="Aula 30" style="grid-row: 2; grid-column: 1;">Aula 30<span id="tv-Aula 30"></span></div>
+
+          <!-- Fila 3 -->
+          <div class="celda aula-btn" data-aula="Aula 29" style="grid-row: 3; grid-column: 1;">Aula 29<span id="tv-Aula 29"></span></div>
+
+          <!-- Fila 4 -->
+          <div class="celda aula-btn" data-aula="LAB 2" style="grid-row: 4; grid-column: 1;">LAB 2<span id="tv-LAB 2"></span></div>
+
+          <!-- Fila 5: ESQUINA INFERIOR IZQUIERDA -->
+          <div class="celda aula-btn" data-aula="Aula 27" style="grid-row: 5; grid-column: 1;">Aula 27<span id="tv-Aula 27"></span></div>
+
+          <!-- Fila 5 / Fila 6: BASE HORIZONTAL -->
+          <div class="celda aula-btn" data-aula="Aula 26" style="grid-row: 5; grid-column: 2;">Aula 26<span id="tv-Aula 26"></span></div>
+          <div class="celda fijo" style="grid-row: 5; grid-column: 3;">LAB TEC</div>
+          <div class="celda fijo" style="grid-row: 5; grid-column: 4;">Aula tecnología</div>
+          <div class="celda fijo" style="grid-row: 5; grid-column: 5;">LAB SIS</div>
+        </div>
+      </div>
+      
+
+    </div>
+  </div>
+
+  <script>
+    function sincronizarPlano() {
+      google.script.run.withSuccessHandler(aulas => {
+        if (!aulas || aulas.length === 0) return;
+
+        aulas.forEach(a => {
+          const btn = document.querySelector(`[data-aula="${a.aula}"]`);
+          if (btn) {
+            const spanTv = document.getElementById(`tv-${a.aula}`);
+            if (spanTv && a.tv) {
+              spanTv.textContent = String(a.tv).replace(/([a-z])([A-Z])/g, '$1 $2');
+            }
+
+            if (a.activo) {
+              btn.classList.add('estado-verde');
+            } else {
+              btn.classList.remove('estado-verde');
+            }
+
+            btn.onclick = () => toggleAula(btn, a.aula);
+          }
+        });
+      }).obtenerAulasYEquipos();
+    }
+
+    function toggleAula(elemento, nombreAula) {
+      const nuevoEstado = !elemento.classList.contains('estado-verde');
+      
+      if (nuevoEstado) {
+        elemento.classList.add('estado-verde');
+      } else {
+        elemento.classList.remove('estado-verde');
+      }
+
+      google.script.run.actualizarEstadoAula(nombreAula, nuevoEstado);
+    }
+
+    window.addEventListener('load', () => {
+      sincronizarPlano();
+      setInterval(sincronizarPlano, 3000);
+    });
+  </script>
+
+</body>
+</html>

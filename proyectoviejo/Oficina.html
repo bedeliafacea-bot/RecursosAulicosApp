@@ -1,0 +1,2093 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Styles'); ?>
+
+  <style>
+    :root {
+      --uap-azul:#003C71;
+      --uap-azul-oscuro:#002f5a;
+      --uap-azul-profundo:#002447;
+      --uap-azul-2:#0f6fd6;
+      --uap-verde:#2cb34a;
+      --uap-naranja:#ff8a00;
+      --uap-texto:#18365d;
+      --uap-fondo:#eef5fb;
+      --uap-borde:#d7e2ee;
+      --uap-sombra:0 14px 30px rgba(11,48,92,.12);
+      --uap-sombra-fuerte:0 18px 42px rgba(7,30,58,.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--uap-texto);
+      background:
+        radial-gradient(circle at 18% 14%, rgba(10, 94, 168, .10), transparent 28%),
+        linear-gradient(180deg, #edf5fb 0%, #f8fbff 100%);
+      overflow-x: hidden;
+    }
+
+    body {
+      display: block;
+    }
+
+    .oficina-app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 275px minmax(0, 1fr);
+      background: #f4f8fc;
+    }
+
+    /* =========================
+       SIDEBAR IZQUIERDA
+    ========================== */
+
+    .oficina-sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 275px;
+      min-height: 100vh;
+      z-index: 40;
+      background:
+        radial-gradient(circle at 80% 0%, rgba(26, 105, 190, .34), transparent 28%),
+        linear-gradient(180deg, #003C71 0%, #003365 48%, #002447 100%);
+      color: #fff;
+      padding: 28px 22px 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,.12);
+    }
+
+    .side-logo {
+      margin-bottom: 26px;
+    }
+
+    .side-logo img {
+      width: 105px;
+      display: block;
+      margin-bottom: 18px;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.18));
+    }
+
+    .side-universidad {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 1000;
+      line-height: 1.12;
+      letter-spacing: .2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .side-area {
+      color: rgba(255,255,255,.88);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    .side-sistema {
+      color: rgba(255,255,255,.58);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,.16);
+    }
+
+    .side-menu {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .side-link-oficina {
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      outline: 0;
+      border-radius: 0;
+      padding: 0 22px;
+      background: transparent;
+      color: rgba(255,255,255,.90);
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      text-align: left;
+      cursor: pointer;
+      transition: background .14s ease, color .14s ease;
+      font-family: Arial, sans-serif;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+
+    .side-link-oficina:hover {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+    }
+
+    .side-link-oficina.activo {
+      background: linear-gradient(135deg, #1b68c6, #0b56ac);
+      border-radius: 8px;
+      color: #fff;
+      border-bottom-color: transparent;
+    }
+
+    .side-separador {
+      height: 1px;
+      background: rgba(255,255,255,.16);
+      margin: 14px 0;
+    }
+
+    .side-bottom {
+      margin-top: auto;
+      padding-top: 18px;
+      color: rgba(255,255,255,.70);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    /* =========================
+       MAIN
+    ========================== */
+
+    .oficina-main {
+      grid-column: 2;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #f2f8ff 0%, #ffffff 100%);
+    }
+
+    .oficina-hero {
+      position: relative;
+      min-height: 220px;
+      margin: 0;
+      border-radius: 0;
+      background-image: url("https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg");
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+      box-shadow: none;
+      border-bottom: 1px solid #d7e2ee;
+    }
+
+    .oficina-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0,45,90,.96) 0%, rgba(0,60,113,.88) 38%, rgba(0,60,113,.64) 70%, rgba(0,60,113,.82) 100%),
+        linear-gradient(180deg, rgba(0,20,48,.12), rgba(0,20,48,.16));
+      z-index: 1;
+    }
+
+    .oficina-hero::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 360px;
+      height: 100%;
+      background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px);
+      background-size: 14px 14px;
+      opacity: .30;
+      z-index: 2;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 3;
+      min-height: 220px;
+      padding: 48px 54px 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      color: #fff;
+    }
+
+    .hero-title h1 {
+      margin: 0;
+      font-size: 38px;
+      line-height: 1.12;
+      font-weight: 1000;
+      letter-spacing: -.4px;
+      color: #fff;
+    }
+
+    .hero-title p {
+      margin: 10px 0 0;
+      font-size: 18px;
+      color: rgba(255,255,255,.90);
+      font-weight: 650;
+    }
+
+    .hero-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .hero-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1d73d4, #0c4f9c);
+      border: 1px solid rgba(255,255,255,.34);
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+      font-weight: 1000;
+      font-size: 14px;
+    }
+
+    /* =========================
+       LAYOUT CONTENIDO
+    ========================== */
+
+    .oficina-content {
+      padding: 34px 34px 58px;
+    }
+
+    .oficina-layout {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .oficina-center {
+      min-width: 0;
+    }
+
+    .oficina-right {
+      position: sticky;
+      top: 18px;
+      display: grid;
+      gap: 18px;
+      align-self: start;
+    }
+
+    .oficina-vista {
+      display: none;
+      animation: aparecerVista .18s ease both;
+    }
+
+    @keyframes aparecerVista {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: rgba(255,255,255,.98);
+      border: 1px solid var(--uap-borde);
+      border-radius: 22px;
+      box-shadow: var(--uap-sombra);
+    }
+
+    .card-padded {
+      padding: 24px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 0 0 18px;
+      color: #173f80;
+      font-size: 23px;
+      font-weight: 1000;
+    }
+
+    .section-title .ico {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #edf4ff;
+      border: 1px solid #d6e4f5;
+      font-size: 24px;
+    }
+
+    .registro-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .input-wrap label {
+      display: block;
+      margin: 0 0 8px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #314d74;
+    }
+
+    .input-wrap input,
+    .input-wrap select {
+      width: 100%;
+      height: 56px;
+      border-radius: 12px;
+      border: 1px solid #cfdae6;
+      background: #fff;
+      padding: 0 16px;
+      font-size: 16px;
+      color: #193761;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .input-wrap input:focus,
+    .input-wrap select:focus {
+      border-color: #4f9dff;
+      box-shadow: 0 0 0 3px rgba(79,157,255,.12);
+    }
+
+    .total-strip {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: #edf4ff;
+      border: 1px solid #d2dff0;
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #183d7d;
+    }
+
+    .total-strip strong {
+      font-size: 20px;
+    }
+
+    .total-strip .big {
+      font-size: 25px;
+      font-weight: 1000;
+      color: #1d3cc8;
+    }
+
+    .action-row-center {
+      margin-top: 18px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-main {
+      min-width: 190px;
+      height: 46px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 1000;
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 18px;
+      box-shadow: 0 7px 16px rgba(0,0,0,.12);
+      font-family: Arial, sans-serif;
+    }
+
+    .btn-verde { background: linear-gradient(180deg,#46c857 0%,#29a946 100%); }
+    .btn-azul { background: linear-gradient(180deg,#1d78f0 0%,#0b5fd4 100%); }
+    .btn-rojo { background: linear-gradient(180deg,#ff5a58 0%,#e43835 100%); }
+    .btn-outline {
+      background: #fff;
+      color: #1d68d7;
+      border: 2px solid #5a95eb;
+      box-shadow: none;
+    }
+
+    /* =========================
+       INFORME
+    ========================== */
+
+    .report-card {
+      padding: 20px;
+    }
+
+    .report-top {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .report-top .mes-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: flex-end;
+      font-weight: 900;
+      color: #163d7b;
+      font-size: 16px;
+    }
+
+    .report-top select,
+    .report-top input {
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid #cfdae6;
+      background: #fff;
+      padding: 0 14px;
+      font-size: 15px;
+      color: #193761;
+    }
+
+    .tabla-wrap {
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid #dce6f1;
+    }
+
+    .tabla-tradicional {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    .tabla-tradicional th,
+    .tabla-tradicional td {
+      border: 1px solid #dce6f1;
+      padding: 12px 14px;
+      text-align: center;
+      font-size: 16px;
+      color: #1d3759;
+    }
+
+    .tabla-tradicional th {
+      background: linear-gradient(180deg,#0f55a7 0%,#003C71 100%);
+      color: #fff;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+
+    .tabla-tradicional td:first-child,
+    .tabla-tradicional th:first-child {
+      text-align: left;
+      padding-left: 20px;
+    }
+
+    .tabla-tradicional tfoot td,
+    .fila-total td {
+      background: #eef5ff;
+      color: #1a49c8;
+      font-weight: 1000;
+    }
+
+    /* =========================
+       COLUMNA DERECHA FIJA
+    ========================== */
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .calc-total {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #edf4ff;
+      border: 1px solid #d2dff0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: #183d7d;
+    }
+
+    .calc-total strong {
+      font-size: 18px;
+    }
+
+    .calc-total .big {
+      font-size: 22px;
+      font-weight: 1000;
+      color: #1d3cc8;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+    }
+
+    .mini-stat {
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+      border: 1px solid #d9e5f2;
+    }
+
+    .mini-stat .icon {
+      font-size: 26px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .mini-stat .value {
+      font-size: 20px;
+      font-weight: 1000;
+      margin-bottom: 6px;
+    }
+
+    .mini-stat .label {
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .stat-azul { background:#eef5ff;color:#1a57ae; }
+    .stat-verde { background:#eefaf1;color:#239144; }
+    .stat-naranja { background:#fff4e8;color:#eb7a06; }
+
+    .ultimo-mov {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .ultimo-mov .mov-left {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      row-gap: 8px;
+      column-gap: 10px;
+      font-size: 14px;
+    }
+
+    .ultimo-mov .mov-left strong {
+      font-weight: 1000;
+    }
+
+    .ultimo-mov .mov-right {
+      border-top: 1px solid #dde6f1;
+      padding-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: #324e75;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .total-mes-box {
+      width: 100%;
+      padding: 22px 14px;
+      background: #f6f8fb;
+      border: 1px solid #d8dde3;
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .total-mes-box .t1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1D3759;
+      margin-bottom: 12px;
+    }
+
+    .total-mes-box .t2 {
+      font-size: 42px;
+      font-weight: 1000;
+      color: #1fa247;
+      line-height: 1;
+    }
+
+    .total-mes-box .t3 {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #6c757d;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .quick-btn {
+      min-height: 48px;
+      border-radius: 12px;
+      background: #fff;
+      border: 2px solid #d9e5f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 1000;
+      font-size: 14px;
+      color: #173f80;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+
+    .quick-blue { border-color:#5a95eb;color:#2169d2; }
+    .quick-violet { border-color:#be9bf0;color:#7f38c6; }
+    .quick-orange { border-color:#ffc58b;color:#ff8600; }
+
+    .mobile-topbar {
+      display: none;
+    }
+
+    /* Ocultamos navegación vieja del archivo anterior */
+    .hero-oficina,
+    .nav-dashboard,
+    .main-header,
+    .nav-bar {
+      display: none !important;
+    }
+
+    @media (max-width: 1350px) {
+      .oficina-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .oficina-right {
+        position: static;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .registro-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .report-top {
+        grid-template-columns: 1fr;
+      }
+
+      .report-top .mes-wrap {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .oficina-app {
+        grid-template-columns: 1fr;
+      }
+
+      .oficina-sidebar {
+        transform: translateX(-100%);
+        transition: transform .18s ease;
+      }
+
+      .oficina-sidebar.abierta {
+        transform: translateX(0);
+      }
+
+      .oficina-main {
+        grid-column: 1;
+      }
+
+      .mobile-topbar {
+        display: flex;
+        height: 64px;
+        background: var(--uap-azul);
+        color: #fff;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        position: sticky;
+        top: 0;
+        z-index: 45;
+      }
+
+      .mobile-menu-btn {
+        border: 0;
+        background: transparent;
+        color: #fff;
+        font-size: 26px;
+        cursor: pointer;
+      }
+
+      .hero-inner {
+        min-height: 190px;
+        padding: 34px 24px;
+      }
+
+      .hero-title h1 {
+        font-size: 30px;
+      }
+
+      .hero-title p {
+        font-size: 15px;
+      }
+
+      .oficina-content {
+        padding: 28px 18px 50px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .oficina-right {
+        grid-template-columns: 1fr;
+      }
+
+      .registro-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .calc-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .hero-user {
+        align-self: flex-end;
+      }
+
+      .tabla-tradicional th,
+      .tabla-tradicional td {
+        font-size: 13px;
+        padding: 9px;
+      }
+    }
+
+    @media print {
+      .no-print-zone,
+      .oficina-sidebar,
+      .oficina-hero,
+      .mobile-topbar,
+      .oficina-right {
+        display: none !important;
+      }
+
+      .oficina-app,
+      .oficina-main {
+        display: block !important;
+        margin: 0 !important;
+        background: white !important;
+      }
+
+      .oficina-content {
+        padding: 0 !important;
+      }
+
+      .oficina-vista {
+        display: block !important;
+      }
+
+      .card {
+        box-shadow: none !important;
+      }
+    }
+  </style>
+
+  <style id="oficina-portada-ancho-completo">
+    /* =========================================
+       PORTADA A ANCHO COMPLETO
+       Corrige límites heredados del Styles general.
+    ========================================= */
+
+    .oficina-app {
+      width: 100vw !important;
+      max-width: none !important;
+      grid-template-columns: 275px minmax(0, 1fr) !important;
+    }
+
+    .oficina-main {
+      grid-column: 2 !important;
+      width: calc(100vw - 275px) !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .oficina-hero.no-print-zone,
+    .oficina-hero {
+      width: 100% !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      min-height: 245px !important;
+      display: block !important;
+      text-align: left !important;
+      color: white !important;
+    }
+
+    .hero-inner {
+      width: 100% !important;
+      max-width: none !important;
+      min-height: 245px !important;
+      padding: 54px 70px 44px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 34px !important;
+    }
+
+    .hero-title h1 {
+      font-size: 42px !important;
+      line-height: 1.08 !important;
+      font-weight: 1000 !important;
+      margin: 0 !important;
+    }
+
+    .hero-title p {
+      font-size: 20px !important;
+      margin-top: 12px !important;
+    }
+
+    .hero-user {
+      margin-left: auto !important;
+      padding-right: 18px !important;
+    }
+
+    .oficina-content {
+      width: 100% !important;
+      max-width: none !important;
+      padding: 34px 34px 58px !important;
+    }
+
+    @media (max-width: 1100px) {
+      .oficina-app {
+        grid-template-columns: 1fr !important;
+      }
+
+      .oficina-main {
+        grid-column: 1 !important;
+        width: 100vw !important;
+      }
+
+      .oficina-hero.no-print-zone,
+      .oficina-hero {
+        min-height: 215px !important;
+      }
+
+      .hero-inner {
+        min-height: 215px !important;
+        padding: 36px 24px !important;
+      }
+
+      .hero-title h1 {
+        font-size: 32px !important;
+      }
+
+      .hero-title p {
+        font-size: 16px !important;
+      }
+    }
+
+    @media print {
+      .oficina-hero.no-print-zone,
+      .oficina-hero {
+        display: none !important;
+      }
+    }
+  </style>
+
+
+<style id="usuario-activo-chip-uap">
+  .uap-user-chip {
+    position: fixed;
+    top: 18px;
+    right: 22px;
+    z-index: 99999;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 0 15px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.94);
+    color: #003C71;
+    border: 1px solid rgba(255,255,255,.72);
+    box-shadow: 0 12px 26px rgba(7,30,58,.18);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    backdrop-filter: blur(8px);
+  }
+
+  .uap-user-chip-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #55318f;
+    font-size: 14px;
+    font-weight: 1000;
+  }
+
+  .uap-user-chip strong {
+    color: #003C71;
+    font-weight: 1000;
+  }
+
+  .uap-user-chip button {
+    border: 0;
+    background: transparent;
+    color: #003C71;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 1000;
+    padding: 0 0 0 2px;
+  }
+
+  .uap-user-menu {
+    position: fixed;
+    top: 66px;
+    right: 22px;
+    z-index: 100000;
+    width: 220px;
+    display: none;
+    background: #ffffff;
+    color: #173b68;
+    border: 1px solid #d8e3ef;
+    border-radius: 14px;
+    box-shadow: 0 18px 38px rgba(7,30,58,.20);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+
+  .uap-user-menu.show {
+    display: block;
+  }
+
+  .uap-user-menu-info {
+    padding: 13px 15px;
+    border-bottom: 1px solid #e5edf6;
+    background: #f6faff;
+  }
+
+  .uap-user-menu-info b {
+    display: block;
+    color: #003C71;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+
+  .uap-user-menu-info span {
+    display: block;
+    color: #6d7e92;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  .uap-user-menu button {
+    width: 100%;
+    min-height: 42px;
+    border: 0;
+    background: #ffffff;
+    color: #003C71;
+    text-align: left;
+    padding: 0 15px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 900;
+    font-family: Arial, sans-serif;
+  }
+
+  .uap-user-menu button:hover {
+    background: #eef7ff;
+  }
+
+  @media print {
+    .uap-user-chip,
+    .uap-user-menu {
+      display: none !important;
+    }
+  }
+</style>
+
+
+  <style id="fix-print-informe-fotocopias">
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+
+      html, body {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+      }
+
+      body * { visibility: hidden !important; }
+
+      #informe-mensual,
+      #informe-mensual * {
+        visibility: visible !important;
+      }
+
+      #informe-mensual {
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      #registro-fotocopias,
+      #pagos-efectivo,
+      .oficina-sidebar,
+      .oficina-hero,
+      .mobile-topbar,
+      .oficina-right,
+      .uap-user-chip,
+      .uap-user-menu,
+      .no-print-zone {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      .oficina-app,
+      .oficina-main,
+      .oficina-content,
+      .oficina-layout,
+      .oficina-center {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      #informe-mensual .report-top {
+        display: block !important;
+        margin-bottom: 12px !important;
+      }
+
+      #informe-mensual .report-top .mes-wrap,
+      #informe-mensual .report-top button {
+        display: none !important;
+      }
+
+      #informe-mensual .section-title {
+        display: block !important;
+        margin: 0 0 14px !important;
+        color: #003C71 !important;
+        font-size: 20px !important;
+        font-weight: 1000 !important;
+      }
+
+      #informe-mensual .section-title .ico { display: none !important; }
+
+      #informe-mensual .tabla-wrap {
+        overflow: visible !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+
+      #informe-mensual table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        background: #ffffff !important;
+      }
+
+      #informe-mensual th,
+      #informe-mensual td {
+        border: 1px solid #333 !important;
+        padding: 8px 9px !important;
+        font-size: 12px !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+      }
+
+      #informe-mensual th {
+        background: #003C71 !important;
+        color: #ffffff !important;
+        font-weight: 1000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      #informe-mensual tfoot td,
+      #informe-mensual .fila-total td {
+        background: #eef5ff !important;
+        color: #000000 !important;
+        font-weight: 1000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+
+
+  <style id="informe-fotocopias-formato-clasico-uap">
+    .informe-fotocopias-uap {
+      background: #ffffff !important;
+      border-radius: 0 !important;
+      box-shadow: var(--uap-sombra) !important;
+      padding: 18px !important;
+    }
+
+    .informe-uap-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .informe-uap-toolbar .mes-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      color: #163d7b;
+    }
+
+    .informe-uap-toolbar select {
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid #cfdae6;
+      background: #fff;
+      padding: 0 12px;
+      font-size: 14px;
+      color: #193761;
+    }
+
+    .informe-fotocopias-print {
+      width: 100%;
+      background: #ffffff;
+      padding: 0;
+      color: #000000;
+    }
+
+    .tabla-informe-uap {
+      width: 100%;
+      max-width: 940px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background: #ffffff;
+      color: #000000;
+      font-family: Arial, sans-serif;
+      border: 2px solid #000000;
+    }
+
+    .tabla-informe-uap th,
+    .tabla-informe-uap td {
+      border: 1.5px solid #000000;
+      padding: 9px 10px;
+      font-size: 13px;
+      line-height: 1.18;
+      text-align: center;
+      vertical-align: middle;
+      color: #000000;
+      background: #ffffff;
+    }
+
+    .tabla-informe-uap .informe-header-row th {
+      height: 56px;
+      font-size: 12px;
+      font-weight: 1000;
+      background: #ffffff;
+    }
+
+    .tabla-informe-uap .logo-cell {
+      width: 110px;
+      padding: 6px 10px;
+    }
+
+    .tabla-informe-uap .logo-cell img {
+      width: 76px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      background: #003C71;
+      padding: 4px 6px;
+    }
+
+    .tabla-informe-uap .titulo-cell {
+      font-size: 12px;
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+
+    .tabla-informe-uap .mes-cell {
+      width: 130px;
+      font-size: 12px;
+      font-weight: 1000;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .tabla-informe-uap .columnas-row th {
+      font-size: 12px;
+      font-weight: 1000;
+      background: #ffffff;
+    }
+
+    .tabla-informe-uap td:first-child,
+    .tabla-informe-uap th:first-child {
+      text-align: left;
+    }
+
+    .tabla-informe-uap tbody td:first-child {
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .tabla-informe-uap tbody td:last-child {
+      font-weight: 1000;
+    }
+
+    .tabla-informe-uap .fila-total td {
+      font-weight: 1000;
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
+      }
+
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+      }
+
+      body * {
+        visibility: hidden !important;
+      }
+
+      #informe-fotocopias-print,
+      #informe-fotocopias-print * {
+        visibility: visible !important;
+      }
+
+      #informe-fotocopias-print {
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      #informe-mensual,
+      .oficina-app,
+      .oficina-main,
+      .oficina-content,
+      .oficina-layout,
+      .oficina-center {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      .no-print-zone,
+      .oficina-sidebar,
+      .oficina-hero,
+      .mobile-topbar,
+      .oficina-right,
+      .uap-user-chip,
+      .uap-user-menu,
+      #registro-fotocopias,
+      #pagos-efectivo,
+      .informe-uap-toolbar {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      .tabla-informe-uap {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        border: 2px solid #000000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+      }
+
+      .tabla-informe-uap th,
+      .tabla-informe-uap td {
+        border: 1.5px solid #000000 !important;
+        padding: 7px 8px !important;
+        font-size: 11px !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .tabla-informe-uap .logo-cell img {
+        width: 68px !important;
+      }
+
+      .tabla-informe-uap .titulo-cell,
+      .tabla-informe-uap .mes-cell,
+      .tabla-informe-uap .columnas-row th {
+        font-size: 10px !important;
+      }
+    }
+  </style>
+
+</head>
+
+<body onload="inicializarGestionOficina()">
+
+<div class="uap-user-chip no-print-zone">
+  <span class="uap-user-chip-icon">♟</span>
+  <span>Bienvenido, <strong><?= nombreUsuarioActivo ?></strong></span>
+  <button type="button" onclick="toggleMenuUsuarioUap()">▼</button>
+</div>
+
+<div id="uap-user-menu" class="uap-user-menu no-print-zone">
+  <div class="uap-user-menu-info">
+    <b><?= nombreUsuarioActivo ?></b>
+    <span><?= rolUsuarioActivo ?></span>
+  </div>
+
+  <button type="button" onclick="cambiarUsuarioUap()">Cambiar usuario</button>
+</div>
+
+
+  <div class="oficina-app">
+
+    <aside class="oficina-sidebar no-print-zone" id="sidebar-oficina">
+      <div class="side-logo">
+        <img src="https://i.postimg.cc/fyMcjMcn/logo-uap.png" alt="Logo UAP">
+        <div class="side-universidad">
+          Universidad<br>
+          Adventista<br>
+          del Plata
+        </div>
+        <div class="side-area">Recursos Áulicos | Bedelía</div>
+        <div class="side-sistema">Gestión de Oficina</div>
+      </div>
+
+      <nav class="side-menu">
+        <a class="side-link-oficina" href="<?= getUrlConToken('Index', token) ?>" target="_top">
+          <span>INICIO</span>
+        </a>
+
+        <button class="side-link-oficina activo" data-target="registro-fotocopias" onclick="mostrarVistaOficina('registro-fotocopias')">
+          <span>REGISTRAR GASTO</span>
+        </button>
+
+        <button class="side-link-oficina" data-target="pagos-efectivo" onclick="mostrarVistaOficina('pagos-efectivo')">
+          <span>PAGO EN EFECTIVO</span>
+        </button>
+
+        <button class="side-link-oficina" data-target="informe-mensual" onclick="mostrarVistaOficina('informe-mensual'); generarInformeMensual()">
+          <span>INFORME MENSUAL</span>
+        </button>
+
+        <div class="side-separador"></div>
+
+        <button class="side-link-oficina" type="button" onclick="generarInformeMensual()">
+          <span>ACTUALIZAR INFORME</span>
+        </button>
+
+        <button class="side-link-oficina" type="button" onclick="verTotalEfectivoMensual()">
+          <span>ACTUALIZAR EFECTIVO</span>
+        </button>
+
+        <button class="side-link-oficina" type="button" onclick="imprimirInformeFotocopias()">
+          <span>IMPRIMIR</span>
+        </button>
+      </nav>
+
+      <div class="side-bottom">
+        Sistema de control de fotocopias, informes mensuales y pagos en efectivo.
+      </div>
+    </aside>
+
+    <main class="oficina-main">
+
+      <div class="mobile-topbar no-print-zone">
+        <button class="mobile-menu-btn" onclick="document.getElementById('sidebar-oficina').classList.toggle('abierta')">☰</button>
+        <strong>Gestión de Oficina</strong>
+        <span>UAP</span>
+      </div>
+
+      <header class="oficina-hero no-print-zone">
+        <div class="hero-inner">
+          <div class="hero-title">
+            <h1 id="titulo-vista-oficina">Gestión de Oficina</h1>
+            <p id="subtitulo-vista-oficina">Sistema de control de fotocopias, informes y pagos.</p>
+          </div>
+
+          
+        </div>
+      </header>
+
+      <section class="oficina-content">
+        <div class="oficina-layout">
+
+          <div class="oficina-center">
+
+            <!-- REGISTRO DE FOTOCOPIAS -->
+            <div class="oficina-vista card card-padded" id="registro-fotocopias" style="display:block;">
+              <h2 class="section-title"><span class="ico">🖨️</span> Registro de Fotocopias</h2>
+
+              <div class="registro-grid">
+                <div class="input-wrap">
+                  <label>Fecha</label>
+                  <input type="date" id="f_fecha">
+                </div>
+
+                <div class="input-wrap">
+                  <label>Departamento</label>
+                  <select id="f_departamento">
+                    <option value="">Cargando...</option>
+                  </select>
+                </div>
+
+                <div class="input-wrap">
+                  <label>Cantidad</label>
+                  <input type="number" id="f_cant" placeholder="0" oninput="calcularTotalOficina()">
+                </div>
+
+                <div class="input-wrap">
+                  <label>Valor Unit.</label>
+                  <input type="number" id="f_valor" placeholder="0" oninput="calcularTotalOficina()">
+                </div>
+              </div>
+
+              <div class="total-strip">
+                <strong>TOTAL</strong>
+                <span class="big">$ <span id="f_total_texto">0,00</span></span>
+              </div>
+
+              <input type="hidden" id="f_total" readonly>
+
+              <div class="action-row-center">
+                <button class="btn-main btn-verde" onclick="guardarFotocopia()">💾 Registrar Gasto</button>
+              </div>
+            </div>
+
+            <!-- PAGO EN EFECTIVO -->
+            <div class="oficina-vista card card-padded" id="pagos-efectivo">
+              <h2 class="section-title"><span class="ico">💵</span> Pagos en efectivo</h2>
+
+              <div class="registro-grid">
+                <div class="input-wrap">
+                  <label>Fecha</label>
+                  <input type="date" id="ef_fecha">
+                </div>
+
+                <div class="input-wrap">
+                  <label>Cantidad de copias</label>
+                  <input type="number" id="ef_cant" placeholder="0" oninput="calcularTotalEfectivo()">
+                </div>
+
+                <div class="input-wrap">
+                  <label>Valor por copia</label>
+                  <input type="number" id="ef_valor" placeholder="0" oninput="calcularTotalEfectivo()">
+                </div>
+
+                <div class="input-wrap">
+                  <label>Total</label>
+                  <input type="number" id="ef_total" readonly style="background:#eef2f7;font-weight:bold">
+                </div>
+              </div>
+
+              <div class="action-row-center">
+                <button class="btn-main btn-verde" onclick="guardarPagoEfectivo()">💾 Registrar Pago</button>
+              </div>
+            </div>
+
+            <!-- INFORME MENSUAL -->
+            <div class="oficina-vista card report-card informe-fotocopias-uap" id="informe-mensual">
+              <div class="informe-uap-toolbar no-print-zone">
+                <div class="mes-wrap">
+                  <span>Mes:</span>
+                  <select id="mes-informe">
+                    <option value="1">Enero 2026</option>
+                    <option value="2">Febrero 2026</option>
+                    <option value="3">Marzo 2026</option>
+                    <option value="4">Abril 2026</option>
+                    <option value="5">Mayo 2026</option>
+                    <option value="6">Junio 2026</option>
+                    <option value="7">Julio 2026</option>
+                    <option value="8">Agosto 2026</option>
+                    <option value="9">Septiembre 2026</option>
+                    <option value="10">Octubre 2026</option>
+                    <option value="11">Noviembre 2026</option>
+                    <option value="12">Diciembre 2026</option>
+                  </select>
+                </div>
+
+                <button class="btn-main btn-azul" onclick="generarInformeMensual()">📊 Generar Informe</button>
+                <button class="btn-main btn-outline" onclick="imprimirInformeFotocopias()">🖨️ Imprimir PDF</button>
+              </div>
+
+              <div id="informe-fotocopias-print" class="informe-fotocopias-print">
+                <table class="tabla-informe-uap">
+                  <thead>
+                    <tr class="informe-header-row">
+                      <th class="logo-cell">
+                        <img src="https://i.postimg.cc/fyMcjMcn/logo-uap.png" alt="Logo UAP">
+                      </th>
+                      <th colspan="3" class="titulo-cell">INFORME DE FOTOCOPIAS POR DEPARTAMENTO</th>
+                      <th class="mes-cell">MES: <span id="mes-informe-texto">-</span></th>
+                    </tr>
+                    <tr class="columnas-row">
+                      <th>Departamento</th>
+                      <th>Cantidad Total Copias</th>
+                      <th>Precio Unit. Promedio</th>
+                      <th colspan="2">Importe Total</th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="cuerpo-informe"></tbody>
+
+                  <tfoot>
+                    <tr class="fila-total">
+                      <td>TOTAL GENERAL</td>
+                      <td id="total-copias-gen">0</td>
+                      <td id="promedio-total-gen">-</td>
+                      <td colspan="2" id="total-importe-gen">$ 0.00</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- COLUMNA DERECHA FIJA -->
+          <aside class="oficina-right no-print-zone">
+
+            <div class="card card-padded">
+              <h2 class="section-title"><span class="ico">🧮</span> Calculadora</h2>
+
+              <div class="calc-grid">
+                <div class="input-wrap">
+                  <label>Cant. Hojas</label>
+                  <input type="number" id="calc_cant" placeholder="0" oninput="operarCalculadora()">
+                </div>
+
+                <div class="input-wrap">
+                  <label>Valor</label>
+                  <input type="number" id="calc_valor" value="150" oninput="operarCalculadora()">
+                </div>
+              </div>
+
+              <div class="calc-total">
+                <strong>Total</strong>
+                <span class="big">$ <span id="calc_total">0,00</span></span>
+              </div>
+
+              <div class="action-row-center" style="margin-top:14px">
+                <button class="btn-main btn-rojo" style="min-width:150px" onclick="limpiarCalculadora()">🗑️ Borrar</button>
+              </div>
+            </div>
+
+            <div class="card card-padded">
+              <h2 class="section-title"><span class="ico">🕘</span> Resumen del mes</h2>
+
+              <div class="mini-stats">
+                <div class="mini-stat stat-azul">
+                  <span class="icon">📄</span>
+                  <div class="value" id="stat-gastos">0</div>
+                  <div class="label">Gastos<br>registrados</div>
+                </div>
+
+                <div class="mini-stat stat-verde">
+                  <span class="icon">📑</span>
+                  <div class="value" id="stat-copias">0</div>
+                  <div class="label">Copias<br>totales</div>
+                </div>
+
+                <div class="mini-stat stat-naranja">
+                  <span class="icon">💵</span>
+                  <div class="value" id="stat-efectivo">$ 0</div>
+                  <div class="label">Pagos en<br>efectivo</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card-padded">
+              <h2 class="section-title"><span class="ico">📈</span> Total efectivo</h2>
+
+              <div class="input-wrap">
+                <label>Mes automático</label>
+                <input type="number" id="ef_mes" placeholder="Mes automático" readonly>
+              </div>
+
+              <button class="btn-main btn-azul" style="width:100%;min-width:0" onclick="verTotalEfectivoMensual()">Actualizar total</button>
+
+              <div class="total-mes-box" style="margin-top:14px">
+                <div class="t1">Total del mes</div>
+                <div class="t2">$<span id="ef_total_mes">0.00</span></div>
+                <div class="t3">Acumulado registrado</div>
+              </div>
+            </div>
+
+            <div class="card card-padded">
+              <h2 class="section-title"><span class="ico">🕒</span> Último movimiento</h2>
+
+              <div class="ultimo-mov">
+                <div class="mov-left">
+                  <strong>Depto.</strong><span id="mov-depto">Secretaría Académica</span>
+                  <strong>Cantidad</strong><span id="mov-cant">120 copias</span>
+                  <strong>Total</strong><span id="mov-total">$ 1.200,00</span>
+                </div>
+
+                <div class="mov-right">
+                  <div>📅 <span id="mov-fecha">24/05/2025</span></div>
+                  <div>🕘 <span id="mov-hora">10:32 hs.</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card-padded">
+              <h2 class="section-title"><span class="ico">⚡</span> Accesos rápidos</h2>
+
+              <div class="quick-grid">
+                <button class="quick-btn quick-blue" onclick="mostrarVistaOficina('registro-fotocopias')">
+                  Nuevo gasto
+                </button>
+
+                <button class="quick-btn quick-orange" onclick="mostrarVistaOficina('pagos-efectivo')">
+                  Registrar efectivo
+                </button>
+
+                <button class="quick-btn quick-violet" onclick="mostrarVistaOficina('informe-mensual'); generarInformeMensual()">
+                  Ver informe
+                </button>
+              </div>
+            </div>
+
+          </aside>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+<script>
+function inicializarGestionOficina() {
+  cargarListaDepartamentos();
+  setearFechasHoy();
+  setMesActual();
+  activarMesAutomatico();
+
+  renderizarTotalesVista(0, 0);
+
+  // Carga automática del mes actual al abrir la pantalla.
+  generarInformeMensual();
+  verTotalEfectivoMensual();
+
+  mostrarVistaOficina('registro-fotocopias');
+}
+
+function irASeccion(id) {
+  mostrarVistaOficina(id);
+}
+
+function mostrarVistaOficina(id) {
+  document.querySelectorAll('.oficina-vista').forEach(v => v.style.display = 'none');
+
+  const vista = document.getElementById(id);
+  if (vista) {
+    vista.style.display = 'block';
+  }
+
+  document.querySelectorAll('.side-link-oficina').forEach(btn => btn.classList.remove('activo'));
+  const activo = document.querySelector(`.side-link-oficina[data-target="${id}"]`);
+  if (activo) activo.classList.add('activo');
+
+  const titulos = {
+    'registro-fotocopias': ['Registro de Fotocopias', 'Cargá gastos por departamento y controlá el total automáticamente.'],
+    'pagos-efectivo': ['Pagos en efectivo', 'Registrá pagos en efectivo y consultá el acumulado mensual.'],
+    'informe-mensual': ['Informe mensual', 'Generá el informe mensual por departamento y preparalo para imprimir.']
+  };
+
+  if (titulos[id]) {
+    const t = document.getElementById('titulo-vista-oficina');
+    const s = document.getElementById('subtitulo-vista-oficina');
+    if (t) t.innerText = titulos[id][0];
+    if (s) s.innerText = titulos[id][1];
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function activarNavOficina(boton, id) {
+  mostrarVistaOficina(id);
+}
+
+function setearFechasHoy() {
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+  const dd = String(hoy.getDate()).padStart(2, '0');
+  const fecha = `${yyyy}-${mm}-${dd}`;
+  const f1 = document.getElementById('f_fecha');
+  const f2 = document.getElementById('ef_fecha');
+  if (f1 && !f1.value) f1.value = fecha;
+  if (f2 && !f2.value) f2.value = fecha;
+}
+
+function setMesActual() {
+  const hoy = new Date();
+  const mesActual = hoy.getMonth() + 1;
+
+  const sel = document.getElementById('mes-informe');
+  const efm = document.getElementById('ef_mes');
+
+  if (sel) {
+    sel.value = String(mesActual);
+  }
+
+  if (efm) {
+    efm.value = String(mesActual);
+  }
+}
+
+function activarMesAutomatico() {
+  const sel = document.getElementById('mes-informe');
+  const efm = document.getElementById('ef_mes');
+
+  // Si cambiás el mes del informe, también cambia el mes de efectivo.
+  if (sel) {
+    sel.addEventListener('change', () => {
+      if (efm) efm.value = sel.value;
+      generarInformeMensual();
+      verTotalEfectivoMensual();
+    });
+  }
+
+  // Si cambiás el mes de efectivo, también cambia el mes del informe.
+  if (efm) {
+    efm.addEventListener('input', () => {
+      if (sel && efm.value) sel.value = efm.value;
+      verTotalEfectivoMensual();
+    });
+  }
+}
+
+function cargarListaDepartamentos() {
+  google.script.run.withSuccessHandler(list => {
+    const sel = document.getElementById('f_departamento');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Seleccionar Depto...</option>' +
+      list.map(d => `<option value="${d}">${d}</option>`).join('');
+  }).obtenerDepartamentos();
+}
+
+function formatearMoneda(num) {
+  const n = Number(num || 0);
+  return n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function calcularTotalOficina() {
+  const c = parseFloat(document.getElementById('f_cant').value) || 0;
+  const v = parseFloat(document.getElementById('f_valor').value) || 0;
+  const total = c * v;
+  document.getElementById('f_total').value = total.toFixed(2);
+  document.getElementById('f_total_texto').innerText = formatearMoneda(total);
+}
+
+function guardarFotocopia() {
+  const gasto = {
+    fecha: document.getElementById('f_fecha').value,
+    depto: document.getElementById('f_departamento').value,
+    cant: document.getElementById('f_cant').value,
+    valor: document.getElementById('f_valor').value,
+    total: document.getElementById('f_total').value
+  };
+
+  if (!gasto.fecha || !gasto.depto || !gasto.cant) return alert("Completá los campos");
+
+  google.script.run.withSuccessHandler(res => {
+    if (res === "OK") {
+      alert("✅ Gasto registrado");
+      actualizarUltimoMovimiento({
+        depto: gasto.depto,
+        cant: `${gasto.cant} copias`,
+        total: `$ ${formatearMoneda(gasto.total)}`,
+        fecha: formatearFechaSimple(gasto.fecha),
+        hora: horaActualTexto()
+      });
+      incrementarResumenDesdeFormulario(gasto.cant, gasto.total);
+      document.getElementById('f_cant').value = "";
+      document.getElementById('f_total').value = "";
+      document.getElementById('f_total_texto').innerText = "0,00";
+    } else {
+      alert(res);
+    }
+  }).registrarGastoFotocopia(gasto);
+}
+
+function operarCalculadora() {
+  const cant = parseFloat(document.getElementById('calc_cant').value) || 0;
+  const valor = parseFloat(document.getElementById('calc_valor').value) || 0;
+  const total = cant * valor;
+  document.getElementById('calc_total').innerText = formatearMoneda(total);
+}
+
+function limpiarCalculadora() {
+  document.getElementById('calc_cant').value = "";
+  document.getElementById('calc_total').innerText = "0,00";
+}
+
+function calcularTotalEfectivo() {
+  const cant = parseFloat(document.getElementById('ef_cant').value) || 0;
+  const valor = parseFloat(document.getElementById('ef_valor').value) || 0;
+  document.getElementById('ef_total').value = (cant * valor).toFixed(2);
+}
+
+function guardarPagoEfectivo() {
+  const pago = {
+    fecha: document.getElementById('ef_fecha').value,
+    cantCopias: document.getElementById('ef_cant').value,
+    valCopias: document.getElementById('ef_valor').value,
+    total: document.getElementById('ef_total').value
+  };
+
+  if (!pago.fecha || !pago.cantCopias || !pago.valCopias) {
+    return alert("Completá fecha, cantidad y valor.");
+  }
+
+  google.script.run.withSuccessHandler(res => {
+    if (res === "OK") {
+      alert("✅ Pago en efectivo registrado");
+      actualizarMontoEfectivoResumen(pago.total);
+      document.getElementById('ef_cant').value = "";
+      document.getElementById('ef_valor').value = "";
+      document.getElementById('ef_total').value = "";
+    } else {
+      alert(res);
+    }
+  }).registrarPagoEfectivo(pago);
+}
+
+function verTotalEfectivoMensual() {
+  const mesInput = document.getElementById('ef_mes');
+  let mes = mesInput ? mesInput.value : "";
+
+  if (!mes) {
+    setMesActual();
+    mes = document.getElementById('ef_mes').value;
+  }
+
+  google.script.run.withSuccessHandler(total => {
+    document.getElementById('ef_total_mes').innerText = Number(total).toFixed(2);
+    document.getElementById('stat-efectivo').innerText = '$ ' + formatearMoneda(total);
+  }).obtenerTotalEfectivoMensual(mes);
+}
+
+function generarInformeMensual(callback) {
+  const mesInput = document.getElementById('mes-informe');
+  let mes = mesInput ? mesInput.value : "";
+
+  if (!mes) {
+    setMesActual();
+    mes = document.getElementById('mes-informe').value;
+  }
+
+  const mesTexto = document.getElementById('mes-informe-texto');
+  if (mesTexto) mesTexto.innerText = String(mes) + " / 2026";
+
+  const cuerpo = document.getElementById('cuerpo-informe');
+  if (!cuerpo) {
+    alert("No se encontró la tabla del informe.");
+    if (typeof callback === "function") callback();
+    return;
+  }
+
+  cuerpo.innerHTML = "<tr><td colspan='5'>Buscando datos...</td></tr>";
+
+  google.script.run
+    .withSuccessHandler(datos => {
+      if (!datos || datos.length === 0) {
+        cuerpo.innerHTML = `<tr><td colspan="5">Sin datos para el mes ${mes} de 2026.</td></tr>`;
+        document.getElementById('total-copias-gen').innerText = "0";
+        document.getElementById('promedio-total-gen').innerText = "-";
+        document.getElementById('total-importe-gen').innerText = "$ 0.00";
+        renderizarTotalesVista(0, 0);
+        if (typeof callback === "function") callback();
+        return;
+      }
+
+      let sumaCopias = 0;
+      let sumaImporte = 0;
+
+      cuerpo.innerHTML = datos.map(d => {
+        const cantidad = Number(d.cantidad) || 0;
+        const precioUnit = Number(d.precioUnit) || 150;
+        const importeCorrecto = cantidad * precioUnit;
+
+        sumaCopias += cantidad;
+        sumaImporte += importeCorrecto;
+
+        return `<tr>
+          <td>${d.departamento || "—"}</td>
+          <td>${cantidad}</td>
+          <td>$ ${precioUnit.toFixed(2)}</td>
+          <td colspan="2"><b>$ ${importeCorrecto.toFixed(2)}</b></td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('total-copias-gen').innerText = sumaCopias;
+      document.getElementById('promedio-total-gen').innerText = "-";
+      document.getElementById('total-importe-gen').innerText = "$ " + sumaImporte.toFixed(2);
+      renderizarTotalesVista(datos.length, sumaCopias);
+
+      if (typeof callback === "function") callback();
+    })
+    .withFailureHandler(err => {
+      cuerpo.innerHTML = `<tr><td colspan="5">Error al cargar informe: ${err.message || err}</td></tr>`;
+      document.getElementById('total-copias-gen').innerText = "0";
+      document.getElementById('promedio-total-gen').innerText = "-";
+      document.getElementById('total-importe-gen').innerText = "$ 0.00";
+      alert("Error al generar informe: " + (err.message || err));
+      if (typeof callback === "function") callback();
+    })
+    .obtenerDatosFotocopias(mes);
+}
+
+function imprimirInformeFotocopias() {
+  mostrarVistaOficina('informe-mensual');
+
+  generarInformeMensual(function() {
+    setTimeout(function() {
+      window.print();
+    }, 350);
+  });
+}
+
+function renderizarTotalesVista(gastos, copias) {
+  document.getElementById('stat-gastos').innerText = Number(gastos || 0);
+  document.getElementById('stat-copias').innerText = Number(copias || 0).toLocaleString('es-AR');
+}
+
+function incrementarResumenDesdeFormulario(copias, total) {
+  const gastosEl = document.getElementById('stat-gastos');
+  const copiasEl = document.getElementById('stat-copias');
+
+  const gastosActual = Number((gastosEl.innerText || '0').replace(/\./g, '').replace(',', '.')) || 0;
+  const copiasActual = Number((copiasEl.innerText || '0').replace(/\./g, '').replace(',', '.')) || 0;
+
+  gastosEl.innerText = gastosActual + 1;
+  copiasEl.innerText = (copiasActual + Number(copias || 0)).toLocaleString('es-AR');
+}
+
+function actualizarMontoEfectivoResumen(total) {
+  const el = document.getElementById('stat-efectivo');
+  const actual = Number(String(el.innerText).replace(/[^\d,.-]/g,'').replace(/\./g, '').replace(',', '.')) || 0;
+  const nuevo = actual + Number(total || 0);
+  el.innerText = '$ ' + formatearMoneda(nuevo);
+}
+
+function actualizarUltimoMovimiento(data) {
+  document.getElementById('mov-depto').innerText = data.depto || '—';
+  document.getElementById('mov-cant').innerText = data.cant || '—';
+  document.getElementById('mov-total').innerText = data.total || '—';
+  document.getElementById('mov-fecha').innerText = data.fecha || '—';
+  document.getElementById('mov-hora').innerText = data.hora || '—';
+}
+
+function horaActualTexto() {
+  const now = new Date();
+  return now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) + ' hs.';
+}
+
+function formatearFechaSimple(fechaISO) {
+  if (!fechaISO) return '—';
+  const [y,m,d] = fechaISO.split('-');
+  return `${d}/${m}/${y}`;
+}
+</script>
+<?!= include('AlertasReservas'); ?>
+
+<script id="usuario-activo-script-uap">
+  function toggleMenuUsuarioUap() {
+    const menu = document.getElementById("uap-user-menu");
+    if (!menu) return;
+    menu.classList.toggle("show");
+  }
+
+  function cerrarMenuUsuarioUap(e) {
+    const chip = document.querySelector(".uap-user-chip");
+    const menu = document.getElementById("uap-user-menu");
+
+    if (!menu || !chip) return;
+
+    if (!chip.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.remove("show");
+    }
+  }
+
+  function cambiarUsuarioUap() {
+    const token = "<?= token ?>";
+
+    localStorage.removeItem("uap_token");
+    localStorage.removeItem("uap_usuario");
+    localStorage.removeItem("uap_nombre");
+    localStorage.removeItem("uap_rol");
+
+    google.script.run
+      .withSuccessHandler(function(url) {
+        window.top.location.href = url;
+      })
+      .withFailureHandler(function(err) {
+        alert("No se pudo cerrar sesión: " + (err.message || err));
+      })
+      .cerrarSesion(token);
+  }
+
+  document.addEventListener("click", cerrarMenuUsuarioUap);
+</script>
+
+</body>
+</html>

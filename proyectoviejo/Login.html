@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(90deg, rgba(0,60,113,.96), rgba(0,60,113,.74)),
+        url("https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg") center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      color: #18365d;
+    }
+    .login-wrap {
+      width: min(100%, 980px);
+      min-height: 560px;
+      display: grid;
+      grid-template-columns: 1fr 430px;
+      background: rgba(255,255,255,.96);
+      border-radius: 28px;
+      box-shadow: 0 18px 45px rgba(7,30,58,.18);
+      overflow: hidden;
+    }
+    .login-brand {
+      padding: 48px;
+      background: linear-gradient(180deg, rgba(0,60,113,.96), rgba(0,38,74,.98));
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .login-brand img {
+      width: 130px;
+      margin-bottom: 30px;
+    }
+    .login-brand h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.05;
+      font-weight: 1000;
+    }
+    .login-brand p {
+      margin: 16px 0 0;
+      font-size: 17px;
+      line-height: 1.4;
+      color: rgba(255,255,255,.86);
+      font-weight: 700;
+    }
+    .login-footer {
+      font-size: 12px;
+      color: rgba(255,255,255,.62);
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+    .login-form {
+      padding: 48px 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .login-form h2 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      color: #003C71;
+      font-weight: 1000;
+    }
+    .sub {
+      margin: 0 0 28px;
+      color: #607895;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 900;
+      color: #314d74;
+      margin: 0 0 8px;
+    }
+    input {
+      width: 100%;
+      height: 52px;
+      border: 1px solid #ccd9e7;
+      border-radius: 14px;
+      padding: 0 15px;
+      font-size: 16px;
+      outline: none;
+      color: #193761;
+      margin-bottom: 16px;
+    }
+    input:focus {
+      border-color: #3483fa;
+      box-shadow: 0 0 0 3px rgba(52,131,250,.14);
+    }
+    button {
+      width: 100%;
+      height: 52px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #1d78f0 0%, #0b5fd4 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 1000;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(11,95,212,.20);
+      margin-top: 6px;
+    }
+    button:disabled { opacity: .65; cursor: wait; }
+    .error {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #fff1f1;
+      color: #b42318;
+      font-size: 14px;
+      font-weight: 800;
+      border: 1px solid #ffd0d0;
+    }
+    .nota {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #7c8fa5;
+      line-height: 1.4;
+    }
+    @media (max-width: 850px) {
+      .login-wrap { grid-template-columns: 1fr; }
+      .login-brand { min-height: 260px; }
+      .login-brand h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <section class="login-brand">
+      <div>
+        <img src="https://i.postimg.cc/fyMcjMcn/logo-uap.png" alt="Logo UAP">
+        <h1>Recursos Áulicos UAP</h1>
+        <p>Sistema interno de gestión, reservas, oficina, caja y alumnos becarios.</p>
+      </div>
+      <div class="login-footer">Universidad Adventista del Plata</div>
+    </section>
+    <section class="login-form">
+      <h2>Ingresar</h2>
+      <p class="sub">Usá tu usuario y contraseña para entrar al sistema.</p>
+      <label>Usuario</label>
+      <input type="text" id="usuario" autocomplete="username" placeholder="Ej: admin">
+      <label>Contraseña</label>
+      <input type="password" id="password" autocomplete="current-password" placeholder="Contraseña">
+      <button id="btn-login" onclick="ingresar()">Entrar al sistema</button>
+      <div class="error" id="error-login"></div>
+      <p class="nota">Si la sesión vence, el sistema te va a pedir ingresar nuevamente.</p>
+    </section>
+  </div>
+  <script>
+    const PAGE_DESTINO = "<?= pageDestino ?>";
+    function mostrarError(msg) {
+      const el = document.getElementById("error-login");
+      el.innerText = msg;
+      el.style.display = "block";
+    }
+    function ingresar() {
+      const usuario = document.getElementById("usuario").value;
+      const password = document.getElementById("password").value;
+      const btn = document.getElementById("btn-login");
+      document.getElementById("error-login").style.display = "none";
+      if (!usuario || !password) {
+        mostrarError("Completá usuario y contraseña.");
+        return;
+      }
+      btn.disabled = true;
+      btn.innerText = "Ingresando...";
+      google.script.run
+        .withSuccessHandler(res => {
+          btn.disabled = false;
+          btn.innerText = "Entrar al sistema";
+          if (!res || !res.ok) {
+            mostrarError(res && res.mensaje ? res.mensaje : "No se pudo iniciar sesión.");
+            return;
+          }
+          localStorage.setItem("uap_token", res.token);
+          localStorage.setItem("uap_usuario", res.usuario);
+          localStorage.setItem("uap_nombre", res.nombre);
+          localStorage.setItem("uap_rol", res.rol);
+          window.top.location.href = res.url;
+        })
+        .withFailureHandler(err => {
+          btn.disabled = false;
+          btn.innerText = "Entrar al sistema";
+          mostrarError(err.message || "Error al iniciar sesión.");
+        })
+        .validarLogin(usuario, password, PAGE_DESTINO);
+    }
+    document.addEventListener("keydown", e => {
+      if (e.key === "Enter") ingresar();
+    });
+  </script>
+</body>
+</html>

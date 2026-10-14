@@ -1,0 +1,613 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --uap-azul:#003C71;
+      --uap-azul-2:#0f6fd6;
+      --uap-fondo:#eef5fb;
+      --uap-borde:#d7e2ee;
+      --uap-texto:#18365d;
+      --uap-sombra:0 14px 30px rgba(11,48,92,.12);
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      min-height:100vh;
+      font-family:Arial,sans-serif;
+      background:linear-gradient(180deg,#edf5fb 0%,#f8fbff 100%);
+      color:var(--uap-texto);
+    }
+
+    .hero {
+      min-height:210px;
+      background:
+        linear-gradient(90deg,rgba(0,60,113,.96),rgba(0,60,113,.72)),
+        url("https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg") center/cover no-repeat;
+      color:white;
+      padding:34px 42px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+    }
+
+    .hero h1 {
+      margin:0;
+      font-size:38px;
+      font-weight:1000;
+    }
+
+    .hero p {
+      margin:10px 0 0;
+      font-size:17px;
+      font-weight:700;
+      opacity:.9;
+    }
+
+    .user-chip {
+      background:rgba(255,255,255,.95);
+      color:#003C71;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:13px;
+      font-weight:900;
+      white-space:nowrap;
+      box-shadow:0 10px 22px rgba(0,0,0,.12);
+    }
+
+    .wrap {
+      width:min(100%,1180px);
+      margin:-34px auto 40px;
+      padding:0 18px;
+      position:relative;
+      z-index:2;
+      display:grid;
+      grid-template-columns:390px minmax(0,1fr);
+      gap:18px;
+      align-items:start;
+    }
+
+    .card {
+      background:white;
+      border:1px solid var(--uap-borde);
+      border-radius:20px;
+      box-shadow:var(--uap-sombra);
+      padding:22px;
+    }
+
+    h2 {
+      margin:0 0 18px;
+      color:#003C71;
+      font-size:22px;
+      font-weight:1000;
+    }
+
+    label {
+      display:block;
+      margin:0 0 7px;
+      font-size:13px;
+      font-weight:900;
+      color:#314d74;
+    }
+
+    input, select {
+      width:100%;
+      height:48px;
+      border:1px solid #ccd9e7;
+      border-radius:12px;
+      padding:0 14px;
+      font-size:15px;
+      color:#193761;
+      outline:none;
+      margin-bottom:14px;
+      background:white;
+    }
+
+    input:focus, select:focus {
+      border-color:#3483fa;
+      box-shadow:0 0 0 3px rgba(52,131,250,.14);
+    }
+
+    button {
+      height:44px;
+      border:0;
+      border-radius:12px;
+      padding:0 16px;
+      font-size:14px;
+      font-weight:1000;
+      cursor:pointer;
+      font-family:Arial,sans-serif;
+    }
+
+    .btn-primary {
+      width:100%;
+      height:50px;
+      background:linear-gradient(180deg,#1d78f0,#0b5fd4);
+      color:white;
+      box-shadow:0 10px 22px rgba(11,95,212,.18);
+    }
+
+    .btn-light {
+      background:#eef5ff;
+      color:#0b5fd4;
+      border:1px solid #cfe0f5;
+    }
+
+    .btn-danger {
+      background:#fff1f1;
+      color:#b42318;
+      border:1px solid #ffd0d0;
+    }
+
+    .btn-ok {
+      background:#eefaf1;
+      color:#239144;
+      border:1px solid #cfead7;
+    }
+
+    .top-actions {
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+
+    .tabla-wrap {
+      overflow:auto;
+      border:1px solid #dce6f1;
+      border-radius:14px;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      background:white;
+    }
+
+    th, td {
+      border:1px solid #dce6f1;
+      padding:11px 12px;
+      text-align:left;
+      font-size:14px;
+      white-space:nowrap;
+    }
+
+    th {
+      background:linear-gradient(180deg,#0f55a7,#003C71);
+      color:white;
+      font-weight:1000;
+    }
+
+    .estado-activo {
+      color:#239144;
+      font-weight:1000;
+    }
+
+    .estado-inactivo {
+      color:#b42318;
+      font-weight:1000;
+    }
+
+    .acciones {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .nota {
+      margin-top:14px;
+      font-size:12px;
+      color:#6b7d92;
+      line-height:1.4;
+    }
+
+    @media (max-width:900px) {
+      .wrap { grid-template-columns:1fr; }
+      .hero { flex-direction:column; align-items:flex-start; }
+      .hero h1 { font-size:30px; }
+    }
+  </style>
+
+  <style id="sin-usuario-visual-uap">
+    .inicio-user,
+    .hero-user,
+    .hero-usuario,
+    .caja-hero-user,
+    .uap-user-chip,
+    .user-chip {
+      display: none !important;
+    }
+  </style>
+  <style id="usuario-activo-chip-uap">
+    .uap-user-chip {
+      position: fixed;
+      top: 18px;
+      right: 22px;
+      z-index: 9999;
+      display: inline-flex !important;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 0 15px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.94);
+      color: #003C71;
+      border: 1px solid rgba(255,255,255,.72);
+      box-shadow: 0 12px 26px rgba(7,30,58,.18);
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      backdrop-filter: blur(8px);
+    }
+
+    .uap-user-chip-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #55318f;
+      font-size: 14px;
+      font-weight: 1000;
+    }
+
+    .uap-user-chip strong {
+      color: #003C71;
+      font-weight: 1000;
+    }
+
+    .uap-user-chip button {
+      border: 0;
+      background: transparent;
+      color: #003C71;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 1000;
+      padding: 0 0 0 2px;
+    }
+
+    .uap-user-menu {
+      position: fixed;
+      top: 66px;
+      right: 22px;
+      z-index: 10000;
+      width: 210px;
+      display: none;
+      background: #ffffff;
+      color: #173b68;
+      border: 1px solid #d8e3ef;
+      border-radius: 14px;
+      box-shadow: 0 18px 38px rgba(7,30,58,.20);
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    .uap-user-menu.show {
+      display: block;
+    }
+
+    .uap-user-menu-info {
+      padding: 13px 15px;
+      border-bottom: 1px solid #e5edf6;
+      background: #f6faff;
+    }
+
+    .uap-user-menu-info b {
+      display: block;
+      color: #003C71;
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .uap-user-menu-info span {
+      display: block;
+      color: #6d7e92;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+
+    .uap-user-menu button {
+      width: 100%;
+      min-height: 42px;
+      border: 0;
+      background: #ffffff;
+      color: #003C71;
+      text-align: left;
+      padding: 0 15px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 900;
+      font-family: Arial, sans-serif;
+    }
+
+    .uap-user-menu button:hover {
+      background: #eef7ff;
+    }
+
+    @media print {
+      .uap-user-chip,
+      .uap-user-menu {
+        display: none !important;
+      }
+    }
+  </style>
+
+</head>
+<body>
+<div class="uap-user-chip no-print-zone">
+  <span class="uap-user-chip-icon">♟</span>
+  <span>Bienvenido, <strong><?= nombreUsuarioActivo ?></strong></span>
+  <button type="button" onclick="toggleMenuUsuarioUap()">▼</button>
+</div>
+
+<div id="uap-user-menu" class="uap-user-menu no-print-zone">
+  <div class="uap-user-menu-info">
+    <b><?= nombreUsuarioActivo ?></b>
+    <span><?= rolUsuarioActivo ?></span>
+  </div>
+
+  <button type="button" onclick="cambiarUsuarioUap()">
+    Cambiar usuario
+  </button>
+</div>
+
+<body onload="inicializarUsuarios()">
+  <header class="hero">
+    <div>
+      <h1>Administración de Usuarios</h1>
+      <p>Solo el perfil administrador puede crear usuarios, cambiar roles y contraseñas.</p>
+    </div>
+
+    
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Crear usuario</h2>
+
+      <label>Usuario</label>
+      <input type="text" id="u_usuario" placeholder="Ej: secretario2">
+
+      <label>Nombre visible</label>
+      <input type="text" id="u_nombre" placeholder="Ej: Secretaría Mañana">
+
+      <label>Contraseña</label>
+      <input type="password" id="u_password" placeholder="Contraseña inicial">
+
+      <label>Rol</label>
+      <select id="u_rol">
+        <option value="secretario">Secretario</option>
+        <option value="alumno">Alumno</option>
+        <option value="admin">Administrador</option>
+      </select>
+
+      <button class="btn-primary" onclick="crearUsuario()">Crear usuario</button>
+
+      <p class="nota">
+        Recomendación: dejá pocos usuarios con rol administrador.
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="top-actions">
+        <button class="btn-light" onclick="abrirModulo('Index')">Inicio</button>
+        <button class="btn-light" onclick="cargarUsuarios()">Actualizar</button>
+        <button class="btn-danger" onclick="cerrarSesion()">Salir</button>
+      </div>
+
+      <h2>Usuarios cargados</h2>
+
+      <div class="tabla-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Creado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="usuarios-body">
+            <tr><td colspan="6">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  
+<script id="token-helper-usuarios">
+  function obtenerTokenUap() {
+    const params = new URLSearchParams(window.location.search);
+    const tokenUrl = params.get("token");
+
+    if (tokenUrl) {
+      localStorage.setItem("uap_token", tokenUrl);
+      return tokenUrl;
+    }
+
+    return localStorage.getItem("uap_token") || "";
+  }
+
+  function abrirModulo(page) {
+    const token = obtenerTokenUap();
+
+    google.script.run
+      .withSuccessHandler(function(url) {
+        window.top.location.href = url;
+      })
+      .withFailureHandler(function(err) {
+        alert("No se pudo abrir la página: " + (err.message || err));
+      })
+      .getUrlConToken(page || "Index", token);
+  }
+</script>
+
+<script>
+    const TOKEN = obtenerTokenUap();
+
+    function inicializarUsuarios() {
+      cargarUsuarios();
+    }
+
+    function cargarUsuarios() {
+      const body = document.getElementById("usuarios-body");
+      body.innerHTML = "<tr><td colspan='6'>Cargando...</td></tr>";
+
+      google.script.run
+        .withSuccessHandler(usuarios => {
+          if (!usuarios || usuarios.length === 0) {
+            body.innerHTML = "<tr><td colspan='6'>No hay usuarios.</td></tr>";
+            return;
+          }
+
+          body.innerHTML = usuarios.map(u => `
+            <tr>
+              <td><b>${u.usuario}</b></td>
+              <td>${u.nombre}</td>
+              <td>
+                <select onchange="cambiarRol('${u.usuario}', this.value)" ${u.usuario === "admin" ? "disabled" : ""}>
+                  <option value="admin" ${u.rol === "admin" ? "selected" : ""}>admin</option>
+                  <option value="secretario" ${u.rol === "secretario" ? "selected" : ""}>secretario</option>
+                  <option value="alumno" ${u.rol === "alumno" ? "selected" : ""}>alumno</option>
+                </select>
+              </td>
+              <td class="${u.activo ? "estado-activo" : "estado-inactivo"}">
+                ${u.activo ? "Activo" : "Inactivo"}
+              </td>
+              <td>${u.creado || "—"}</td>
+              <td>
+                <div class="acciones">
+                  <button class="btn-light" onclick="cambiarPassword('${u.usuario}')">Clave</button>
+                  ${
+                    u.activo
+                      ? `<button class="btn-danger" onclick="cambiarEstado('${u.usuario}', false)">Desactivar</button>`
+                      : `<button class="btn-ok" onclick="cambiarEstado('${u.usuario}', true)">Activar</button>`
+                  }
+                </div>
+              </td>
+            </tr>
+          `).join("");
+        })
+        .withFailureHandler(err => {
+          body.innerHTML = `<tr><td colspan="6">Error: ${err.message}</td></tr>`;
+        })
+        .listarUsuariosSistema(TOKEN);
+    }
+
+    function crearUsuario() {
+      const usuario = document.getElementById("u_usuario").value.trim().toLowerCase();
+      const nombre = document.getElementById("u_nombre").value.trim();
+      const password = document.getElementById("u_password").value.trim();
+      const rol = document.getElementById("u_rol").value;
+
+      if (!usuario || !nombre || !password || !rol) {
+        alert("Completá usuario, nombre, contraseña y rol.");
+        return;
+      }
+
+      if (!TOKEN) {
+        alert("Sesión vencida. Volvé a iniciar sesión.");
+        abrirModulo("Index");
+        return;
+      }
+
+      const obj = { usuario, nombre, password, rol };
+
+      const btn = document.querySelector('button[onclick="crearUsuario()"]');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Creando...";
+      }
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Crear usuario";
+          }
+
+          if (res === "OK") {
+            alert("✅ Usuario creado");
+            document.getElementById("u_usuario").value = "";
+            document.getElementById("u_nombre").value = "";
+            document.getElementById("u_password").value = "";
+            cargarUsuarios();
+          } else {
+            alert(res || "No se pudo crear el usuario.");
+          }
+        })
+        .withFailureHandler(err => {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Crear usuario";
+          }
+          alert("Error al crear usuario: " + (err.message || err));
+        })
+        .crearUsuarioSistema(TOKEN, obj);
+    }
+
+    function cambiarPassword(usuario) {
+      const nueva = prompt("Nueva contraseña para " + usuario + ":");
+      if (!nueva) return;
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res === "OK") alert("✅ Contraseña actualizada");
+          else alert(res);
+        })
+        .withFailureHandler(err => alert(err.message))
+        .cambiarPasswordUsuarioSistema(TOKEN, usuario, nueva);
+    }
+
+    function cambiarEstado(usuario, activo) {
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res === "OK") cargarUsuarios();
+          else alert(res);
+        })
+        .withFailureHandler(err => alert(err.message))
+        .cambiarEstadoUsuarioSistema(TOKEN, usuario, activo);
+    }
+
+    function cambiarRol(usuario, rol) {
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res === "OK") cargarUsuarios();
+          else {
+            alert(res);
+            cargarUsuarios();
+          }
+        })
+        .withFailureHandler(err => {
+          alert(err.message);
+          cargarUsuarios();
+        })
+        .actualizarRolUsuarioSistema(TOKEN, usuario, rol);
+    }
+
+    function cerrarSesion() {
+      google.script.run.withSuccessHandler(url => {
+        window.top.location.href = url;
+      }).cerrarSesion(TOKEN);
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

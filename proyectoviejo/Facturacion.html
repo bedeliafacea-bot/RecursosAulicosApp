@@ -1,0 +1,3890 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Styles'); ?>
+
+  <style id="header-caja-mas-compacto">
+    /* HEADER MÁS CHICO / COMPACTO */
+    .caja-hero-reservas{
+      min-height: 255px !important;
+      border-radius: 0 0 22px 22px !important;
+    }
+
+    .caja-hero-contenido{
+      min-height: 255px !important;
+      padding: 18px 26px 14px !important;
+      gap: 8px !important;
+    }
+
+    .caja-hero-top{
+      gap: 12px !important;
+    }
+
+    .caja-hero-logo{
+      width: 78px !important;
+    }
+
+    .caja-hero-brand-divider{
+      height: 46px !important;
+    }
+
+    .caja-hero-brand-text{
+      font-size: 14px !important;
+      line-height: 1.02 !important;
+    }
+
+    .caja-hero-user{
+      padding: 10px 16px !important;
+      font-size: 13px !important;
+      border-radius: 16px !important;
+    }
+
+    .caja-hero-center{
+      padding-top: 0 !important;
+    }
+
+    .caja-hero-center h1{
+      font-size: 42px !important;
+      line-height: 1 !important;
+      margin: 0 !important;
+    }
+
+    .caja-hero-center p{
+      margin-top: 8px !important;
+      font-size: 14px !important;
+    }
+
+    .caja-hero-bottom{
+      grid-template-columns: minmax(0,1fr) 300px !important;
+      gap: 16px !important;
+      padding-top: 10px !important;
+    }
+
+    .caja-nav-textual{
+      gap: 24px !important;
+    }
+
+    .caja-nav-link{
+      font-size: 13px !important;
+      padding: 6px 0 !important;
+    }
+
+    .diferencia-top-card{
+      min-height: 88px !important;
+      padding: 12px 14px !important;
+      border-radius: 18px !important;
+      grid-template-columns: 44px 1fr !important;
+      gap: 10px !important;
+      max-width: 300px !important;
+    }
+
+    .diferencia-top-icono{
+      width: 40px !important;
+      height: 40px !important;
+      font-size: 22px !important;
+    }
+
+    .diferencia-top-label{
+      font-size: 12px !important;
+    }
+
+    .diferencia-top-monto{
+      font-size: 28px !important;
+      margin: 2px 0 !important;
+    }
+
+    .diferencia-top-formula{
+      font-size: 11px !important;
+      line-height: 1.2 !important;
+    }
+
+    .diferencia-top-ayuda{
+      margin-top: 6px !important;
+      padding-top: 6px !important;
+      font-size: 11px !important;
+    }
+
+    .no-print-zone[style*="max-width:1150px"]{
+      margin-top: -2px !important;
+    }
+
+    @media (max-width: 1280px){
+      .caja-hero-reservas{
+        min-height: 300px !important;
+      }
+
+      .caja-hero-contenido{
+        min-height: 300px !important;
+      }
+
+      .caja-hero-bottom{
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+      }
+
+      .diferencia-top-card{
+        max-width: 360px !important;
+      }
+    }
+
+    @media (max-width: 860px){
+      .caja-hero-reservas{
+        min-height: 350px !important;
+      }
+
+      .caja-hero-contenido{
+        min-height: 350px !important;
+      }
+
+      .caja-hero-center h1{
+        font-size: 34px !important;
+      }
+
+      .caja-nav-textual{
+        gap: 12px 18px !important;
+      }
+
+      .caja-nav-link{
+        font-size: 12px !important;
+      }
+    }
+  
+  /* ==========================================================
+     DIFERENCIA COMO 4ta COLUMNA A LA DERECHA
+  ========================================================== */
+  .diferencia-top-card{
+    display:none !important;
+  }
+
+  .contenedor-tarjetas{
+    display:grid !important;
+    grid-template-columns: 1.15fr 1fr 1fr 0.92fr !important;
+    gap: 20px !important;
+    align-items:start !important;
+  }
+
+  .diferencia-col-card{
+    background: linear-gradient(180deg, #0a4ea2 0%, #093a78 100%) !important;
+    color:#fff !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    box-shadow: 0 18px 34px rgba(7,30,58,.18) !important;
+    border-radius: 24px !important;
+    min-height: 250px !important;
+    overflow:hidden !important;
+  }
+
+  .diferencia-col-header{
+    align-items:center !important;
+    gap:12px !important;
+    border-bottom: 2px solid rgba(255,255,255,.18) !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .diferencia-col-header h2{
+    color:#ffffff !important;
+    margin:0 !important;
+    font-size: 22px !important;
+    font-weight: 1000 !important;
+  }
+
+  .diferencia-col-header p{
+    color: rgba(255,255,255,.82) !important;
+    margin-top: 4px !important;
+    font-size: 13px !important;
+  }
+
+  .diferencia-col-icono{
+    background: rgba(255,255,255,.14) !important;
+    color:#ffffff !important;
+    width:54px !important;
+    height:54px !important;
+    border-radius: 16px !important;
+    font-size: 26px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    flex:0 0 54px !important;
+  }
+
+  .diferencia-col-body{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:center !important;
+    gap: 10px !important;
+    min-height: 150px !important;
+  }
+
+  .diferencia-col-label{
+    font-size: 13px !important;
+    letter-spacing: .9px !important;
+    font-weight: 1000 !important;
+    color: rgba(255,255,255,.82) !important;
+  }
+
+  .diferencia-col-monto{
+    font-size: 46px !important;
+    line-height: 1 !important;
+    font-weight: 1000 !important;
+    color:#ffffff !important;
+    margin: 2px 0 4px !important;
+  }
+
+  .diferencia-col-ayuda{
+    display:inline-flex !important;
+    align-items:center !important;
+    gap: 8px !important;
+    font-size: 16px !important;
+    font-weight: 900 !important;
+    color: #c9ffd9 !important;
+    padding: 8px 12px !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.10) !important;
+  }
+
+  .diferencia-col-formula{
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    color: rgba(255,255,255,.82) !important;
+    margin-top: 4px !important;
+  }
+
+  @media (max-width: 1500px){
+    .contenedor-tarjetas{
+      grid-template-columns: 1.1fr 1fr 1fr 0.9fr !important;
+      gap: 16px !important;
+    }
+    .diferencia-col-monto{
+      font-size: 40px !important;
+    }
+  }
+
+  @media (max-width: 1180px){
+    .contenedor-tarjetas{
+      grid-template-columns: 1fr 1fr !important;
+    }
+  }
+
+  @media (max-width: 760px){
+    .contenedor-tarjetas{
+      grid-template-columns: 1fr !important;
+    }
+    .diferencia-col-card{
+      min-height: auto !important;
+    }
+    .diferencia-col-monto{
+      font-size: 36px !important;
+    }
+  }
+
+  </style>
+
+
+  <style id="header-caja-compacto-equilibrado">
+    /* ==========================================================
+       HEADER COMPACTO PERO LEGIBLE
+       - mantiene las letras del menú
+       - diferencia visible pero discreta
+       - evita que las tarjetas tapen el encabezado
+    ========================================================== */
+
+    .caja-hero-reservas {
+      min-height: 235px !important;
+      height: 235px !important;
+      border-radius: 0 0 20px 20px !important;
+      margin-bottom: 0 !important;
+      overflow: hidden !important;
+    }
+
+    .caja-hero-contenido {
+      min-height: 235px !important;
+      height: 235px !important;
+      padding: 16px 30px 14px !important;
+      gap: 6px !important;
+      grid-template-rows: 46px 92px 58px !important;
+    }
+
+    .caja-hero-top {
+      align-items: center !important;
+    }
+
+    .caja-hero-brand {
+      gap: 12px !important;
+      align-items: center !important;
+    }
+
+    .caja-hero-logo {
+      width: 76px !important;
+    }
+
+    .caja-hero-brand-divider {
+      height: 42px !important;
+      width: 1px !important;
+    }
+
+    .caja-hero-brand-text {
+      display: block !important;
+      font-size: 13px !important;
+      line-height: 1.02 !important;
+      font-weight: 1000 !important;
+      color: #ffffff !important;
+    }
+
+    .caja-hero-user {
+      padding: 8px 14px !important;
+      font-size: 12px !important;
+      border-radius: 14px !important;
+    }
+
+    .caja-hero-center {
+      padding-top: 0 !important;
+      margin: 0 !important;
+      justify-content: center !important;
+    }
+
+    .caja-hero-center h1 {
+      font-size: 42px !important;
+      line-height: 1 !important;
+      margin: 0 !important;
+      color: #ffffff !important;
+    }
+
+    .caja-hero-center p {
+      margin-top: 7px !important;
+      font-size: 13px !important;
+      color: rgba(255,255,255,.94) !important;
+    }
+
+    .caja-hero-bottom {
+      grid-template-columns: minmax(0, 1fr) 250px !important;
+      gap: 14px !important;
+      padding-top: 9px !important;
+      border-top: 1px solid rgba(255,255,255,.22) !important;
+      align-items: center !important;
+    }
+
+    /* Menú textual visible */
+    .caja-nav-textual {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 28px !important;
+      flex-wrap: wrap !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border-top: none !important;
+    }
+
+    .caja-nav-link {
+      display: inline-block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      color: rgba(255,255,255,.92) !important;
+      background: transparent !important;
+      border: 0 !important;
+      font-size: 13px !important;
+      font-weight: 900 !important;
+      padding: 6px 0 !important;
+      text-shadow: 0 2px 8px rgba(0,0,0,.28) !important;
+      white-space: nowrap !important;
+    }
+
+    .caja-nav-link::after {
+      height: 2px !important;
+      bottom: -3px !important;
+    }
+
+    .caja-nav-link:hover,
+    .caja-nav-link.activo {
+      color: #ffffff !important;
+    }
+
+    /* Diferencia visible, pero más chica */
+    .diferencia-top-card {
+      display: grid !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      width: 250px !important;
+      max-width: 250px !important;
+      min-height: 68px !important;
+      height: 68px !important;
+      padding: 9px 12px !important;
+      border-radius: 15px !important;
+      grid-template-columns: 34px 1fr !important;
+      gap: 9px !important;
+      align-items: center !important;
+      justify-self: end !important;
+      background: rgba(255,255,255,.94) !important;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12) !important;
+      color: #1d3759 !important;
+    }
+
+    .diferencia-top-icono {
+      display: flex !important;
+      width: 30px !important;
+      height: 30px !important;
+      font-size: 15px !important;
+      margin: 0 !important;
+    }
+
+    .diferencia-top-info {
+      display: block !important;
+      text-align: left !important;
+      width: 100% !important;
+    }
+
+    .diferencia-top-label {
+      display: block !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+      margin-bottom: 2px !important;
+      color: #003C71 !important;
+    }
+
+    .diferencia-top-monto {
+      display: block !important;
+      font-size: 24px !important;
+      line-height: 1 !important;
+      margin: 0 !important;
+      color: #1654b5 !important;
+    }
+
+    .diferencia-top-formula {
+      display: none !important;
+    }
+
+    .diferencia-top-ayuda {
+      display: none !important;
+    }
+
+    /* Que las tarjetas NO tapen el header */
+    .no-print-zone[style*="max-width:1150px"] {
+      margin-top: 34px !important;
+    }
+
+    .contenedor-tarjetas {
+      margin-top: 0 !important;
+    }
+
+    @media (max-width: 1280px) {
+      .caja-hero-reservas {
+        height: auto !important;
+        min-height: 285px !important;
+      }
+
+      .caja-hero-contenido {
+        height: auto !important;
+        min-height: 285px !important;
+        grid-template-rows: auto auto auto !important;
+      }
+
+      .caja-hero-bottom {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+
+      .diferencia-top-card {
+        justify-self: center !important;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .caja-hero-reservas {
+        min-height: 330px !important;
+      }
+
+      .caja-hero-contenido {
+        min-height: 330px !important;
+        padding: 14px 14px !important;
+      }
+
+      .caja-hero-top {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+
+      .caja-hero-user {
+        align-self: flex-end !important;
+      }
+
+      .caja-hero-center h1 {
+        font-size: 34px !important;
+      }
+
+      .caja-nav-textual {
+        justify-content: flex-start !important;
+        gap: 12px 18px !important;
+      }
+
+      .diferencia-top-card {
+        width: 230px !important;
+        max-width: 230px !important;
+        justify-self: center !important;
+      }
+    }
+  </style>
+
+
+  <style id="diferencia-pill-oscura">
+    /* ==========================================================
+       DIFERENCIA TIPO PASTILLA OSCURA
+       Más prolija, fina y visible sin ocupar tanto
+    ========================================================== */
+
+    .caja-hero-reservas {
+      min-height: 225px !important;
+      height: 225px !important;
+    }
+
+    .caja-hero-contenido {
+      min-height: 225px !important;
+      height: 225px !important;
+      padding: 15px 30px 13px !important;
+      grid-template-rows: 44px 90px 54px !important;
+    }
+
+    .caja-hero-center h1 {
+      font-size: 40px !important;
+    }
+
+    .caja-hero-center p {
+      font-size: 13px !important;
+      margin-top: 6px !important;
+    }
+
+    .caja-hero-bottom {
+      grid-template-columns: minmax(0, 1fr) 250px !important;
+      gap: 14px !important;
+      align-items: center !important;
+      padding-top: 8px !important;
+    }
+
+    .caja-nav-textual {
+      gap: 28px !important;
+    }
+
+    .caja-nav-link {
+      font-size: 13px !important;
+      padding: 6px 0 !important;
+    }
+
+    .diferencia-top-card {
+      width: 250px !important;
+      max-width: 250px !important;
+      min-height: 70px !important;
+      height: 70px !important;
+      padding: 10px 14px !important;
+      border-radius: 12px !important;
+      grid-template-columns: 1fr auto !important;
+      gap: 10px !important;
+      align-items: center !important;
+      justify-self: end !important;
+      text-align: left !important;
+
+      background: linear-gradient(135deg, rgba(12, 43, 82, .96) 0%, rgba(26, 66, 111, .96) 100%) !important;
+      border: 1px solid rgba(255,255,255,.42) !important;
+      box-shadow: 0 8px 18px rgba(0,0,0,.18) !important;
+      color: #ffffff !important;
+    }
+
+    .diferencia-top-icono {
+      display: none !important;
+    }
+
+    .diferencia-top-info {
+      display: grid !important;
+      grid-template-columns: 1fr auto !important;
+      grid-template-rows: auto auto !important;
+      column-gap: 10px !important;
+      row-gap: 3px !important;
+      align-items: center !important;
+      width: 100% !important;
+    }
+
+    .diferencia-top-label {
+      grid-column: 1 / 2 !important;
+      grid-row: 1 / 2 !important;
+      display: block !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+      letter-spacing: .6px !important;
+      color: #ffffff !important;
+      font-weight: 1000 !important;
+      margin: 0 !important;
+      text-align: left !important;
+    }
+
+    .diferencia-top-monto {
+      grid-column: 1 / 2 !important;
+      grid-row: 2 / 3 !important;
+      display: block !important;
+      font-size: 24px !important;
+      line-height: 1 !important;
+      margin: 0 !important;
+      color: #ffffff !important;
+      font-weight: 1000 !important;
+      text-align: left !important;
+    }
+
+    .diferencia-top-formula {
+      display: none !important;
+    }
+
+    .diferencia-top-ayuda {
+      grid-column: 2 / 3 !important;
+      grid-row: 1 / 3 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 5px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      font-size: 11px !important;
+      line-height: 1.1 !important;
+      color: #a8ffc4 !important;
+      font-weight: 900 !important;
+      white-space: nowrap !important;
+      text-align: right !important;
+    }
+
+    .diferencia-top-ayuda::before {
+      content: "✅";
+      font-size: 14px;
+    }
+
+    .diferencia-top-ayuda {
+      font-size: 0 !important;
+    }
+
+    .diferencia-top-ayuda::after {
+      content: "Caja perfecta";
+      font-size: 11px !important;
+    }
+
+    /* Evita que las cards se monten encima del indicador */
+    .no-print-zone[style*="max-width:1150px"] {
+      margin-top: 36px !important;
+    }
+
+    @media (max-width: 1280px) {
+      .caja-hero-reservas {
+        height: auto !important;
+        min-height: 285px !important;
+      }
+
+      .caja-hero-contenido {
+        height: auto !important;
+        min-height: 285px !important;
+        grid-template-rows: auto auto auto !important;
+      }
+
+      .caja-hero-bottom {
+        grid-template-columns: 1fr !important;
+      }
+
+      .diferencia-top-card {
+        justify-self: center !important;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .diferencia-top-card {
+        width: 230px !important;
+        max-width: 230px !important;
+      }
+
+      .diferencia-top-monto {
+        font-size: 22px !important;
+      }
+
+      .diferencia-top-ayuda::after {
+        content: "OK";
+      }
+    }
+  </style>
+
+
+  <style id="diferencia-azul-larga-fina">
+    /* ==========================================================
+       DIFERENCIA AZUL, LARGA Y FINA
+       Más horizontal, más prolija, menos "corta"
+    ========================================================== */
+
+    .caja-hero-bottom {
+      grid-template-columns: minmax(0, 1fr) 360px !important;
+      gap: 16px !important;
+      align-items: center !important;
+    }
+
+    .diferencia-top-card {
+      width: 360px !important;
+      max-width: 360px !important;
+      min-height: 56px !important;
+      height: 56px !important;
+      padding: 8px 14px !important;
+      border-radius: 999px !important;
+      grid-template-columns: 1fr auto !important;
+      gap: 10px !important;
+      align-items: center !important;
+      justify-self: end !important;
+      text-align: left !important;
+
+      background: linear-gradient(135deg, rgba(10, 52, 110, .97) 0%, rgba(20, 86, 180, .96) 100%) !important;
+      border: 1px solid rgba(255,255,255,.34) !important;
+      box-shadow: 0 8px 20px rgba(0,0,0,.16) !important;
+      color: #ffffff !important;
+    }
+
+    .diferencia-top-icono {
+      display: none !important;
+    }
+
+    .diferencia-top-info {
+      display: grid !important;
+      grid-template-columns: auto 1fr auto !important;
+      align-items: center !important;
+      column-gap: 12px !important;
+      width: 100% !important;
+    }
+
+    .diferencia-top-label {
+      display: inline-block !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+      letter-spacing: .7px !important;
+      color: rgba(255,255,255,.88) !important;
+      font-weight: 1000 !important;
+      margin: 0 !important;
+      text-align: left !important;
+      white-space: nowrap !important;
+    }
+
+    .diferencia-top-monto {
+      display: inline-block !important;
+      font-size: 24px !important;
+      line-height: 1 !important;
+      margin: 0 !important;
+      color: #ffffff !important;
+      font-weight: 1000 !important;
+      text-align: left !important;
+      white-space: nowrap !important;
+    }
+
+    .diferencia-top-formula {
+      display: none !important;
+    }
+
+    .diferencia-top-ayuda {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 5px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      font-size: 0 !important;
+      line-height: 1 !important;
+      color: #c9ffd9 !important;
+      font-weight: 900 !important;
+      white-space: nowrap !important;
+      text-align: right !important;
+    }
+
+    .diferencia-top-ayuda::before {
+      content: "✅";
+      font-size: 13px !important;
+    }
+
+    .diferencia-top-ayuda::after {
+      content: "Caja perfecta";
+      font-size: 11px !important;
+      color: #c9ffd9 !important;
+    }
+
+    @media (max-width: 1280px) {
+      .caja-hero-bottom {
+        grid-template-columns: 1fr !important;
+      }
+
+      .diferencia-top-card {
+        width: 360px !important;
+        max-width: 360px !important;
+        justify-self: center !important;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .diferencia-top-card {
+        width: 290px !important;
+        max-width: 290px !important;
+        height: auto !important;
+        min-height: 56px !important;
+        border-radius: 18px !important;
+      }
+
+      .diferencia-top-info {
+        grid-template-columns: 1fr !important;
+        row-gap: 4px !important;
+        text-align: center !important;
+        justify-items: center !important;
+      }
+
+      .diferencia-top-label,
+      .diferencia-top-monto,
+      .diferencia-top-ayuda {
+        text-align: center !important;
+      }
+    }
+  </style>
+
+
+  <style id="remover-diferencia-portada-final">
+    /* Oculta definitivamente la diferencia del encabezado.
+       La diferencia válida queda como 4ta columna. */
+    .caja-hero .diferencia-top-card,
+    .caja-hero-reservas .diferencia-top-card,
+    section .diferencia-top-card {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  </style>
+
+
+  <style id="agrandar-mercado-galicia">
+    /* ==========================================================
+       AGRANDAR TARJETAS MERCADO PAGO Y GALICIA
+       Para que los campos internos respiren mejor
+    ========================================================== */
+
+    /* El contenedor general de las tarjetas usa más ancho */
+    .no-print-zone[style*="max-width:1150px"] {
+      max-width: 1380px !important;
+      width: calc(100vw - 80px) !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    /* Repartimos mejor el espacio:
+       recibos = normal
+       mercado = más ancho
+       galicia = más ancho
+       diferencia = más angosta */
+    .contenedor-tarjetas {
+      grid-template-columns: 1.12fr 1.15fr 1.15fr 0.82fr !important;
+      gap: 24px !important;
+      align-items: start !important;
+    }
+
+    .mercado-pago-card,
+    .galicia-card {
+      min-width: 0 !important;
+      width: 100% !important;
+      padding: 22px !important;
+    }
+
+    /* Mercado Pago: que entren bien fecha + monto + botón */
+    .mercado-pago-card .fila-mercado-pago {
+      grid-template-columns: 150px minmax(150px, 1fr) 52px !important;
+      gap: 12px !important;
+    }
+
+    .mercado-pago-card input[type="date"],
+    .mercado-pago-card input[type="number"] {
+      min-width: 0 !important;
+      height: 50px !important;
+      font-size: 15px !important;
+    }
+
+    .mercado-pago-card .fila-mercado-pago button {
+      width: 52px !important;
+      height: 50px !important;
+    }
+
+    /* Galicia: inputs más cómodos */
+    .galicia-card .fila-transferencia-superior {
+      grid-template-columns: minmax(120px, .9fr) minmax(150px, 1.1fr) !important;
+      gap: 12px !important;
+    }
+
+    .galicia-card .fila-transferencia-inferior {
+      grid-template-columns: minmax(190px, 1fr) 52px !important;
+      gap: 12px !important;
+    }
+
+    .galicia-card input[type="text"],
+    .galicia-card input[type="date"],
+    .galicia-card input[type="number"] {
+      min-width: 0 !important;
+      height: 50px !important;
+      font-size: 15px !important;
+    }
+
+    .galicia-card .fila-transferencia button {
+      width: 52px !important;
+      height: 50px !important;
+    }
+
+    /* Ajuste de totales para que no se partan feo */
+    .mercado-pago-card .caja-total span,
+    .galicia-card .caja-total span {
+      font-size: 15px !important;
+      line-height: 1.15 !important;
+    }
+
+    .mercado-pago-card .caja-total strong,
+    .galicia-card .caja-total strong {
+      font-size: 22px !important;
+      white-space: nowrap !important;
+    }
+
+    /* Un poco más de aire entre logo y línea */
+    .mercado-pago-card .caja-card-header,
+    .galicia-card .caja-card-header {
+      margin-bottom: 20px !important;
+    }
+
+    /* Responsive: si no entra, baja a 2 columnas */
+    @media (max-width: 1350px) {
+      .no-print-zone[style*="max-width:1150px"] {
+        width: calc(100vw - 40px) !important;
+      }
+
+      .contenedor-tarjetas {
+        grid-template-columns: 1fr 1fr !important;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .contenedor-tarjetas {
+        grid-template-columns: 1fr !important;
+      }
+
+      .mercado-pago-card .fila-mercado-pago,
+      .galicia-card .fila-transferencia-superior,
+      .galicia-card .fila-transferencia-inferior {
+        grid-template-columns: 1fr !important;
+      }
+
+      .mercado-pago-card .fila-mercado-pago button,
+      .galicia-card .fila-transferencia button {
+        width: 100% !important;
+      }
+    }
+  </style>
+
+
+  <style id="fix-tarjetas-sin-overflow">
+    /* ==========================================================
+       FIX FINAL: QUE NADA SE SALGA DE LAS TARJETAS
+       Mercado Pago y Galicia más anchas, inputs contenidos
+    ========================================================== */
+
+    /* Más ancho real para que entren 4 columnas */
+    .no-print-zone[style*="max-width:1150px"] {
+      max-width: 1480px !important;
+      width: calc(100vw - 70px) !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    .contenedor-tarjetas {
+      display: grid !important;
+      grid-template-columns:
+        minmax(330px, 0.95fr)
+        minmax(370px, 1.12fr)
+        minmax(405px, 1.22fr)
+        minmax(245px, 0.72fr) !important;
+      gap: 22px !important;
+      align-items: start !important;
+    }
+
+    .caja-card {
+      min-width: 0 !important;
+      width: 100% !important;
+      overflow: hidden !important;
+    }
+
+    /* Evita que los textos de títulos se partan feo */
+    .recibos-card .caja-card-header h2 {
+      white-space: nowrap !important;
+      font-size: 22px !important;
+    }
+
+    .recibos-card .caja-card-header {
+      gap: 12px !important;
+    }
+
+    .recibos-card .caja-icono-uap img {
+      width: 92px !important;
+      max-width: 92px !important;
+    }
+
+    /* Todos los inputs se pueden achicar dentro de grids */
+    .caja-card input,
+    .caja-card select,
+    .caja-card button {
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Mercado Pago */
+    .mercado-pago-card {
+      padding: 22px !important;
+    }
+
+    .mercado-pago-card .fila-mercado-pago {
+      display: grid !important;
+      grid-template-columns: 140px minmax(0, 1fr) 50px !important;
+      gap: 10px !important;
+      align-items: center !important;
+      width: 100% !important;
+    }
+
+    .mercado-pago-card input[type="date"],
+    .mercado-pago-card input[type="number"] {
+      width: 100% !important;
+      height: 48px !important;
+      font-size: 14px !important;
+    }
+
+    .mercado-pago-card .fila-mercado-pago button {
+      width: 50px !important;
+      height: 48px !important;
+      padding: 0 !important;
+      flex: 0 0 50px !important;
+    }
+
+    .mercado-pago-card .caja-total {
+      gap: 10px !important;
+    }
+
+    .mercado-pago-card .caja-total span {
+      font-size: 15px !important;
+      white-space: nowrap !important;
+    }
+
+    .mercado-pago-card .caja-total strong {
+      font-size: 21px !important;
+      white-space: nowrap !important;
+    }
+
+    /* Galicia */
+    .galicia-card {
+      padding: 22px !important;
+    }
+
+    .galicia-card .fila-transferencia {
+      width: 100% !important;
+      gap: 12px !important;
+    }
+
+    .galicia-card .fila-transferencia-superior {
+      display: grid !important;
+      grid-template-columns: minmax(120px, 0.95fr) minmax(155px, 1.05fr) !important;
+      gap: 12px !important;
+      width: 100% !important;
+    }
+
+    .galicia-card .fila-transferencia-inferior {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 50px !important;
+      gap: 12px !important;
+      width: 100% !important;
+    }
+
+    .galicia-card input[type="text"],
+    .galicia-card input[type="date"],
+    .galicia-card input[type="number"] {
+      width: 100% !important;
+      height: 48px !important;
+      font-size: 14px !important;
+    }
+
+    .galicia-card .fila-transferencia button {
+      width: 50px !important;
+      height: 48px !important;
+      padding: 0 !important;
+      flex: 0 0 50px !important;
+    }
+
+    .galicia-card .caja-total {
+      gap: 10px !important;
+    }
+
+    .galicia-card .caja-total span {
+      font-size: 15px !important;
+      white-space: nowrap !important;
+    }
+
+    .galicia-card .caja-total strong {
+      font-size: 21px !important;
+      white-space: nowrap !important;
+    }
+
+    /* Diferencia: más compacta para ceder espacio */
+    .diferencia-col-card {
+      min-height: 250px !important;
+      padding: 20px !important;
+    }
+
+    .diferencia-col-header h2 {
+      font-size: 20px !important;
+    }
+
+    .diferencia-col-monto {
+      font-size: 42px !important;
+    }
+
+    .diferencia-col-ayuda {
+      font-size: 14px !important;
+      line-height: 1.25 !important;
+      text-align: center !important;
+    }
+
+    .diferencia-col-formula {
+      font-size: 12px !important;
+    }
+
+    /* Pantallas medianas: 2 columnas para que no se rompa */
+    @media (max-width: 1380px) {
+      .no-print-zone[style*="max-width:1150px"] {
+        width: calc(100vw - 36px) !important;
+      }
+
+      .contenedor-tarjetas {
+        grid-template-columns: 1fr 1fr !important;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .contenedor-tarjetas {
+        grid-template-columns: 1fr !important;
+      }
+
+      .mercado-pago-card .fila-mercado-pago,
+      .galicia-card .fila-transferencia-superior,
+      .galicia-card .fila-transferencia-inferior {
+        grid-template-columns: 1fr !important;
+      }
+
+      .mercado-pago-card .fila-mercado-pago button,
+      .galicia-card .fila-transferencia button {
+        width: 100% !important;
+      }
+
+      .recibos-card .caja-card-header h2 {
+        white-space: normal !important;
+      }
+    }
+  </style>
+
+
+  <style id="mercado-pago-monto-editable">
+    #lista-ml .mercado-monto:focus {
+      outline: none !important;
+      border-color: #3483fa !important;
+      box-shadow: 0 0 0 3px rgba(52, 131, 250, .14) !important;
+    }
+
+    #lista-ml li {
+      align-items: center !important;
+    }
+  </style>
+
+
+  
+<style id="usuario-activo-chip-uap">
+  .uap-user-chip {
+    position: fixed;
+    top: 18px;
+    right: 22px;
+    z-index: 99999;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 0 15px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.94);
+    color: #003C71;
+    border: 1px solid rgba(255,255,255,.72);
+    box-shadow: 0 12px 26px rgba(7,30,58,.18);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    backdrop-filter: blur(8px);
+  }
+
+  .uap-user-chip-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #55318f;
+    font-size: 14px;
+    font-weight: 1000;
+  }
+
+  .uap-user-chip strong {
+    color: #003C71;
+    font-weight: 1000;
+  }
+
+  .uap-user-chip button {
+    border: 0;
+    background: transparent;
+    color: #003C71;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 1000;
+    padding: 0 0 0 2px;
+  }
+
+  .uap-user-menu {
+    position: fixed;
+    top: 66px;
+    right: 22px;
+    z-index: 100000;
+    width: 220px;
+    display: none;
+    background: #ffffff;
+    color: #173b68;
+    border: 1px solid #d8e3ef;
+    border-radius: 14px;
+    box-shadow: 0 18px 38px rgba(7,30,58,.20);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+
+  .uap-user-menu.show {
+    display: block;
+  }
+
+  .uap-user-menu-info {
+    padding: 13px 15px;
+    border-bottom: 1px solid #e5edf6;
+    background: #f6faff;
+  }
+
+  .uap-user-menu-info b {
+    display: block;
+    color: #003C71;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+
+  .uap-user-menu-info span {
+    display: block;
+    color: #6d7e92;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  .uap-user-menu button {
+    width: 100%;
+    min-height: 42px;
+    border: 0;
+    background: #ffffff;
+    color: #003C71;
+    text-align: left;
+    padding: 0 15px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 900;
+    font-family: Arial, sans-serif;
+  }
+
+  .uap-user-menu button:hover {
+    background: #eef7ff;
+  }
+
+  @media print {
+    .uap-user-chip,
+    .uap-user-menu {
+      display: none !important;
+    }
+  }
+</style>
+
+
+<style id="fix-impresion-solo-informe-caja">
+  @media print {
+    html, body {
+      background: #ffffff !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    body * {
+      visibility: hidden !important;
+    }
+
+    #hoja-informe-cierre,
+    #hoja-informe-cierre * {
+      visibility: visible !important;
+    }
+
+    #hoja-informe-cierre {
+      display: block !important;
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 12mm !important;
+      box-shadow: none !important;
+      border: none !important;
+      background: #ffffff !important;
+    }
+
+    .no-print-zone,
+    .no-print-zone *,
+    .uap-user-chip,
+    .uap-user-menu {
+      visibility: hidden !important;
+      display: none !important;
+    }
+  }
+</style>
+
+</head>
+
+<body>
+
+<div class="uap-user-chip no-print-zone">
+  <span class="uap-user-chip-icon">♟</span>
+  <span>Bienvenido, <strong><?= nombreUsuarioActivo ?></strong></span>
+  <button type="button" onclick="toggleMenuUsuarioUap()">▼</button>
+</div>
+
+<div id="uap-user-menu" class="uap-user-menu no-print-zone">
+  <div class="uap-user-menu-info">
+    <b><?= nombreUsuarioActivo ?></b>
+    <span><?= rolUsuarioActivo ?></span>
+  </div>
+
+  <button type="button" onclick="cambiarUsuarioUap()">Cambiar usuario</button>
+</div>
+
+
+
+  
+  <section class="caja-hero caja-hero-reservas no-print-zone">
+    <div class="caja-hero-overlay"></div>
+
+    <div class="caja-hero-contenido">
+      <div class="caja-hero-top">
+        <div class="caja-hero-brand">
+          <img src="https://i.postimg.cc/fyMcjMcn/logo-uap.png" class="caja-hero-logo" alt="Logo UAP">
+          <div class="caja-hero-brand-divider"></div>
+          <div class="caja-hero-brand-text">
+            UNIVERSIDAD<br>ADVENTISTA<br>DEL PLATA
+          </div>
+        </div>
+
+        
+      </div>
+
+      <div class="caja-hero-center">
+        <h1>Control de Caja</h1>
+        <p>Sistema de control y cierre diario</p>
+      </div>
+
+      <div class="caja-hero-bottom">
+        <nav class="caja-nav-textual">
+          <a href="<?= getUrlConToken('Index', token) ?>" target="_top" class="caja-nav-link activo">
+            Inicio
+          </a>
+          <button type="button" class="caja-nav-link" onclick="limpiarFacturacion()">Limpiar todo</button>
+          <button type="button" class="caja-nav-link" onclick="imprimirInformeCierre()">Imprimir informe</button>
+          <button type="button" class="caja-nav-link" onclick="guardarCierreCajaFront()">Guardar cierre</button>
+        </nav>
+
+        
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- INFORME PARA IMPRIMIR -->
+  <div id="hoja-informe-cierre" style="
+    display:none;
+    background:white;
+    color:black;
+    font-family:Arial, sans-serif;
+    width:180mm;
+    margin:0 auto;
+    padding:15mm;
+    box-sizing:border-box;
+  ">
+
+    <div style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:2px solid #333;
+      margin-bottom:22px;
+      padding-bottom:10px;
+    ">
+      <div style="width:80px;background:#003C71;padding:5px;border-radius:6px;">
+        <img src="https://i.postimg.cc/Vvwqr0y9/Logo-UAP-2026-blanco.png" style="width:70px;">
+      </div>
+
+      <div style="text-align:center;flex:1;">
+        <h2 style="margin:0;">INFORME DE CIERRE DE CAJA</h2>
+        <p style="margin:6px 0;">Fecha: <span id="fecha-informe"></span></p>
+      </div>
+
+      <div style="width:80px;"></div>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:flex-start;">
+      <div style="flex:1;">
+        <img src="https://i.postimg.cc/m2rnXPrj/Gemini-Generated-Image-bc1qfobc1qfobc1q.png" style="height:60px; width:auto; object-fit:contain;">
+        <ul id="detalle-recibos" style="list-style:none;padding:0;margin:0;font-size:13px;"></ul>
+        <p style="text-align:right;margin-top:12px;font-size:16px;">
+          <b>
+            Total recibos válidos:
+            <span style="font-size:20px;">$<span id="val-recibos">0.00</span></span>
+          </b>
+        </p>
+      </div>
+
+      <div style="flex:1;">
+        <img src="https://i.postimg.cc/dtdCKB35/mercado-pago.png" style="height:60px; width:auto; object-fit:contain;">
+        <ul id="detalle-ml" style="list-style:none;padding:0;margin:0;font-size:13px;"></ul>
+        <p style="text-align:right;margin-top:12px;font-size:16px;">
+          <b>
+            Total Mercado Pago:
+            <span style="font-size:20px;">$<span id="val-ml">0.00</span></span>
+          </b>
+        </p>
+      </div>
+    </div>
+
+    <div style="
+      margin-top:22px;
+      padding-top:10px;
+      border-top:2px solid black;
+      display:flex;
+      justify-content:space-between;
+      font-size:17px;
+      font-weight:bold;
+    ">
+      <span>DIFERENCIA FINAL</span>
+      <span id="val-diferencia">$0.00</span>
+    </div>
+
+    <div style="
+      margin-top:28px;
+      border:1px solid #ccc;
+      background:#f8f9fa;
+      padding:12px;
+      font-size:14px;
+    ">
+      <h3 style="margin-top:0;border-bottom:1px solid #ccc;padding-bottom:6px;">💵 Efectivo informado</h3>
+      <ul id="detalle-efectivo" style="list-style:none;padding:0;margin:0;"></ul>
+      <p style="text-align:right;margin-bottom:0;margin-top:12px;font-size:18px;">
+        <b>
+          Total efectivo informado:
+          <span style="font-size:20px;">$<span id="val-efectivo">0.00</span></span>
+        </b>
+      </p>
+    </div>
+    <div style="
+      margin-top:18px;
+      border:1px solid #ccc;
+      background:#fff3e6;
+      padding:12px;
+      font-size:14px;
+    ">
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        border-bottom:1px solid #ccc;
+        padding-bottom:6px;
+        margin-bottom:8px;
+      ">
+        <span style="
+          width:12px;
+          height:12px;
+          background:#999;
+          display:inline-block;
+          border-radius:2px;
+        "></span>
+
+        <strong style="font-size:16px;">Transferencias</strong>
+
+        <img src="https://i.postimg.cc/s2Kb9TDd/Captura-de-pantalla-2026-06-08-164229.png"
+             style="height:32px;width:auto;object-fit:contain;margin-left:4px;">
+      </div>
+
+      <ul id="detalle-transfer" style="list-style:none;padding:0;margin:0;"></ul>
+
+      <p style="text-align:right;margin-bottom:0;margin-top:12px;font-size:18px;">
+        <b>
+          Total transferencias:
+          <span style="font-size:20px;">$<span id="val-transfer">0.00</span></span>
+        </b>
+      </p>
+    </div>
+    
+  </div>
+
+  <!-- PANTALLA DE CARGA -->
+  <div class="no-print-zone" style="max-width:1150px;margin:18px auto 90px;">
+    <div class="contenedor-tarjetas">
+
+      <!-- RECIBOS -->
+      <div class="caja-card recibos-card">
+        <div class="caja-card-header recibos-header">
+          <div class="caja-icono caja-icono-uap">
+            <img src="https://i.postimg.cc/fyMcjMcn/logo-uap.png" alt="Logo UAP">
+          </div>
+          <div>
+            <h2>Recibos físicos</h2>
+            <p>Control por numeración</p>
+          </div>
+        </div>
+
+        <div class="recibos-rango">
+          <input type="number" id="recibo-desde" placeholder="Desde N°">
+          <input type="number" id="recibo-hasta" placeholder="Hasta N°">
+        </div>
+
+        <input type="text"
+              id="recibos-anulados"
+              class="recibos-anulados-input"
+              placeholder="Anulados. Ej: 27503,27508">
+
+        <input type="text"
+              id="recibos-efectivo"
+              class="recibos-anulados-input"
+              placeholder="Efectivo. Ej: 27501,27504">
+        
+        <input type="text"
+              id="recibos-transfer"
+              class="recibos-anulados-input"
+              placeholder="Transferencias. Ej: 27506,27509">
+
+        <button type="button" class="btn-g" onclick="generarRecibosNumerados()">
+          🧾 Generar recibos
+        </button>
+
+        <ul id="lista-recibos" class="caja-lista"></ul>
+
+        <div class="caja-total">
+          <span>Total recibos válidos</span>
+          <strong>$<span id="total-recibos">0.00</span></strong>
+        </div>
+      </div>
+
+      <!-- MERCADO PAGO -->
+      <div class="caja-card mercado-pago-card">
+        <div class="caja-card-header mp-header">
+          <div class="caja-icono caja-icono-logo">
+            <img src="https://i.postimg.cc/KYZcxG53/Captura-de-pantalla-2026-05-15-103339.png" alt="Logo Mercado Pago">
+          </div>
+        </div>
+
+        <div class="fila-mercado-pago">
+          <input type="date" id="fecha-ml">
+
+          <input
+            type="number"
+            id="input-ml"
+            placeholder="Monto Mercado Pago $">
+
+          <button type="button" onclick="agregarItem('ml')">+</button>
+        </div>
+
+        <ul id="lista-ml" class="caja-lista"></ul>
+
+        <div class="caja-total">
+          <span>Total Mercado Pago</span>
+          <strong>$<span id="total-ml">0.00</span></strong>
+        </div>
+      </div>
+
+      <!-- TRANSFERENCIA GALICIA -->
+      <div class="caja-card galicia-card">
+        <div class="caja-card-header galicia-header">
+          <div class="caja-icono caja-icono-galicia">
+            <img src="https://i.postimg.cc/s2Kb9TDd/Captura-de-pantalla-2026-06-08-164229.png" alt="Logo Banco Galicia">
+          </div>
+        </div>
+
+        <div class="fila-transferencia">
+          <div class="fila-transferencia-superior">
+            <input type="text"
+                  id="transfer-recibo"
+                  placeholder="N° recibo">
+
+            <input type="date"
+                  id="fecha-transfer">
+          </div>
+
+          <div class="fila-transferencia-inferior">
+            <input type="number"
+                  id="input-transfer"
+                  placeholder="Valor transferido $">
+
+            <button type="button" onclick="agregarTransferencia()">+</button>
+          </div>
+        </div>
+
+        <ul id="lista-transfer" class="caja-lista"></ul>
+
+        <div class="caja-total">
+          <span>Total Transferencias</span>
+          <strong>$<span id="total-transfer">0.00</span></strong>
+        </div>
+      </div>
+
+      <!-- DIFERENCIA -->
+      <div class="caja-card diferencia-col-card no-print-zone">
+        <div class="caja-card-header diferencia-col-header">
+          <div class="caja-icono diferencia-col-icono">⚖️</div>
+          <div>
+            <h2>Diferencia</h2>
+            <p>Control automático</p>
+          </div>
+        </div>
+
+        <div class="diferencia-col-body">
+          <div class="diferencia-col-label">DIFERENCIA</div>
+          <div id="diferencia-total-visual" class="diferencia-col-monto">$0.00</div>
+          <div class="diferencia-col-ayuda">✅ Si es $0.00, la caja está perfecta</div>
+          <div class="diferencia-col-formula">recibos válidos - Mercado Pago</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="resumen-informe no-print-zone">
+    <div class="resumen-titulo">
+      <span></span>
+      <strong>INFORME</strong>
+      <span></span>
+    </div>
+
+    <div class="resumen-grid">
+      <div class="resumen-card">
+        <div class="resumen-icono resumen-icono-recibos">🧾</div>
+        <div>
+          <div class="resumen-label">RECIBOS VÁLIDOS</div>
+          <div class="resumen-monto">$<span id="resumen-recibos">0.00</span></div>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="resumen-icono resumen-icono-mp">🤝</div>
+        <div>
+          <div class="resumen-label">MERCADO PAGO</div>
+          <div class="resumen-monto">$<span id="resumen-ml">0.00</span></div>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="resumen-icono resumen-icono-efectivo">💵</div>
+        <div>
+          <div class="resumen-label">EFECTIVO</div>
+          <div class="resumen-monto">$<span id="resumen-efectivo">0.00</span></div>
+        </div>
+      </div>
+
+      <div class="resumen-card">
+        <div class="resumen-icono resumen-icono-transfer">🏦</div>
+        <div>
+          <div class="resumen-label">TRANSFERENCIAS</div>
+          <div class="resumen-monto">$<span id="resumen-transfer">0.00</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    :root {
+      --uap-azul: #003C71;
+      --uap-azul-oscuro: #002f5a;
+      --uap-azul-medio: #0b5ea8;
+      --uap-celeste: #dff2ff;
+      --uap-fondo: #eef4f9;
+      --uap-texto: #1d3759;
+      --uap-card-border: #d7e2ee;
+      --uap-sombra: 0 18px 34px rgba(7, 30, 58, 0.16);
+      --mp-fondo: #fff7d5;
+      --mp-borde: #e7cf72;
+      --galicia-fondo: #fff1e8;
+      --galicia-borde: #ffb98f;
+      --recibos-fondo: #eef7ff;
+      --recibos-borde: #cfe2f4;
+      --galicia-naranja: #fa6400;
+      --mp-amarillo: #ffe600;
+      --ok-verde: #1a9d55;
+      --danger: #e23b3b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--uap-texto);
+      background:
+        linear-gradient(180deg,
+          #f7fcff 0px,
+          #dff2ff 92px,
+          #87c8f3 172px,
+          #0b5ea8 255px,
+          #eef4f9 256px,
+          #eef4f9 100%);
+      background-attachment: fixed;
+    }
+
+    .uap-top {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 0 22px 26px;
+      position: relative;
+    }
+
+    .uap-hero {
+      min-height: 118px;
+      display: grid;
+      grid-template-columns: 430px 1fr 360px;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .uap-hero-left {
+      width: 430px;
+      height: 112px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 0 26px;
+      color: white;
+      background: linear-gradient(135deg, #0d6eb8 0%, #075699 45%, #003C71 100%);
+      border-bottom-right-radius: 70px;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 12px 26px rgba(0, 27, 60, 0.22);
+    }
+
+    .uap-hero-logo {
+      width: 108px;
+      height: auto;
+      display: block;
+      object-fit: contain;
+      filter: none;
+    }
+
+    .uap-hero-texto {
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.1;
+      color: #ffffff;
+    }
+
+    .uap-hero-title {
+      margin: 0;
+      text-align: center;
+      font-size: 54px;
+      font-weight: 1000;
+      letter-spacing: -1px;
+      color: #083f7a;
+      text-shadow: 0 2px 0 rgba(255,255,255,0.45);
+    }
+
+    .diferencia-top-card {
+      position: absolute;
+      top: 20px;
+      right: 22px;
+      width: 360px;
+      min-height: 132px;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+      border: 1px solid #c9d8e8;
+      border-radius: 20px;
+      box-shadow: 0 14px 28px rgba(7, 30, 58, 0.18);
+      z-index: 2;
+    }
+
+    .diferencia-top-icono {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #eaf1fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .diferencia-top-label {
+      font-size: 15px;
+      font-weight: 1000;
+      color: var(--uap-azul);
+      letter-spacing: .4px;
+    }
+
+    .diferencia-top-monto {
+      font-size: 38px;
+      font-weight: 1000;
+      color: #1654b5;
+      line-height: 1;
+      margin: 4px 0;
+    }
+
+    .diferencia-top-formula {
+      font-size: 12px;
+      color: #35567e;
+    }
+
+    .diferencia-top-ayuda {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--ok-verde);
+      font-weight: 800;
+    }
+
+    .nav-bar-modern {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+      padding-right: 380px;
+    }
+
+    .btn-nav {
+      min-width: 205px;
+      padding: 14px 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.30);
+      text-align: center;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 1000;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(8, 30, 58, 0.18);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+
+    .btn-nav:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow: 0 10px 22px rgba(8, 30, 58, 0.24);
+    }
+
+    .btn-nav-home {
+      background: linear-gradient(180deg, #ffffff 0%, #eef5fb 100%);
+      color: #1253a1;
+    }
+
+    .btn-nav-danger {
+      background: linear-gradient(180deg, #ff5b5b 0%, #d62828 100%);
+      color: #ffffff;
+    }
+
+    .btn-nav-success {
+      background: linear-gradient(180deg, #39c86a 0%, #15994c 100%);
+      color: #ffffff;
+    }
+
+    .btn-nav-primary {
+      background: linear-gradient(180deg, #0f66c0 0%, #083f7a 100%);
+      color: #ffffff;
+    }
+
+    .no-print-zone {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .contenedor-tarjetas {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(315px, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .caja-card {
+      color: var(--uap-texto);
+      border-radius: 26px;
+      padding: 20px;
+      box-shadow: var(--uap-sombra);
+      border: 1px solid var(--uap-card-border);
+      min-height: 255px;
+    }
+
+    .recibos-card {
+      background: linear-gradient(180deg, #f8fcff 0%, var(--recibos-fondo) 100%);
+      border-color: var(--recibos-borde);
+    }
+
+    .mercado-pago-card {
+      background: linear-gradient(180deg, #fffdf1 0%, var(--mp-fondo) 100%);
+      border-color: var(--mp-borde);
+    }
+
+    .galicia-card {
+      background: linear-gradient(180deg, #fff8f2 0%, var(--galicia-fondo) 100%);
+      border-color: var(--galicia-borde);
+    }
+
+    .caja-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 3px solid var(--uap-azul);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .recibos-header,
+    .mp-header,
+    .galicia-header {
+      justify-content: flex-start;
+    }
+
+    .caja-card-header h2 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--uap-azul);
+      font-weight: 1000;
+    }
+
+    .caja-card-header p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .caja-icono-uap,
+    .caja-icono-logo,
+    .caja-icono-galicia {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .caja-icono-uap img {
+      width: 96px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .caja-icono-logo img {
+      width: 116px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .caja-icono-galicia img {
+      width: 160px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .recibos-rango {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    input,
+    button {
+      font-family: inherit;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid #c5d0db;
+      background: #ffffff;
+      font-size: 15px;
+      color: var(--uap-texto);
+      outline: none;
+      box-shadow: inset 0 1px 1px rgba(0,0,0,0.03);
+    }
+
+    input:focus {
+      border-color: #4d90fe;
+      box-shadow: 0 0 0 3px rgba(77, 144, 254, 0.12);
+    }
+
+    .recibos-anulados-input {
+      margin-top: 10px;
+    }
+
+    .btn-g {
+      width: 100%;
+      height: 48px;
+      margin-top: 14px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #17c260 0%, #0ca34d 100%);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 1000;
+      letter-spacing: 0.2px;
+      box-shadow: 0 12px 22px rgba(17, 184, 91, 0.28);
+      cursor: pointer;
+    }
+
+    .fila-mercado-pago,
+    .fila-transferencia-superior,
+    .fila-transferencia-inferior {
+      display: grid;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .fila-mercado-pago {
+      grid-template-columns: 140px 1fr 48px;
+      margin-bottom: 14px;
+    }
+
+    .fila-transferencia {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .fila-transferencia-superior {
+      grid-template-columns: 1fr 1.2fr;
+    }
+
+    .fila-transferencia-inferior {
+      grid-template-columns: 1fr 48px;
+    }
+
+    .fila-mercado-pago button,
+    .fila-transferencia button {
+      width: 48px;
+      height: 46px;
+      border: none;
+      border-radius: 14px;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    }
+
+    .mercado-pago-card .fila-mercado-pago button {
+      background: linear-gradient(180deg, #ffd640 0%, #f3b90a 100%);
+      color: #ffffff;
+    }
+
+    .galicia-card .fila-transferencia button {
+      background: linear-gradient(180deg, #ff8d2a 0%, var(--galicia-naranja) 100%);
+      color: #ffffff;
+    }
+
+    .caja-lista {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 16px;
+      max-height: 190px;
+      overflow-y: auto;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.68);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .caja-lista li {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 10px 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+    }
+
+    .caja-lista li:last-child {
+      border-bottom: 0;
+    }
+
+    .linea-valor {
+      flex: 1;
+      text-align: center;
+      font-weight: 800;
+      color: #111827;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .recibo-monto {
+      min-width: 100px;
+      max-width: 115px;
+      text-align: right !important;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+    }
+
+    .caja-total {
+      border-top: 3px solid var(--uap-azul);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--uap-azul);
+    }
+
+    .caja-total span {
+      font-weight: 1000;
+      font-size: 16px;
+      text-transform: uppercase;
+    }
+
+    .caja-total strong {
+      font-size: 24px;
+      font-weight: 1000;
+    }
+
+    .resumen-informe {
+      max-width: 1150px;
+      margin: -30px auto 32px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid #c9d8e8;
+      border-radius: 24px;
+      box-shadow: 0 16px 30px rgba(7, 30, 58, 0.13);
+      padding: 22px 24px;
+    }
+
+    .resumen-titulo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      color: var(--uap-azul);
+      font-size: 22px;
+      font-weight: 1000;
+      letter-spacing: .4px;
+      margin-bottom: 18px;
+    }
+
+    .resumen-titulo span {
+      width: 70px;
+      height: 3px;
+      background: var(--uap-azul);
+      display: block;
+      border-radius: 99px;
+    }
+
+    .resumen-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .resumen-card {
+      min-height: 112px;
+      border: 1px solid #d8e6f2;
+      border-radius: 14px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 14px;
+    }
+
+    .resumen-icono {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      font-size: 30px;
+    }
+
+    .resumen-icono-recibos { background: #eaf5ff; }
+    .resumen-icono-mp { background: #fff3c4; }
+    .resumen-icono-efectivo { background: #e6f8ee; }
+    .resumen-icono-transfer { background: #fff0e6; }
+
+    .resumen-label {
+      color: var(--uap-azul);
+      font-size: 13px;
+      font-weight: 1000;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .resumen-monto {
+      color: #1654b5;
+      font-size: 28px;
+      font-weight: 1000;
+      text-align: center;
+    }
+
+    @media (max-width: 1250px) {
+      .uap-hero {
+        grid-template-columns: 360px 1fr;
+      }
+
+      .uap-hero-left {
+        width: 360px;
+      }
+
+      .uap-hero-title {
+        font-size: 48px;
+      }
+
+      .diferencia-top-card {
+        position: static;
+        width: 100%;
+        max-width: 420px;
+        margin: 12px auto 0;
+      }
+
+      .nav-bar-modern {
+        padding-right: 0;
+      }
+
+      .contenedor-tarjetas {
+        grid-template-columns: repeat(2, minmax(315px, 1fr));
+      }
+
+      .resumen-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .uap-top {
+        padding: 0 14px 22px;
+      }
+
+      .uap-hero {
+        grid-template-columns: 1fr;
+        padding-top: 14px;
+        gap: 10px;
+      }
+
+      .uap-hero-left {
+        width: 100%;
+        border-bottom-right-radius: 36px;
+        height: auto;
+        padding: 18px 20px;
+      }
+
+      .uap-hero-title {
+        font-size: 38px;
+      }
+
+      .btn-nav {
+        width: 100%;
+      }
+
+      .contenedor-tarjetas {
+        grid-template-columns: 1fr;
+      }
+
+      .resumen-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .resumen-informe {
+        margin: 0 14px 28px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+      }
+
+      .uap-top,
+      .resumen-informe {
+        display: none !important;
+      }
+
+      .caja-card,
+      .btn-nav,
+      .uap-hero-left {
+        box-shadow: none !important;
+      }
+    }
+  
+    /* ==========================================================
+       HEADER CONTROL DE CAJA - FOTO UAP + MENÚ TEXTUAL
+       Reemplaza visual anterior del encabezado
+    ========================================================== */
+
+    body {
+      background: linear-gradient(180deg, #eef7ff 0%, #f8fbff 100%) !important;
+    }
+
+    .caja-hero {
+      position: relative;
+      min-height: 340px;
+      width: 100%;
+      overflow: hidden;
+      background-image: url("https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg");
+      background-size: cover;
+      background-position: center;
+      box-shadow: inset 0 -80px 110px rgba(0,0,0,.12);
+    }
+
+    .caja-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0, 39, 86, .98) 0%, rgba(0, 60, 113, .86) 34%, rgba(0, 60, 113, .52) 66%, rgba(0, 60, 113, .28) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.16) 100%);
+    }
+
+    .caja-hero-content {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 1760px);
+      min-height: 340px;
+      margin: 0 auto;
+      padding: 34px 44px 26px;
+      display: grid;
+      grid-template-columns: 360px minmax(420px, 1fr) 390px;
+      gap: 28px;
+      align-items: center;
+      color: #fff;
+    }
+
+    .caja-hero-brand {
+      align-self: start;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding-top: 18px;
+    }
+
+    .caja-hero-logo {
+      width: 148px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.22));
+    }
+
+    .caja-hero-separador {
+      width: 2px;
+      height: 72px;
+      background: rgba(255,255,255,.65);
+      border-radius: 999px;
+    }
+
+    .caja-hero-nombre {
+      color: #fff;
+      font-size: 22px;
+      line-height: 1.15;
+      font-weight: 900;
+      text-shadow: 0 3px 12px rgba(0,0,0,.25);
+    }
+
+    .caja-hero-center {
+      text-align: center;
+      align-self: center;
+      margin-top: 28px;
+    }
+
+    .caja-hero-center h1 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 70px;
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: -1px;
+      text-shadow: 0 6px 20px rgba(0,0,0,.22);
+    }
+
+    .caja-hero-center p {
+      margin: 14px 0 0;
+      color: rgba(255,255,255,.92);
+      font-size: 26px;
+      font-weight: 700;
+      text-shadow: 0 3px 12px rgba(0,0,0,.24);
+    }
+
+    .caja-nav-textual {
+      margin-top: 42px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,.28);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 34px;
+      flex-wrap: wrap;
+    }
+
+    .caja-nav-link {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: rgba(255,255,255,.88);
+      text-decoration: none;
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 900;
+      padding: 8px 0;
+      cursor: pointer;
+      position: relative;
+      text-shadow: 0 2px 8px rgba(0,0,0,.25);
+      transition: color .12s ease, transform .12s ease;
+    }
+
+    .caja-nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -5px;
+      height: 3px;
+      border-radius: 999px;
+      background: #4aa3ff;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform .16s ease;
+    }
+
+    .caja-nav-link:hover {
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .caja-nav-link:hover::after,
+    .caja-nav-link.activo::after {
+      transform: scaleX(1);
+    }
+
+    .caja-nav-link.activo {
+      color: #ffffff;
+    }
+
+    .diferencia-top-card {
+      position: static !important;
+      justify-self: end;
+      align-self: start;
+      margin-top: 28px;
+      width: 390px;
+      min-height: 170px;
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 22px 24px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 24px;
+      box-shadow: 0 18px 36px rgba(0,0,0,.20);
+      color: #1d3759;
+    }
+
+    .diferencia-top-icono {
+      width: 64px !important;
+      height: 64px !important;
+      border-radius: 50%;
+      background: #eaf1fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px !important;
+    }
+
+    .diferencia-top-label {
+      font-size: 17px !important;
+      font-weight: 1000 !important;
+      color: #003C71 !important;
+      letter-spacing: .4px;
+    }
+
+    .diferencia-top-monto {
+      font-size: 52px !important;
+      font-weight: 1000 !important;
+      color: #1654b5 !important;
+      line-height: 1 !important;
+      margin: 4px 0 6px !important;
+    }
+
+    .diferencia-top-formula {
+      font-size: 14px !important;
+      color: #4b5e78 !important;
+      line-height: 1.3;
+    }
+
+    .diferencia-top-ayuda {
+      margin-top: 12px !important;
+      padding-top: 10px;
+      border-top: 1px solid #e3eaf2;
+      font-size: 15px !important;
+      color: #129247 !important;
+      font-weight: 900 !important;
+    }
+
+    /* desactivar header viejo */
+    .uap-top,
+    .uap-hero,
+    .nav-bar-modern {
+      display: none !important;
+    }
+
+    /* tarjetas más pegadas al hero, como en reservas */
+    .no-print-zone[style*="max-width:1150px"] {
+      max-width: 1280px !important;
+      margin-top: 58px !important;
+    }
+
+    .contenedor-tarjetas {
+      gap: 28px !important;
+    }
+
+    .resumen-informe {
+      max-width: 1280px !important;
+    }
+
+    @media (max-width: 1250px) {
+      .caja-hero-content {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        text-align: center;
+        padding: 28px 24px 30px;
+      }
+
+      .caja-hero-brand {
+        justify-content: center;
+        align-self: center;
+      }
+
+      .caja-hero-center {
+        margin-top: 8px;
+      }
+
+      .caja-hero-center h1 {
+        font-size: 54px;
+      }
+
+      .diferencia-top-card {
+        justify-self: center;
+        width: min(100%, 430px);
+        margin-top: 18px;
+      }
+
+      .caja-nav-textual {
+        margin-top: 26px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .caja-hero {
+        min-height: 420px;
+      }
+
+      .caja-hero-content {
+        min-height: 420px;
+        padding: 22px 14px;
+      }
+
+      .caja-hero-brand {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .caja-hero-logo {
+        width: 120px;
+      }
+
+      .caja-hero-separador {
+        height: 52px;
+      }
+
+      .caja-hero-nombre {
+        font-size: 18px;
+      }
+
+      .caja-hero-center h1 {
+        font-size: 40px;
+      }
+
+      .caja-hero-center p {
+        font-size: 18px;
+      }
+
+      .caja-nav-textual {
+        gap: 16px;
+      }
+
+      .diferencia-top-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .diferencia-top-icono {
+        margin: 0 auto;
+      }
+    }
+
+    @media print {
+      .caja-hero {
+        display: none !important;
+      }
+    }
+
+
+    /* ==========================================================
+       HEADER ESTILO RESERVAS PARA CONTROL DE CAJA
+    ========================================================== */
+
+    body {
+      background: linear-gradient(180deg, #edf5fb 0%, #f8fbff 100%) !important;
+    }
+
+    .caja-hero-reservas {
+      position: relative;
+      width: calc(100vw - 16px);
+      max-width: none;
+      min-height: 330px;
+      margin: 8px 8px 0;
+      overflow: hidden;
+      border-radius: 0 0 26px 26px;
+      background: url("https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg") center/cover no-repeat;
+      box-shadow: 0 12px 32px rgba(9, 54, 101, .14);
+    }
+
+    .caja-hero-reservas .caja-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0, 48, 103, .94) 0%, rgba(0, 60, 113, .82) 32%, rgba(0, 60, 113, .42) 68%, rgba(255,255,255,.10) 100%),
+        linear-gradient(180deg, rgba(255,255,255,.02) 0%, rgba(255,255,255,.02) 100%);
+    }
+
+    .caja-hero-contenido {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      min-height: 330px;
+      padding: 22px 30px 20px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      color: #fff;
+    }
+
+    .caja-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .caja-hero-brand {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+    }
+
+    .caja-hero-logo {
+      width: 98px;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
+    }
+
+    .caja-hero-brand-divider {
+      width: 2px;
+      height: 56px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.65);
+      margin-top: 4px;
+    }
+
+    .caja-hero-brand-text {
+      color: #fff;
+      font-size: 17px;
+      line-height: 1.05;
+      font-weight: 1000;
+      letter-spacing: .3px;
+      text-shadow: 0 3px 12px rgba(0,0,0,.22);
+      margin-top: 2px;
+    }
+
+    .caja-hero-user {
+      background: rgba(255,255,255,.94);
+      color: #003C71;
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 18px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(0,0,0,.14);
+      white-space: nowrap;
+    }
+
+    .caja-hero-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-top: 4px;
+    }
+
+    .caja-hero-center h1 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 64px;
+      line-height: .98;
+      font-weight: 1000;
+      letter-spacing: -1px;
+      text-shadow: 0 6px 20px rgba(0,0,0,.18);
+    }
+
+    .caja-hero-center p {
+      margin: 12px 0 0;
+      color: rgba(255,255,255,.94);
+      font-size: 18px;
+      font-weight: 700;
+      text-shadow: 0 2px 8px rgba(0,0,0,.20);
+    }
+
+    .caja-hero-bottom {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      align-items: end;
+      gap: 20px;
+      border-top: 1px solid rgba(255,255,255,.24);
+      padding-top: 16px;
+    }
+
+    .caja-nav-textual {
+      margin: 0;
+      padding: 0;
+      border-top: none !important;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 34px;
+      flex-wrap: wrap;
+    }
+
+    .caja-nav-link {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: rgba(255,255,255,.90);
+      text-decoration: none;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 8px 0;
+      cursor: pointer;
+      position: relative;
+      text-shadow: 0 2px 8px rgba(0,0,0,.22);
+      transition: color .12s ease, transform .12s ease;
+    }
+
+    .caja-nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      height: 3px;
+      border-radius: 99px;
+      background: #4aa3ff;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform .16s ease;
+    }
+
+    .caja-nav-link:hover {
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .caja-nav-link:hover::after,
+    .caja-nav-link.activo::after {
+      transform: scaleX(1);
+    }
+
+    .caja-nav-link.activo {
+      color: #ffffff;
+    }
+
+    .diferencia-top-card {
+      position: static !important;
+      width: 100%;
+      min-height: 108px;
+      margin: 0 !important;
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 14px;
+      align-items: center;
+      background: rgba(255,255,255,.95);
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 22px;
+      box-shadow: 0 14px 28px rgba(0,0,0,.16);
+      color: #1d3759;
+      text-align: left;
+    }
+
+    .diferencia-top-icono {
+      width: 52px !important;
+      height: 52px !important;
+      border-radius: 50%;
+      background: #edf4ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px !important;
+      margin: 0 !important;
+    }
+
+    .diferencia-top-label {
+      font-size: 14px !important;
+      color: #003C71 !important;
+      font-weight: 1000 !important;
+      letter-spacing: .3px;
+    }
+
+    .diferencia-top-monto {
+      font-size: 42px !important;
+      line-height: 1 !important;
+      color: #1654b5 !important;
+      font-weight: 1000 !important;
+      margin: 3px 0 4px !important;
+    }
+
+    .diferencia-top-formula {
+      font-size: 13px !important;
+      color: #4c607a !important;
+      line-height: 1.25;
+    }
+
+    .diferencia-top-ayuda {
+      margin-top: 8px !important;
+      padding-top: 8px;
+      border-top: 1px solid #e5edf5;
+      font-size: 13px !important;
+      color: #129247 !important;
+      font-weight: 900 !important;
+    }
+
+    /* desactivar header viejo */
+    .uap-top,
+    .uap-hero,
+    .nav-bar-modern {
+      display: none !important;
+    }
+
+    /* tarjetas más pegadas al hero, como en reservas */
+    .no-print-zone[style*="max-width:1150px"] {
+      max-width: 1280px !important;
+      margin-top: -6px !important;
+    }
+
+    .contenedor-tarjetas {
+      gap: 28px !important;
+    }
+
+    .resumen-informe {
+      max-width: 1280px !important;
+      margin-top: 18px !important;
+    }
+
+    @media (max-width: 1280px) {
+      .caja-hero-bottom {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .diferencia-top-card {
+        max-width: 430px;
+        justify-self: center;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .caja-hero-reservas {
+        min-height: 420px;
+      }
+
+      .caja-hero-contenido {
+        min-height: 420px;
+        padding: 18px 16px 18px;
+      }
+
+      .caja-hero-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .caja-hero-brand {
+        gap: 12px;
+      }
+
+      .caja-hero-logo {
+        width: 88px;
+      }
+
+      .caja-hero-brand-text {
+        font-size: 15px;
+      }
+
+      .caja-hero-user {
+        align-self: flex-end;
+        font-size: 14px;
+      }
+
+      .caja-hero-center h1 {
+        font-size: 42px;
+      }
+
+      .caja-nav-textual {
+        gap: 16px 22px;
+        justify-content: flex-start;
+      }
+
+      .diferencia-top-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .diferencia-top-icono {
+        margin: 0 auto !important;
+      }
+    }
+
+    @media print {
+      .caja-hero-reservas {
+        display: none !important;
+      }
+    }
+
+</style>
+
+<script>
+let sumaRecibos = 0;
+let sumaML = 0;
+let sumaEfectivo = 0;
+let sumaTransfer = 0;
+
+function normalizarNumero(valor) {
+  let texto = String(valor || "").trim();
+
+  // Soporta "$1.200,50", "1200.50", "1200,50" y texto pegado desde pantalla.
+  texto = texto.replace(/\$/g, "").replace(/\s/g, "");
+
+  if (texto.includes(",") && texto.includes(".")) {
+    texto = texto.replace(/\./g, "").replace(",", ".");
+  } else {
+    texto = texto.replace(",", ".");
+  }
+
+  return parseFloat(texto);
+}
+
+function obtenerReferencias(tipo) {
+  if (tipo === "recibo") {
+    return {
+      input: document.getElementById("input-recibo"),
+      lista: document.getElementById("lista-recibos")
+    };
+  }
+
+  if (tipo === "ml") {
+    return {
+      input: document.getElementById("input-ml"),
+      lista: document.getElementById("lista-ml")
+    };
+  }
+
+  return {
+    input: document.getElementById("input-efectivo"),
+    lista: document.getElementById("lista-efectivo")
+  };
+}
+
+function agregarItem(tipo) {
+
+  const refs = obtenerReferencias(tipo);
+  const monto = normalizarNumero(refs.input.value);
+
+  if (isNaN(monto) || monto <= 0) {
+    alert("Ingresá un monto válido");
+    refs.input.focus();
+    return;
+  }
+
+  let extra = null;
+
+  if (tipo === "ml") {
+    extra = {
+      fecha: document.getElementById("fecha-ml").value
+    };
+  }
+
+  crearLinea(tipo, monto, refs.lista, extra);
+
+  refs.input.value = "";
+
+  setTimeout(() => {
+    refs.input.focus();
+  }, 50);
+}
+
+function crearLinea(tipo, monto, lista, extra = null) {
+
+  const li = document.createElement("li");
+
+  li.dataset.valor = monto;
+
+  if (tipo === "ml") {
+    li.dataset.fecha = extra?.fecha || document.getElementById("fecha-ml").value || "";
+  }
+
+  if (tipo === "ml") {
+    li.innerHTML = `
+      <input type="date"
+             class="fecha-ml-editable"
+             value="${li.dataset.fecha}"
+             onchange="editarFechaML(this)"
+             style="
+               width:105px;
+               font-size:11px;
+               border:1px solid #d1d5db;
+               border-radius:6px;
+               padding:4px;
+               background:white;
+             ">
+
+      <span
+        class="linea-valor mercado-monto"
+        contenteditable="true"
+        onfocus="seleccionarContenido(this)"
+        onblur="editarItem(this)"
+        onkeydown="manejarEnterEdicion(e, this)"
+        title="Hacé clic para editar el monto"
+        style="
+          font-weight:bold;
+          flex:1;
+          min-width:86px;
+          text-align:right;
+          padding:5px 8px;
+          border:1px solid #d1d5db;
+          border-radius:6px;
+          background:white;
+          cursor:text;
+        ">
+        ${monto.toFixed(2)}
+      </span>
+
+      <button onclick="eliminarItem(this)">
+        ❌
+      </button>
+    `;
+  } else {
+    li.innerHTML = `
+      <span style="flex:1; font-weight:bold;">
+        $${monto.toFixed(2)}
+      </span>
+
+      <button onclick="eliminarItem(this)">
+        ❌
+      </button>
+    `;
+  }
+
+  if (tipo === "ml") {
+    lista.prepend(li);
+  } else {
+    lista.appendChild(li);
+  }
+
+  recalcularTotales();
+}
+
+function editarFechaML(input) {
+  const li = input.closest("li");
+  li.dataset.fecha = input.value;
+}
+
+function generarRecibosNumerados() {
+  const desde = parseInt(document.getElementById("recibo-desde").value);
+  const hasta = parseInt(document.getElementById("recibo-hasta").value);
+  const anuladosTexto = document.getElementById("recibos-anulados").value;
+  const efectivoTexto = document.getElementById("recibos-efectivo").value;
+  const transferTexto = document.getElementById("recibos-transfer").value;
+
+  if (!desde || !hasta || hasta < desde) {
+    alert("Revisá el número inicial y final.");
+    return;
+  }
+
+  const anulados = anuladosTexto
+    .split(",")
+    .map(n => n.trim())
+    .filter(Boolean)
+    .map(n => parseInt(n));
+
+  const recibosEfectivo = efectivoTexto
+    .split(",")
+    .map(n => n.trim())
+    .filter(Boolean)
+    .map(n => parseInt(n));
+  const recibosTransfer = transferTexto
+    .split(",")
+    .map(n => n.trim())
+    .filter(Boolean)
+    .map(n => parseInt(n));
+
+  const lista = document.getElementById("lista-recibos");
+  lista.innerHTML = "";
+
+  for (let n = desde; n <= hasta; n++) {
+    const esAnulado = anulados.includes(n);
+    const esEfectivo = recibosEfectivo.includes(n);
+    const esTransfer = recibosTransfer.includes(n);
+
+    crearLineaReciboNumerado(n, esAnulado, esEfectivo, esTransfer);
+  }
+
+  recalcularTotales();
+
+  const primerMonto = document.querySelector("#lista-recibos li[data-anulado='false'] .recibo-monto");
+
+  if (primerMonto) {
+    primerMonto.focus();
+    seleccionarContenido(primerMonto);
+  }
+}
+
+function crearLineaReciboNumerado(numero, anulado, efectivo, transfer) {
+  const lista = document.getElementById("lista-recibos");
+
+  const li = document.createElement("li");
+  li.dataset.tipo = "recibo";
+  li.dataset.numero = numero;
+  li.dataset.anulado = anulado ? "true" : "false";
+  li.dataset.efectivo = efectivo ? "true" : "false";
+  li.dataset.transfer = transfer ? "true" : "false";
+  li.dataset.valor = "0";
+
+  let estadoTexto = "";
+  let estadoColor = "";
+
+  if (anulado) {
+    estadoTexto = "ANULADO";
+    estadoColor = "#c62828";
+  } else if (efectivo) {
+    estadoTexto = "EFECTIVO";
+    estadoColor = "#2e7d32";
+  } else if (transfer) {
+    estadoTexto = "TRANSFER";
+    estadoColor = "#f58220";
+  }
+
+  li.innerHTML = `
+    <span style="font-weight:900;color:#003C71;min-width:70px;">
+      ${formatearNumeroRecibo(numero)}
+    </span>
+
+    <span class="linea-valor recibo-monto ${anulado ? "recibo-anulado" : ""}"
+          contenteditable="${anulado ? "false" : "true"}"
+          onfocus="seleccionarContenido(this)"
+          onblur="editarItem(this)"
+          onkeydown="manejarEnterRecibo(event, this)">
+      0.00
+    </span>
+
+    <span style="
+      min-width:80px;
+      font-size:12px;
+      font-weight:800;
+      text-align:center;
+      color:${estadoColor};
+    ">
+      ${estadoTexto}
+    </span>
+  `;
+
+  lista.appendChild(li);
+}
+
+function formatearFecha(fechaISO) {
+
+  if (!fechaISO) return "";
+
+  const p = fechaISO.split("-");
+
+  return `${p[2]}/${p[1]}/${p[0]}`;
+}
+function formatearNumeroRecibo(numero) {
+  return String(numero).padStart(6, "0");
+}
+
+function insertarLineaDebajo(btn, tipo) {
+  const liActual = btn.closest("li");
+  const valorTexto = prompt("Ingresá el monto:");
+
+  if (valorTexto === null) return;
+
+  const monto = normalizarNumero(valorTexto);
+
+  if (isNaN(monto) || monto <= 0) {
+    alert("Monto inválido");
+    return;
+  }
+
+  const lista = obtenerReferencias(tipo).lista;
+  crearLinea(tipo, monto, lista, liActual);
+}
+
+function manejarEnterEdicion(e, span) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    span.blur();
+  }
+}
+
+function seleccionarContenido(el) {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function manejarEnterRecibo(e, span) {
+  if (e.key !== "Enter") return;
+
+  e.preventDefault();
+
+  editarItem(span);
+
+  const liActual = span.closest("li");
+  let siguiente = liActual.nextElementSibling;
+
+  while (siguiente && siguiente.dataset.anulado === "true") {
+    siguiente = siguiente.nextElementSibling;
+  }
+
+  if (siguiente) {
+    const siguienteMonto = siguiente.querySelector(".recibo-monto");
+    siguienteMonto.focus();
+    seleccionarContenido(siguienteMonto);
+  } else {
+    document.getElementById("input-ml").focus();
+  }
+}
+function enterAgregar(e, tipo) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    agregarItem(tipo);
+  }
+}
+
+function editarItem(span) {
+  const li = span.closest("li");
+  const nuevoValor = normalizarNumero(span.innerText);
+
+  if (isNaN(nuevoValor) || nuevoValor <= 0) {
+    alert("Valor inválido");
+    span.innerText = normalizarNumero(li.dataset.valor).toFixed(2);
+    return;
+  }
+
+  li.dataset.valor = nuevoValor;
+  span.innerText = nuevoValor.toFixed(2);
+  recalcularTotales();
+}
+
+function eliminarItem(btn) {
+  btn.closest("li").remove();
+  recalcularTotales();
+}
+
+function recalcularTotales() {
+  sumaRecibos = 0;
+  sumaML = 0;
+  sumaEfectivo = 0;
+  sumaTransfer = 0;
+
+  document.querySelectorAll("#lista-recibos li").forEach(li => {
+    const anulado = li.dataset.anulado === "true";
+    const efectivo = li.dataset.efectivo === "true";
+    const transfer = li.dataset.transfer === "true";
+    const valor = normalizarNumero(li.dataset.valor) || 0;
+
+    if (!anulado) {
+      sumaRecibos += valor;
+
+      if (efectivo) {
+        sumaEfectivo += valor;
+      }
+
+      // Si está marcado como transferencia, solo se etiqueta en recibos.
+      // El total de transferencias se toma desde la tarjeta Galicia.
+    }
+  });
+
+  document.querySelectorAll("#lista-ml li").forEach(li => {
+    sumaML += normalizarNumero(li.dataset.valor) || 0;
+  });
+
+  document.querySelectorAll("#lista-transfer li").forEach(li => {
+    sumaTransfer += normalizarNumero(li.dataset.valor) || 0;
+  });
+
+  document.getElementById("total-recibos").innerText = sumaRecibos.toFixed(2);
+  document.getElementById("total-ml").innerText = sumaML.toFixed(2);
+
+  const resumenRecibos = document.getElementById("resumen-recibos");
+  if (resumenRecibos) resumenRecibos.innerText = sumaRecibos.toFixed(2);
+
+  const resumenML = document.getElementById("resumen-ml");
+  if (resumenML) resumenML.innerText = sumaML.toFixed(2);
+
+  const resumenEfectivo = document.getElementById("resumen-efectivo");
+  if (resumenEfectivo) resumenEfectivo.innerText = sumaEfectivo.toFixed(2);
+
+  const resumenTransfer = document.getElementById("resumen-transfer");
+  if (resumenTransfer) resumenTransfer.innerText = sumaTransfer.toFixed(2);
+
+  const totalTransferEl = document.getElementById("total-transfer");
+  if (totalTransferEl) {
+    totalTransferEl.innerText = sumaTransfer.toFixed(2);
+  }
+
+  const totalEfectivoEl = document.getElementById("total-efectivo");
+  if (totalEfectivoEl) {
+    totalEfectivoEl.innerText = sumaEfectivo.toFixed(2);
+  }
+
+  calcularDiferenciaCaja();
+}
+
+function calcularDiferenciaCaja() {
+  // IMPORTANTE:
+  // La diferencia NO resta transferencias.
+  // Así queda representado lo que NO entró por Mercado Pago:
+  // efectivo + transferencias / Galicia.
+  const diferencia = sumaRecibos - sumaML;
+  const texto = "$" + diferencia.toFixed(2);
+
+  const diferenciaVieja = document.getElementById("diferencia-total");
+  const diferenciaVisual = document.getElementById("diferencia-total-visual");
+  const diferenciaInforme = document.getElementById("val-diferencia");
+
+  if (diferenciaVieja) {
+    diferenciaVieja.innerText = texto;
+    diferenciaVieja.style.color = diferencia === 0 ? "#1654b5" : "#c75b12";
+  }
+
+  if (diferenciaVisual) {
+    diferenciaVisual.innerText = texto;
+    diferenciaVisual.style.color = "#ffffff";
+  }
+
+  if (diferenciaInforme) {
+    diferenciaInforme.innerText = texto;
+  }
+}
+
+function limpiarFacturacion() {
+  if (!confirm("¿Seguro que querés limpiar todo?")) return;
+
+  const listaRecibos = document.getElementById("lista-recibos");
+  if (listaRecibos) listaRecibos.innerHTML = "";
+
+  const listaML = document.getElementById("lista-ml");
+  if (listaML) listaML.innerHTML = "";
+
+  const listaTransfer = document.getElementById("lista-transfer");
+  if (listaTransfer) listaTransfer.innerHTML = "";
+
+  const campos = [
+    "recibo-desde",
+    "recibo-hasta",
+    "recibos-anulados",
+    "recibos-efectivo",
+    "recibos-transfer",
+    "input-ml",
+    "transfer-recibo",
+    "input-transfer"
+  ];
+
+  campos.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  const fechaML = document.getElementById("fecha-ml");
+  if (fechaML) fechaML.valueAsDate = new Date();
+
+  const fechaTransfer = document.getElementById("fecha-transfer");
+  if (fechaTransfer) fechaTransfer.valueAsDate = new Date();
+
+  recalcularTotales();
+}
+
+function imprimirInformeCierre() {
+  document.getElementById("fecha-informe").innerText = new Date().toLocaleDateString();
+
+  const detalleRec = document.getElementById("detalle-recibos");
+  const detalleML = document.getElementById("detalle-ml");
+  const detalleEfectivo = document.getElementById("detalle-efectivo");
+  const detalleTransfer = document.getElementById("detalle-transfer");
+
+  detalleRec.innerHTML = "";
+  detalleML.innerHTML = "";
+  detalleEfectivo.innerHTML = "";
+  detalleTransfer.innerHTML = "";
+
+  document.querySelectorAll("#lista-recibos li").forEach((li, index) => {
+    const valor = normalizarNumero(li.dataset.valor) || 0;
+    const numero = li.dataset.numero || "";
+    const anulado = li.dataset.anulado === "true";
+    const efectivo = li.dataset.efectivo === "true";
+    const transfer = li.dataset.transfer === "true";
+
+    let estadoTexto = "";
+    let estadoColor = "";
+
+    if (anulado) {
+      estadoTexto = "ANULADO";
+      estadoColor = "#c62828";
+    } else if (efectivo) {
+      estadoTexto = "EFECTIVO";
+      estadoColor = "#2e7d32";
+    } else if (transfer) {
+      estadoTexto = "TRANSFER";
+      estadoColor = "#f58220";
+    }
+
+    detalleRec.innerHTML += `
+      <li style="
+        border-bottom:1px solid #eee;
+        padding:6px 0;
+        font-size:14px;
+      ">
+
+        <div style="
+          display:grid;
+          grid-template-columns:35px 1fr 85px 90px;
+          gap:8px;
+          align-items:center;
+        ">
+
+          <span>#${index + 1}</span>
+
+          <span style="
+            font-weight:bold;
+            text-align:left;
+          ">
+            ${formatearNumeroRecibo(numero)}
+          </span>
+
+          <span style="
+            text-align:center;
+            color:${estadoColor};
+            font-weight:bold;
+            font-size:14px;
+          ">
+            ${estadoTexto}
+          </span>
+
+          <span style="
+            text-align:right;
+            font-weight:bold;
+            ${anulado ? "text-decoration:line-through;color:#888;" : ""}
+          ">
+            $${valor.toFixed(2)}
+          </span>
+
+        </div>
+
+      </li>
+    `;
+  });
+
+  const nodosML = Array.from(document.querySelectorAll("#lista-ml li")).reverse();
+  nodosML.forEach((li, index) => {
+
+    const valor = normalizarNumero(li.dataset.valor) || 0;
+    const fecha = li.dataset.fecha || "";
+
+    detalleML.innerHTML += `
+      <li style="
+        display:grid;
+        grid-template-columns:40px 1fr 90px;
+        gap:10px;
+        padding:5px 0;
+        border-bottom:1px solid #eee;
+        font-size:14px;
+        align-items:center;
+      ">
+
+        <span>#${index + 1}</span>
+
+        <span>
+          ${formatearFecha(fecha)}
+        </span>
+
+        <span style="
+          text-align:right;
+          font-weight:bold;
+        ">
+          $${valor.toFixed(2)}
+        </span>
+
+      </li>
+    `;
+  });
+
+  let contadorEfectivo = 0;
+
+  document.querySelectorAll("#lista-recibos li").forEach((li) => {
+    const anulado = li.dataset.anulado === "true";
+    const esEfectivo = li.dataset.efectivo === "true";
+
+    if (!anulado && esEfectivo) {
+      contadorEfectivo++;
+
+      const valor = normalizarNumero(li.dataset.valor) || 0;
+      const numero = li.dataset.numero || "";
+
+      detalleEfectivo.innerHTML += `
+        <li style="
+          display:flex;
+          justify-content:space-between;
+          border-bottom:1px solid #eee;
+          padding:6px 0;
+          font-size:14px;
+        ">
+          <span style="font-weight:600;">
+            #${contadorEfectivo} - Recibo ${formatearNumeroRecibo(numero)}
+          </span>
+
+          <span style="font-weight:bold;font-size:15px;">
+            $${valor.toFixed(2)}
+          </span>
+        </li>
+      `;
+    }
+});
+
+  if (detalleEfectivo.innerHTML === "") {
+    detalleEfectivo.innerHTML = `
+      <li style="color:#666;font-style:italic;padding:5px 0;">
+        No se informó efectivo.
+      </li>
+    `;
+  }
+  document.querySelectorAll("#lista-transfer li").forEach((li, index) => {
+    const recibo = li.dataset.recibo || "";
+    const fecha = li.dataset.fecha || "";
+    const valor = normalizarNumero(li.dataset.valor) || 0;
+
+    detalleTransfer.innerHTML += `
+      <li style="
+        display:grid;
+        grid-template-columns:40px 1fr 90px 95px;
+        gap:10px;
+        padding:6px 0;
+        border-bottom:1px solid #eee;
+        font-size:14px;
+        align-items:center;
+      ">
+        <span>#${index + 1}</span>
+
+        <span>Recibo ${formatearNumeroRecibo(recibo)}</span>
+
+        <span>${formatearFecha(fecha)}</span>
+
+        <span style="text-align:right;font-weight:bold;">
+          $${valor.toFixed(2)}
+        </span>
+      </li>
+    `;
+  });
+
+  if (detalleTransfer.innerHTML === "") {
+    detalleTransfer.innerHTML = `
+      <li style="color:#666;font-style:italic;padding:5px 0;">
+        No se informaron transferencias.
+      </li>
+    `;
+  }
+
+  document.getElementById("val-recibos").innerText = sumaRecibos.toFixed(2);
+  document.getElementById("val-ml").innerText = sumaML.toFixed(2);
+  document.getElementById("val-efectivo").innerText = sumaEfectivo.toFixed(2);
+  document.getElementById("val-transfer").innerText = sumaTransfer.toFixed(2);
+  document.getElementById("val-diferencia").innerText = "$" + (sumaRecibos - sumaML).toFixed(2);
+  document.getElementById("hoja-informe-cierre").style.display = "block";
+  window.print();
+  document.getElementById("hoja-informe-cierre").style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  const fechaML = document.getElementById("fecha-ml");
+  if (fechaML) {
+    fechaML.valueAsDate = new Date();
+  }
+
+  const inputML = document.getElementById("input-ml");
+  if (inputML) {
+    inputML.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        agregarItem("ml");
+      }
+    });
+  }
+
+  const fechaTransfer = document.getElementById("fecha-transfer");
+  if (fechaTransfer) {
+    fechaTransfer.valueAsDate = new Date();
+  }
+
+  const inputTransfer = document.getElementById("input-transfer");
+  if (inputTransfer) {
+    inputTransfer.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        agregarTransferencia();
+      }
+    });
+  }
+});
+
+function obtenerDatosCierreCaja() {
+  const recibos = [];
+  const mercadoPago = [];
+  const efectivo = [];
+  const transferencias = [];
+
+  document.querySelectorAll("#lista-recibos li").forEach((li, index) => {
+    recibos.push({
+      orden: index + 1,
+      numero: li.dataset.numero || "",
+      monto: normalizarNumero(li.dataset.valor) || 0,
+      anulado: li.dataset.anulado === "true",
+      efectivo: li.dataset.efectivo === "true",
+      transfer: li.dataset.transfer === "true",
+      medioPago: li.dataset.anulado === "true"
+        ? "Anulado"
+        : li.dataset.efectivo === "true"
+          ? "Efectivo"
+          : li.dataset.transfer === "true"
+            ? "Transferencia"
+            : "Mercado Pago"
+    });
+  });
+
+  const nodosMLParaGuardar = Array.from(document.querySelectorAll("#lista-ml li")).reverse();
+  nodosMLParaGuardar.forEach((li, index) => {
+    mercadoPago.push({
+      orden: index + 1,
+      fecha: li.dataset.fecha || "",
+      monto: normalizarNumero(li.dataset.valor) || 0
+    });
+  });
+  document.querySelectorAll("#lista-recibos li").forEach((li, index) => {
+    const anulado = li.dataset.anulado === "true";
+    const esEfectivo = li.dataset.efectivo === "true";
+
+    if (!anulado && esEfectivo) {
+      efectivo.push({
+        orden: index + 1,
+        numero: li.dataset.numero || "",
+        monto: normalizarNumero(li.dataset.valor) || 0
+      });
+    }
+  });
+  document.querySelectorAll("#lista-transfer li").forEach((li, index) => {
+    transferencias.push({
+      orden: index + 1,
+      recibo: li.dataset.recibo || "",
+      fecha: li.dataset.fecha || "",
+      monto: normalizarNumero(li.dataset.valor) || 0
+    });
+  });
+
+  return {
+    totalRecibos: sumaRecibos,
+    totalML: sumaML,
+    totalEfectivo: sumaEfectivo,
+    totalTransfer: sumaTransfer,
+    diferencia: sumaRecibos - sumaML,
+    recibos,
+    mercadoPago,
+    efectivo,
+    transferencias
+  };
+}
+
+function guardarCierreCajaFront() {
+  if (!confirm("¿Guardar este cierre de caja?")) return;
+
+  const datos = obtenerDatosCierreCaja();
+
+  google.script.run.withSuccessHandler(res => {
+    if (res === "OK") {
+      alert("✅ Cierre guardado correctamente");
+    } else {
+      alert(res);
+    }
+  }).guardarCierreCaja(datos);
+}
+function agregarTransferencia() {
+  const inputRecibo = document.getElementById("transfer-recibo");
+  const inputFecha = document.getElementById("fecha-transfer");
+  const inputValor = document.getElementById("input-transfer");
+  const lista = document.getElementById("lista-transfer");
+
+  const recibo = String(inputRecibo.value || "").trim();
+  const fecha = inputFecha.value;
+  const valor = normalizarNumero(inputValor.value);
+
+  if (!recibo) {
+    alert("Ingresá el número de recibo de la transferencia");
+    inputRecibo.focus();
+    return;
+  }
+
+  if (!fecha) {
+    alert("Ingresá la fecha de la transferencia");
+    inputFecha.focus();
+    return;
+  }
+
+  if (isNaN(valor) || valor <= 0) {
+    alert("Ingresá un valor transferido válido");
+    inputValor.focus();
+    return;
+  }
+
+  const li = document.createElement("li");
+  li.dataset.recibo = recibo;
+  li.dataset.fecha = fecha;
+  li.dataset.valor = valor;
+
+  li.innerHTML = `
+    <span style="font-weight:900;color:#003C71;min-width:70px;">
+      ${formatearNumeroRecibo(recibo)}
+    </span>
+
+    <span style="font-size:11px;color:#333;">
+      ${formatearFecha(fecha)}
+    </span>
+
+    <span style="font-weight:bold;flex:1;text-align:right;">
+      $${valor.toFixed(2)}
+    </span>
+
+    <button type="button" onclick="eliminarItem(this)">
+      ❌
+    </button>
+  `;
+
+  lista.appendChild(li);
+
+  inputRecibo.value = "";
+  inputValor.value = "";
+
+  recalcularTotales();
+
+  inputRecibo.focus();
+}
+
+</script>
+<script id="refuerzo-diferencia-efectivo-transferencia">
+document.addEventListener("DOMContentLoaded", function() {
+  if (typeof recalcularTotales === "function") {
+    recalcularTotales();
+  } else if (typeof calcularDiferenciaCaja === "function") {
+    calcularDiferenciaCaja();
+  }
+});
+</script>
+
+
+
+<script id="usuario-activo-script-uap">
+  function toggleMenuUsuarioUap() {
+    const menu = document.getElementById("uap-user-menu");
+    if (!menu) return;
+    menu.classList.toggle("show");
+  }
+
+  function cerrarMenuUsuarioUap(e) {
+    const chip = document.querySelector(".uap-user-chip");
+    const menu = document.getElementById("uap-user-menu");
+
+    if (!menu || !chip) return;
+
+    if (!chip.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.remove("show");
+    }
+  }
+
+  function cambiarUsuarioUap() {
+    const token = "<?= token ?>";
+
+    localStorage.removeItem("uap_token");
+    localStorage.removeItem("uap_usuario");
+    localStorage.removeItem("uap_nombre");
+    localStorage.removeItem("uap_rol");
+
+    google.script.run
+      .withSuccessHandler(function(url) {
+        window.top.location.href = url;
+      })
+      .withFailureHandler(function(err) {
+        alert("No se pudo cerrar sesión: " + (err.message || err));
+      })
+      .cerrarSesion(token);
+  }
+
+  document.addEventListener("click", cerrarMenuUsuarioUap);
+</script>
+
+</body>
+</html>

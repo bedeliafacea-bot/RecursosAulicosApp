@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Styles'); ?>
+
+  <style>
+    :root {
+      --uap-azul: #003C71;
+      --uap-azul-oscuro: #002f5a;
+      --uap-azul-medio: #0b5ea8;
+      --uap-celeste: #eaf6ff;
+      --uap-fondo: #f4f8fc;
+      --uap-texto: #173b68;
+      --uap-gris: #6d7e92;
+      --uap-borde: #d8e3ef;
+      --uap-sombra: 0 18px 38px rgba(12, 45, 82, .16);
+      --uap-sombra-suave: 0 10px 24px rgba(12, 45, 82, .10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--uap-texto);
+      background:
+        linear-gradient(180deg, #eef7ff 0%, #f8fbff 46%, #ffffff 100%);
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    #pantalla-inicio {
+      min-height: 100vh;
+      width: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(10, 93, 168, .10), transparent 32%),
+        linear-gradient(180deg, #eef7ff 0%, #ffffff 72%);
+    }
+
+    /* HERO / PORTADA */
+    .inicio-hero {
+      position: relative;
+      width: 100%;
+      min-height: 440px;
+      overflow: hidden;
+      background-image: url("https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg");
+      background-size: cover;
+      background-position: center;
+      border-radius: 0 0 42px 42px;
+      box-shadow: 0 14px 34px rgba(10, 45, 86, .16);
+    }
+
+    .inicio-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0, 46, 94, .96) 0%, rgba(0, 60, 113, .86) 36%, rgba(0, 60, 113, .62) 70%, rgba(0, 60, 113, .78) 100%),
+        linear-gradient(180deg, rgba(0, 23, 52, .24) 0%, rgba(0, 23, 52, .18) 100%);
+      z-index: 1;
+    }
+
+    .inicio-hero::after {
+      content: "";
+      position: absolute;
+      left: -4%;
+      right: -4%;
+      bottom: -72px;
+      height: 150px;
+      background: #f8fbff;
+      border-radius: 50% 50% 0 0;
+      z-index: 2;
+    }
+
+    .inicio-hero-contenido {
+      position: relative;
+      z-index: 3;
+      width: min(100%, 1500px);
+      min-height: 440px;
+      margin: 0 auto;
+      padding: 28px 42px 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      color: #fff;
+    }
+
+    .inicio-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .inicio-logo-bloque {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .logo-uap-inicio {
+      width: 120px;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.20));
+    }
+
+    .inicio-logo-separador {
+      width: 2px;
+      height: 58px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+    }
+
+    .inicio-logo-texto {
+      font-size: 18px;
+      line-height: 1.08;
+      font-weight: 1000;
+      letter-spacing: .25px;
+      text-transform: uppercase;
+      text-shadow: 0 3px 12px rgba(0,0,0,.20);
+    }
+
+    .inicio-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .inicio-user-text small {
+      display: block;
+      color: rgba(255,255,255,.72);
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .inicio-hero-centro {
+      align-self: center;
+      text-align: center;
+      padding-bottom: 74px;
+    }
+
+    .inicio-hero-centro h1 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 48px;
+      line-height: 1.08;
+      font-weight: 1000;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 7px 22px rgba(0,0,0,.20);
+    }
+
+    .inicio-hero-linea {
+      width: 56px;
+      height: 4px;
+      border-radius: 999px;
+      background: #4aa3ff;
+      margin: 18px auto 20px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.16);
+    }
+
+    .inicio-subtitulo {
+      font-size: 24px;
+      font-weight: 800;
+      color: rgba(255,255,255,.96);
+      text-shadow: 0 3px 12px rgba(0,0,0,.20);
+      margin-bottom: 14px;
+    }
+
+    .inicio-sistema {
+      font-size: 16px;
+      color: rgba(255,255,255,.82);
+      font-weight: 600;
+    }
+
+    /* TARJETAS PRINCIPALES */
+    .inicio-contenido {
+      position: relative;
+      z-index: 5;
+      width: min(100%, 1320px);
+      margin: -86px auto 0;
+      padding: 0 24px 42px;
+    }
+
+    .inicio-botones {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .inicio-card {
+      min-height: 210px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--uap-borde);
+      border-radius: 16px;
+      box-shadow: var(--uap-sombra);
+      text-decoration: none;
+      color: var(--uap-texto);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 28px 22px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .inicio-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(10,95,180,.045) 0%, transparent 45%);
+      opacity: 0;
+      transition: opacity .16s ease;
+    }
+
+    .inicio-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 22px 46px rgba(12, 45, 82, .20);
+      border-color: #b9d4ec;
+    }
+
+    .inicio-card:hover::before {
+      opacity: 1;
+    }
+
+    .inicio-icono {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #eef6ff 0%, #e8f1fb 100%);
+      border: 1px solid #dce9f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin-bottom: 22px;
+      box-shadow: inset 0 0 0 8px rgba(255,255,255,.38);
+      position: relative;
+      z-index: 1;
+    }
+
+    .inicio-card-titulo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #003C71;
+      font-size: 20px;
+      font-weight: 1000;
+      letter-spacing: .25px;
+      text-transform: uppercase;
+      line-height: 1.18;
+      min-height: 48px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .inicio-card-flecha {
+      margin-top: 18px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid #d7e4f1;
+      color: #003C71;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 1000;
+      background: #fff;
+      position: relative;
+      z-index: 1;
+      transition: background .16s ease, color .16s ease, transform .16s ease;
+    }
+
+    .inicio-card:hover .inicio-card-flecha {
+      background: #003C71;
+      color: #fff;
+      transform: translateX(2px);
+    }
+
+    /* MODAL DE PLANO SECUNDARIO */
+    .modal-plano-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 30, 60, 0.75);
+      backdrop-filter: blur(5px);
+      z-index: 999999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-plano-contenido {
+      position: relative;
+      width: 100%;
+      max-width: 1250px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+      animation: modalFadeIn 0.25s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .btn-cerrar-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      font-size: 20px;
+      font-weight: bold;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .btn-cerrar-modal:hover {
+      background: #bd2130;
+    }
+
+    /* CUMPLEAÑOS */
+    .inicio-cumpleanos {
+      margin-top: 28px;
+      background: rgba(255,255,255,.97);
+      border: 1px solid var(--uap-borde);
+      border-radius: 16px;
+      box-shadow: var(--uap-sombra-suave);
+      padding: 18px 26px 20px;
+      min-height: 150px;
+    }
+
+    .inicio-cumple-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 2px solid #d8e3ef;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      color: #003C71;
+      font-size: 18px;
+      font-weight: 1000;
+      letter-spacing: .2px;
+      text-transform: uppercase;
+    }
+
+    .inicio-cumple-header-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .inicio-cumple-icono {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #eef6ff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #dce9f6;
+    }
+
+    .inicio-cumple-ver {
+      border: 1px solid #d7e4f1;
+      background: #fff;
+      color: #003C71;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 900;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .inicio-cumple-body {
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6d7e92;
+      font-size: 15px;
+      text-align: center;
+    }
+
+    .sin-cumple {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #6d7e92;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .sin-cumple::before {
+      content: "🎂";
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #eef3f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      opacity: .78;
+    }
+
+    .cumple-item {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border-bottom: 1px solid #edf2f7;
+      color: var(--uap-texto);
+      font-weight: 800;
+    }
+
+    .cumple-item:last-child {
+      border-bottom: none;
+    }
+
+    .cumple-item b {
+      color: #003C71;
+    }
+
+    .inicio-footer {
+      width: min(100%, 1280px);
+      margin: 10px auto 0;
+      padding: 18px 24px 28px;
+      color: #6d7e92;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1150px) {
+      .inicio-botones {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .inicio-hero-centro h1 { font-size: 38px; }
+      .inicio-subtitulo { font-size: 20px; }
+      .inicio-card { min-height: 190px; }
+    }
+
+    @media (max-width: 760px) {
+      .inicio-hero { min-height: 500px; border-radius: 0 0 30px 30px; }
+      .inicio-hero::after { height: 100px; bottom: -52px; }
+      .inicio-hero-contenido { min-height: 500px; padding: 22px 18px 0; }
+      .inicio-topbar { flex-direction: column; align-items: flex-start; }
+      .inicio-logo-bloque { gap: 12px; }
+      .logo-uap-inicio { width: 92px; }
+      .inicio-logo-separador { height: 46px; }
+      .inicio-logo-texto { font-size: 14px; }
+      .inicio-user { align-self: flex-end; }
+      .inicio-hero-centro { padding-bottom: 110px; }
+      .inicio-hero-centro h1 { font-size: 28px; }
+      .inicio-subtitulo { font-size: 17px; }
+      .inicio-sistema { font-size: 14px; }
+      .inicio-contenido { margin-top: -98px; padding-left: 16px; padding-right: 16px; }
+      .inicio-botones { grid-template-columns: 1fr; gap: 18px; }
+      .inicio-card { min-height: 170px; padding: 28px 22px; }
+      .inicio-icono { width: 80px; height: 80px; font-size: 36px; margin-bottom: 18px; }
+      .inicio-cumpleanos { padding: 16px 18px; }
+      .inicio-cumple-header { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+
+  <style id="usuario-activo-chip-uap">
+    .uap-user-chip {
+      position: fixed;
+      top: 18px;
+      right: 22px;
+      z-index: 99999;
+      display: inline-flex !important;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 0 15px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.94);
+      color: #003C71;
+      border: 1px solid rgba(255,255,255,.72);
+      box-shadow: 0 12px 26px rgba(7,30,58,.18);
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      backdrop-filter: blur(8px);
+    }
+
+    .uap-user-chip-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #55318f;
+      font-size: 14px;
+      font-weight: 1000;
+    }
+
+    .uap-user-chip strong {
+      color: #003C71;
+      font-weight: 1000;
+    }
+
+    .uap-user-chip button {
+      border: 0;
+      background: transparent;
+      color: #003C71;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 1000;
+      padding: 0 0 0 2px;
+    }
+
+    .uap-user-menu {
+      position: fixed;
+      top: 66px;
+      right: 22px;
+      z-index: 100000;
+      width: 220px;
+      display: none;
+      background: #ffffff;
+      color: #173b68;
+      border: 1px solid #d8e3ef;
+      border-radius: 14px;
+      box-shadow: 0 18px 38px rgba(7,30,58,.20);
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    .uap-user-menu.show {
+      display: block;
+    }
+
+    .uap-user-menu-info {
+      padding: 13px 15px;
+      border-bottom: 1px solid #e5edf6;
+      background: #f6faff;
+    }
+
+    .uap-user-menu-info b {
+      display: block;
+      color: #003C71;
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .uap-user-menu-info span {
+      display: block;
+      color: #6d7e92;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+
+    .uap-user-menu button {
+      width: 100%;
+      min-height: 42px;
+      border: 0;
+      background: #ffffff;
+      color: #003C71;
+      text-align: left;
+      padding: 0 15px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 900;
+      font-family: Arial, sans-serif;
+    }
+
+    .uap-user-menu button:hover {
+      background: #eef7ff;
+    }
+
+    @media print {
+      .uap-user-chip,
+      .uap-user-menu {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="uap-user-chip no-print-zone">
+    <span class="uap-user-chip-icon">♟</span>
+    <span>Bienvenido, <strong><?= nombreUsuarioActivo ?></strong></span>
+    <button type="button" onclick="toggleMenuUsuarioUap()">▼</button>
+  </div>
+
+  <div id="uap-user-menu" class="uap-user-menu no-print-zone">
+    <div class="uap-user-menu-info">
+      <b><?= nombreUsuarioActivo ?></b>
+      <span><?= rolUsuarioActivo ?></span>
+    </div>
+    <button type="button" onclick="cambiarUsuarioUap()">Cambiar usuario</button>
+  </div>
+
+  <div id="pantalla-inicio">
+
+    <section class="inicio-hero">
+      <div class="inicio-hero-contenido">
+
+        <div class="inicio-topbar">
+          <div class="inicio-logo-bloque">
+            <img class="logo-uap-inicio" src="https://i.postimg.cc/fyMcjMcn/logo-uap.png" alt="Logo UAP">
+            <div class="inicio-logo-separador"></div>
+            <div class="inicio-logo-texto">
+              Universidad<br>
+              Adventista del Plata
+            </div>
+          </div>
+
+          <div class="inicio-user">
+            <div class="inicio-user-text"></div>
+          </div>
+        </div>
+
+        <div class="inicio-hero-centro">
+          <h1>UNIVERSIDAD ADVENTISTA DEL PLATA</h1>
+          <div class="inicio-hero-linea"></div>
+
+          <div class="inicio-subtitulo">
+            Recursos Áulicos | Bedelía
+          </div>
+
+          <div class="inicio-sistema">
+            Sistema de Gestión Interna
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <main class="inicio-contenido">
+
+      <div class="inicio-botones">
+
+        <a class="inicio-card" href="<?= getUrlConToken('Alumnos', token) ?>" target="_top">
+          <span class="inicio-icono">🎓</span>
+          <span class="inicio-card-titulo">ALUMNOS</span>
+          <span class="inicio-card-flecha">›</span>
+        </a>
+
+        <a class="inicio-card" href="<?= getUrlConToken('Oficina', token) ?>" target="_top">
+          <span class="inicio-icono">🖨️</span>
+          <span class="inicio-card-titulo">FOTOCOPIAS</span>
+          <span class="inicio-card-flecha">›</span>
+        </a>
+
+        <a class="inicio-card" href="<?= getUrlConToken('Reservas', token) ?>" target="_top">
+          <span class="inicio-icono">📅</span>
+          <span class="inicio-card-titulo">RESERVAS</span>
+          <span class="inicio-card-flecha">›</span>
+        </a>
+
+        <!-- TARJETA DEL PLANO SECUNDARIO -->
+        <div class="inicio-card" onclick="abrirPlanoModal()">
+          <span class="inicio-icono">📍</span>
+          <span class="inicio-card-titulo">PLANO SECUNDARIO</span>
+          <span class="inicio-card-flecha">›</span>
+        </div>
+
+        <? if (rolUsuarioActivo !== "alumno") { ?>
+        <a class="inicio-card" href="<?= getUrlConToken('Facturacion', token) ?>" target="_top">
+          <span class="inicio-icono">💰</span>
+          <span class="inicio-card-titulo">RECIBOS / MERCADO PAGO</span>
+          <span class="inicio-card-flecha">›</span>
+        </a>
+        <? } ?>
+
+        <? if (rolUsuarioActivo === "admin") { ?>
+        <a class="inicio-card" href="<?= getUrlConToken('Usuarios', token) ?>" target="_top">
+          <span class="inicio-icono">👥</span>
+          <span class="inicio-card-titulo">USUARIOS</span>
+          <span class="inicio-card-flecha">›</span>
+        </a>
+        <? } ?>
+
+      </div>
+
+      <section class="inicio-cumpleanos">
+        <div class="inicio-cumple-header">
+          <div class="inicio-cumple-header-left">
+            <span class="inicio-cumple-icono">🎂</span>
+            <span>PRÓXIMOS CUMPLEAÑOS</span>
+          </div>
+
+          <a href="javascript:void(0)" class="inicio-cumple-ver">Ver todos ›</a>
+        </div>
+
+        <div id="lista-cumpleanos-home" class="inicio-cumple-body">
+          ⏳ Cargando...
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="inicio-footer">
+      © 2026 Universidad Adventista del Plata. Sistema de Gestión Interna.
+    </footer>
+
+  </div>
+
+  <!-- MODAL / POPUP PARA EL PLANO SECUNDARIO -->
+  <div id="modal-plano-secundario" class="modal-plano-overlay" onclick="cerrarPlanoModalFuera(event)">
+    <div class="modal-plano-contenido">
+      <button class="btn-cerrar-modal" onclick="cerrarPlanoModal()">✕</button>
+      <?!= include('PlanoSecu'); ?>
+    </div>
+  </div>
+
+<script>
+function abrirPlanoModal() {
+  document.getElementById('modal-plano-secundario').style.display = 'flex';
+}
+
+function cerrarPlanoModal() {
+  document.getElementById('modal-plano-secundario').style.display = 'none';
+}
+
+function cerrarPlanoModalFuera(event) {
+  if (event.target.id === 'modal-plano-secundario') {
+    cerrarPlanoModal();
+  }
+}
+
+function cargarCumpleanosHome() {
+  const cont = document.getElementById('lista-cumpleanos-home');
+
+  google.script.run.withSuccessHandler(data => {
+    if (!data || data.length === 0) {
+      cont.innerHTML = "<div class='sin-cumple'>No hay cumpleaños próximos</div>";
+      return;
+    }
+
+    cont.innerHTML = data.map(c => `
+      <div class="cumple-item">
+        <span>${c.nombre}</span>
+        <b>${c.fecha}</b>
+      </div>
+    `).join('');
+  }).obtenerCumpleanosProximos();
+}
+
+window.onload = cargarCumpleanosHome;
+</script>
+
+<?!= include('AlertasReservas'); ?>
+
+<script id="usuario-activo-script-uap">
+  function toggleMenuUsuarioUap() {
+    const menu = document.getElementById("uap-user-menu");
+    if (!menu) return;
+    menu.classList.toggle("show");
+  }
+
+  function cerrarMenuUsuarioUap(e) {
+    const chip = document.querySelector(".uap-user-chip");
+    const menu = document.getElementById("uap-user-menu");
+
+    if (!menu || !chip) return;
+
+    if (!chip.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.remove("show");
+    }
+  }
+
+  function cambiarUsuarioUap() {
+    const token = "<?= token ?>";
+
+    localStorage.removeItem("uap_token");
+    localStorage.removeItem("uap_usuario");
+    localStorage.removeItem("uap_nombre");
+    localStorage.removeItem("uap_rol");
+
+    google.script.run
+      .withSuccessHandler(function(url) {
+        window.top.location.href = url;
+      })
+      .withFailureHandler(function(err) {
+        alert("No se pudo cerrar sesión: " + (err.message || err));
+      })
+      .cerrarSesion(token);
+  }
+
+  document.addEventListener("click", cerrarMenuUsuarioUap);
+
+</script>
+<script>
+  let planoActualServidor = "";
+
+  // 1. Función que ejecuta el usuario que HACE CLIC para cambiar el plano
+  function cambiarPlanoParaTodos(idPlano) {
+    // Aplica el cambio localmente de inmediato
+    mostrarPlanoLocal(idPlano);
+
+    // Envía la novedad al backend para que los demás lo sepan
+    google.script.run
+      .withSuccessHandler(function(res) {
+        console.log("Plano actualizado globalmente a:", idPlano);
+      })
+      .guardarEstadoPlano(idPlano);
+  }
+
+  // 2. Función encargada de actualizar la interfaz visual
+  function mostrarPlanoLocal(idPlano) {
+    // Ejemplo de lógica visual: ajustá las clases o IDs según tu maquetación
+    const elementoPlano = document.getElementById(idPlano);
+    if (elementoPlano) {
+      // Oculta otros planos y muestra el seleccionado
+      document.querySelectorAll('.plano-capa').forEach(p => p.style.display = 'none');
+      elementoPlano.style.display = 'block';
+    }
+  }
+
+  // 3. Sincronización automática periódica (Polling cada 3 segundos)
+  function consultarEstadoPlano() {
+    google.script.run
+      .withSuccessHandler(function(idPlanoRemoto) {
+        // Solo actualiza la pantalla si el servidor tiene un plano diferente al actual
+        if (idPlanoRemoto && idPlanoRemoto !== planoActualServidor) {
+          planoActualServidor = idPlanoRemoto;
+          mostrarPlanoLocal(idPlanoRemoto);
+        }
+      })
+      .obtenerEstadoPlano();
+  }
+
+  // Iniciar la verificación automática en bucle al cargar la página
+  window.addEventListener('load', function() {
+    consultarEstadoPlano(); // Primera verificación al cargar
+    setInterval(consultarEstadoPlano, 3000); // Consulta periódica cada 3000 ms (3 seg)
+  });
+</script>
+</body>
+</html>

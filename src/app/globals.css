@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --uap-azul: #003C71;
+  --uap-azul-oscuro: #002f5a;
+  --uap-azul-medio: #0b5ea8;
+  --uap-azul-profundo: #002447;
+  --uap-celeste: #eaf6ff;
+  --uap-fondo: #f4f8fc;
+  --uap-texto: #173b68;
+  --uap-gris: #6d7e92;
+  --uap-borde: #d8e3ef;
+  --uap-sombra: 0 18px 38px rgba(12, 45, 82, .16);
+  --uap-sombra-suave: 0 10px 24px rgba(12, 45, 82, .10);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--uap-texto);
+  background-color: var(--uap-fondo);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+}
+
+/* ==========================================================
+   ESTILOS DEDICADOS PARA IMPRESIÓN OFICIAL A4
+========================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  .no-print,
+  .no-print-zone,
+  header,
+  nav,
+  aside,
+  button,
+  .user-chip,
+  .uap-user-chip {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-page-portrait {
+    page-break-after: always;
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  .print-page-landscape {
+    page-break-after: always;
+    size: A4 landscape;
+    margin: 6mm;
+  }
+
+  /* Evitar sombras y bordes redondeados innecesarios en papel */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}

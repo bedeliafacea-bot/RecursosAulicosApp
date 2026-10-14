@@ -1,0 +1,32 @@
+FechaSolicitado,DepartamentoSolicita,Equipo,Horario,Observacion,Telefono,Retirado,Devuelto
+10/04/2026,Capellania,Proyector,13:30,Escuela sabatica hablemos,,TRUE,TRUE
+10/04/2026,Capellania,Proyector ,13:30,Escuela sabática PEF,,TRUE,TRUE
+8/04/2026,Secretaria general,Proyector,12:00,Oficina Nilde,,TRUE,TRUE
+8/04/2026,Finanzas ,Proyector,,Para Carolina,,TRUE,TRUE
+10/04/2026,Hogar de varones ,Proyector,,Breno Correa,,TRUE,TRUE
+14/04/2026,Bienestar,Aula 12,,Solicito Claudio ,,TRUE,TRUE
+23/04/2026,Asesoría Pedagogica,PC Assus,,SUM,,TRUE,TRUE
+17/04/2026,Capellania,Proyector,,Escuela sabatica hablemos,2700,FALSE,FALSE
+17/04/2026,Capellania,Proyector,,Escuela sabatica Mision FE,2700,TRUE,TRUE
+26/11/2026,Preuniversitario (Teresa Bori),Lab2,,Solicitan reserva para simulacro de examen virtual de medicina,,FALSE,FALSE
+24/04/2026,Capellania,Proyector,,Escuela Sabática Hablemos,,TRUE,TRUE
+24/04/2026,Capellania,Proyector,,Escuela Sabática mision fe,,TRUE,TRUE
+24/04/2026,Hogar de chicas,proyector,,Retiro de chicas Joselin Jurado,,TRUE,TRUE
+27/04/2026,Profesor Universitario,Asus,17:30 a 18:00,,,TRUE,TRUE
+30/04/2026,IDEC,Proyector,,Retira jueves y devuelve el lunes,,FALSE,FALSE
+30/04/2026,Capellania,Proyector,,Odontologia ,,TRUE,TRUE
+30/04/2026,Capellania,Proyector,,FACEA,,TRUE,TRUE
+15/05/2026,Bienestar estudiantil,Proyector y alargue,12:30,Esteban Gusman,int. 2002,TRUE,FALSE
+23/05/2026,Odontología,Notebook Asus + Proyector,18:30 a 23:00,,3435079847,TRUE,TRUE
+18/05/2026,R.U.C.A,Proyector,18:30,"para el galpon, buscan el proyector (EPSON5)",,TRUE,TRUE
+18/05/2026,Enfermeria,Proyector y zapatilla,15hs,Proyector Epson 5 para el galpon,,TRUE,TRUE
+19/05/2026,RCU,Epson 5,7:30,rcu xdxd,?,TRUE,TRUE
+29/05/2026,Facultad de teologia,Proyector + PC ASSUS,,para el galpon sabado a la tarde,,FALSE,FALSE
+05/06/2026,CAE,EPSON 5,8:00-10:00,,54 9 3435 08-3394,TRUE,TRUE
+04/06/2026,INGENIERIA EN SISTEMAS,EPSON 5,19:00- 8:00,"a PEDIDO de psicopedagogia, para reunion de  ING. Sistemas",,TRUE,TRUE
+24/08/2026,AULAS NUEVAS,PC,17:30-19:30,,,TRUE,TRUE
+01/09/2026,CAE,Proyector Nro 5,16:00,Retira CAE,54 9 3435 08-3394,TRUE,TRUE
+16/09/2026,bienestar estudiantil,proyector + hdmi 10mts,,lo devuelven el lunes,,TRUE,TRUE
+18/09/2026,Capellania,Epson Nª5,Todo el cuatri,Mision Fe,,FALSE,FALSE
+08/10/2026,Evaluacion Intitucional,Proyector Nuevo,8:30,Entregar a Nilde (Oficina),Nilde maier,FALSE,FALSE
+09/10/2026,Finanzas institucional,Proyector,,Caro lo retira de Oficina de Nilde,,FALSE,FALSE

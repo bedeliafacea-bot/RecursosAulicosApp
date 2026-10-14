@@ -1,0 +1,929 @@
+
+<style>
+:root {
+  --azul-uap: #003C71;
+  --azul-profundo: #002b52;
+  --blanco-card: #f8fafc;
+}
+
+/* GENERAL */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #003C71;
+  margin: 0;
+  padding: 20px;
+  color: white;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* =========================
+   INICIO
+========================= */
+
+#pantalla-inicio {
+  min-height: 92vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  color: white !important;
+}
+
+.inicio-header {
+  margin-bottom: 34px;
+}
+
+.logo-uap-inicio {
+  width: 95px;
+  height: auto;
+  margin-bottom: 22px;
+}
+
+.inicio-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: white;
+}
+
+.inicio-subtitulo {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+}
+
+.inicio-sistema {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+}
+
+.inicio-botones {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.inicio-card {
+  width: 180px !important;
+  height: 130px !important;
+  background: #f8fafc !important;
+  color: #003C71 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.22) !important;
+  border: 1px solid rgba(255,255,255,0.5) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  font-weight: 800 !important;
+  letter-spacing: .5px !important;
+  transition: transform .2s ease, box-shadow .2s ease !important;
+}
+
+.inicio-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.3) !important;
+}
+
+.inicio-icono {
+  font-size: 36px;
+  margin-bottom: 14px;
+}
+
+.inicio-cumpleanos {
+  width: min(830px, 90%);
+  background: #ffffff;
+  color: #003C71;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.22);
+}
+
+.inicio-cumple-header {
+  font-size: 15px;
+  font-weight: 800;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #003C71;
+}
+
+.inicio-cumple-body {
+  margin-top: 12px;
+  color: #375d84;
+  text-align: left;
+  font-size: 14px;
+}
+
+.inicio-cumple-body div {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sin-cumple {
+  display: block !important;
+  text-align: left;
+  color: #375d84;
+  border-bottom: none !important;
+}
+
+/* =========================
+   MÃ“DULOS INTERNOS
+========================= */
+
+.main-header {
+  text-align: center;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.header-con-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.logo-titulo {
+  width: 60px;
+  height: auto;
+}
+
+.main-header h1 {
+  margin: 0;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,.5);
+}
+
+.nav-bar {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+.nav-bar button,
+.nav-bar a {
+  min-width: 150px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: white !important;
+  font-weight: bold;
+  font-size: 13px;
+  background: #2c4a73;
+  border: 1px solid rgba(255,255,255,0.3);
+  text-align: center;
+  display: inline-block;
+}
+
+.no-print-zone {
+  padding: 4px 15px;
+  border-radius: 12px;
+  max-width: 1000px;
+  margin: 0 auto 10px;
+  text-align: center;
+  color: #333;
+}
+
+input,
+select,
+textarea {
+  width: 90%;
+  padding: 11px;
+  margin: 8px 0;
+  border: 2px solid #adb5bd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #212529;
+  background-color: #fff;
+  font-weight: 500;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,.25);
+  outline: none;
+}
+
+.btn-b,
+.btn-g {
+  width: 95%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
+
+.btn-b {
+  background: #003C71;
+}
+
+.btn-g {
+  background: #28a745;
+}
+
+.ventana {
+  display: none;
+}
+
+.card-info {
+  background: #fdfdfd;
+  border: 1px solid #ddd;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: left;
+  margin-top: 5px;
+  color: #333;
+}
+
+.card-info h2,
+.card-info h3 {
+  color: #003C71;
+}
+
+.card-info h3 {
+  text-align: center;
+  border-bottom: 2px solid #003C71;
+  padding-bottom: 8px;
+}
+
+.contenedor-info-dual {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.col-datos {
+  flex: 1;
+  min-width: 320px;
+}
+
+/* =========================
+   TABLAS
+========================= */
+
+.tabla-tradicional {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+  color: black;
+  background: white;
+}
+
+.tabla-tradicional th,
+.tabla-tradicional td {
+  border: 1px solid #333;
+  padding: 10px;
+  text-align: center;
+  color: black;
+}
+
+.tabla-tradicional th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.fila-total {
+  background-color: #eee;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+/* =========================
+   PLANILLA ALUMNOS
+========================= */
+
+#planilla {
+  display: none;
+  background: white;
+  width: 180mm;
+  margin: 0 auto;
+  color: black;
+  padding: 10mm;
+  font-family: Arial, sans-serif;
+}
+
+.uap-header-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.5px solid black;
+  margin-bottom: 10px;
+  background-color: white;
+  color: black;
+}
+
+.uap-header-table td {
+  border: 1.5px solid black;
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
+  color: black;
+}
+
+.header-logo {
+  width: 80px;
+}
+
+.header-logo img {
+  width: 60px;
+}
+
+.header-title {
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.header-control {
+  font-size: 11px;
+  font-weight: bold;
+  width: 180px;
+}
+
+.info-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 10px;
+  padding: 5px 0;
+  color: black;
+}
+
+.info-line b {
+  text-decoration: underline;
+  margin-left: 5px;
+  text-transform: uppercase;
+}
+
+.horas-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-top: 5px;
+  background-color: white;
+  border: 1px solid black;
+}
+
+.horas-table th,
+.horas-table td {
+  border: 1px solid black;
+  padding: 2px;
+  text-align: center;
+  color: black;
+}
+
+.horas-table th {
+  background: #f2f2f2;
+  font-size: 8px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.horas-table td {
+  font-size: 9px;
+  height: 22px;
+}
+
+.col-dia { width: 32px; }
+.col-hora { width: 42px; }
+.col-total { width: 48px; }
+.col-firma { width: 80px; }
+
+.bloque-firma-impresion {
+  margin-top: 50px;
+  text-align: center;
+  width: 100%;
+  color: black;
+}
+
+.linea-firma {
+  width: 250px;
+  border-top: 1.5px solid black;
+  margin: 0 auto;
+}
+
+.nombre-firma {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 8px 0 2px 0;
+}
+
+.cargo-firma {
+  font-size: 11px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* =========================
+   RESERVAS
+========================= */
+
+.contenedor-scroll-reservas {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.contenedor-scroll-reservas thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+}
+
+.btn-estado {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 18px;
+}
+
+.reservas-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 15px 0 20px;
+}
+
+.tab-reserva {
+  background: #ffffff;
+  color: #003C71;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tab-reserva:hover {
+  background: #e9f2fb;
+}
+
+.tab-reserva.activo {
+  background: #92D050;
+  color: #102000;
+}
+
+.reservas-matriz-wrapper {
+  overflow-x: auto;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+.tabla-reservas-matriz {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: black;
+  background: white;
+}
+
+.tabla-reservas-matriz th,
+.tabla-reservas-matriz td {
+  border: 2px solid #000;
+  padding: 4px 4px !important;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 11px !important;
+}
+
+.fila-header-principal th {
+  background: #0070C0;
+  color: white;
+  height: 30px !important;
+  font-size: 16px !important;
+  font-weight: bold;
+}
+
+.fila-horarios th {
+  background: #92D050;
+  color: #102000;
+  height: 26px !important;
+  font-size: 11px !important;
+  font-weight: bold;
+}
+
+.iap-header,
+.profesor-header {
+  width: 150px !important;
+}
+
+.dia-header {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.profesor-header {
+  background: #92D050 !important;
+  color: black !important;
+}
+
+.profesor-cell {
+  background: #000;
+  color: white;
+  font-weight: bold;
+  text-align: left !important;
+  padding-left: 6px !important;
+  white-space: nowrap;
+  font-size: 12px !important;
+  width: 150px !important;
+}
+
+.reserva-cell {
+  background: #ffffff;
+  color: black;
+  height: 40px !important;
+  line-height: 1.15 !important;
+}
+
+.reserva-aula {
+  font-weight: bold;
+  font-size: 11px !important;
+}
+
+.reserva-recurso {
+  color: #333;
+  font-size: 10px !important;
+}
+
+.celda-vacia {
+  background: #ffffff;
+}
+
+.acciones-reserva {
+  margin-top: 3px !important;
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+}
+
+.acciones-reserva button {
+  width: 22px !important;
+  height: 20px !important;
+  padding: 0 !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  border-radius: 4px !important;
+}
+
+/* =========================
+   FACTURACIÃ“N
+========================= */
+
+.barra-diferencia {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border-top: 3px solid #1D3759;
+  padding: 10px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,.1);
+  z-index: 1000;
+}
+
+.recibo-anulado {
+  text-decoration: line-through;
+  color: #888 !important;
+  background: #f1f1f1;
+}
+
+/* =========================
+   ALERTAS RESERVAS
+========================= */
+
+.panel-alertas-reservas {
+  max-width: 1200px;
+  margin: 10px auto 15px;
+  background: #fff8e1;
+  color: #5c4300;
+  border: 2px solid #f0c36d;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: bold;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+
+.alerta-item {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.alerta-item:last-child {
+  border-bottom: none;
+}
+
+.alerta-15 { color: #8a5a00; }
+.alerta-10 { color: #c46a00; }
+.alerta-5 { color: #b00020; }
+
+.modal-alerta-reserva {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-alerta-contenido {
+  width: min(520px, 90%);
+  background: #fff8e1;
+  color: #3b2a00;
+  border: 4px solid #f0a500;
+  border-radius: 18px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  animation: alertaGolpe .35s ease;
+}
+
+.modal-alerta-icono {
+  font-size: 58px;
+  margin-bottom: 10px;
+}
+
+.modal-alerta-contenido h2 {
+  margin: 0 0 12px;
+  font-size: 30px;
+  color: #b00020;
+}
+
+.modal-alerta-contenido p {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 15px 0 25px;
+}
+
+.modal-alerta-contenido button {
+  background: #b00020;
+  color: white;
+  border: none;
+  padding: 14px 26px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@keyframes alertaGolpe {
+  0% { transform: scale(.85); opacity: 0; }
+  70% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1050px) {
+  .contenedor-botones-inicio {
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .inicio-botones {
+    gap: 16px;
+  }
+
+  .inicio-card {
+    width: 160px !important;
+    height: 120px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  body {
+    padding: 14px;
+  }
+
+  #pantalla-inicio {
+    justify-content: flex-start;
+    padding-top: 35px;
+  }
+
+  .logo-uap {
+    width: 105px;
+  }
+
+  .titulo-inicio {
+    font-size: 20px;
+  }
+
+  .contenedor-botones-inicio {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .btn-principal,
+  .card-cumpleanos {
+    min-height: 115px;
+  }
+}
+
+/* =========================
+   IMPRESIÃ“N GENERAL
+========================= */
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #planilla,
+  #planilla *,
+  #informe-fotocopias,
+  #informe-fotocopias *,
+  #hoja-informe-cierre,
+  #hoja-informe-cierre * {
+    visibility: visible;
+  }
+
+  #planilla,
+  #informe-fotocopias,
+  #hoja-informe-cierre {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  #hoja-informe-cierre {
+    width: 180mm;
+    margin: 0 auto;
+    padding: 15mm;
+    box-sizing: border-box;
+  }
+
+  #hoja-informe-cierre * {
+    box-sizing: border-box;
+  }
+
+  body:not(.modo-impresion-reservas) .no-print-zone,
+  body:not(.modo-impresion-reservas) .main-header,
+  body:not(.modo-impresion-reservas) .nav-bar {
+    display: none !important;
+  }
+}
+
+/* =========================
+   IMPRESIÃ“N RESERVAS
+========================= */
+
+@media print {
+
+  
+
+  body.modo-impresion-reservas {
+    zoom: 1;
+    background: white !important;
+  }
+
+  body.modo-impresion-reservas * {
+    visibility: hidden;
+  }
+
+  body.modo-impresion-reservas #vista-horario,
+  body.modo-impresion-reservas #vista-horario * {
+    visibility: visible !important;
+  }
+
+  body.modo-impresion-reservas #vista-horario {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  body.modo-impresion-reservas #tabla-reservas-wrapper,
+  body.modo-impresion-reservas .reservas-matriz-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    background: white !important;
+    border-radius: 0 !important;
+  }
+
+  body.modo-impresion-reservas .acciones-reserva,
+  body.modo-impresion-reservas .nav-bar,
+  body.modo-impresion-reservas .main-header,
+  body.modo-impresion-reservas .reservas-tabs,
+  body.modo-impresion-reservas #estado-reservas,
+  body.modo-impresion-reservas #form-nueva-reserva-matriz,
+  body.modo-impresion-reservas #form-nueva-reserva-especial,
+  body.modo-impresion-reservas .panel-alertas-reservas {
+    display: none !important;
+  }
+
+  body.modo-impresion-reservas .tabla-reservas-matriz {
+    min-width: 0 !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+
+  body.modo-impresion-reservas .tabla-reservas-matriz th,
+  body.modo-impresion-reservas .tabla-reservas-matriz td {
+    border: 1.5px solid black !important;
+    color: black !important;
+    padding: 4px !important;
+    font-size: 11px !important;
+    overflow: hidden !important;
+  }
+
+  body.modo-impresion-reservas .fila-header-principal th {
+    background: #444 !important;
+    color: white !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body.modo-impresion-reservas .fila-horarios th {
+    background: #d9d9d9 !important;
+    color: black !important;
+    font-size: 11px !important;
+
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body.modo-impresion-reservas .profesor-cell {
+    background: #efefef !important;
+    color: black !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body.modo-impresion-reservas .reserva-cell {
+    height: 28px !important;
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+  }
+
+  body.modo-impresion-reservas .reserva-aula {
+    font-size: 11px !important;
+    font-weight: bold !important;
+  }
+
+  body.modo-impresion-reservas .reserva-recurso {
+    font-size: 11px !important;
+  }
+}
+</style>
