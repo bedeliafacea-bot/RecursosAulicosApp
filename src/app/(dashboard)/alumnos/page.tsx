@@ -1838,7 +1838,7 @@ const MESES_MAYUSCULA = [
   'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE',
 ];
 
-const LOGO_UAP = 'https://i.postimg.cc/fyMcjMcn/logo-uap.png';
+const LOGO_UAP = '/img/logo-uap.png';
 
 /** Copia de la planilla montada directo en <body>: es lo único que se imprime. */
 function PortalImpresion({ tipo, children }: { tipo: 'horas' | 'eval'; children: React.ReactNode }) {
@@ -1942,7 +1942,7 @@ function PlanillaHorasMensual({
                 <td>{hora(r?.salida_2)}</td>
                 <td>{r ? formatearMinutos(totalMinutosJornadas(registros)) : ''}</td>
                 <td className="col-obs">
-                  {registros.map((x) => x.observacion).filter(Boolean).join(' / ')}
+                  {Array.from(new Set(registros.map((x) => x.observacion).filter(Boolean))).join(' / ')}
                 </td>
                 <td></td>
               </tr>

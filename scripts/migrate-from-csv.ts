@@ -56,6 +56,19 @@ async function insertBatch(table: string, records: any[]) {
     console.log(`  🔍 [AUDITORÍA LOCAL] ${records.length} registros válidos para "${table}".`);
     return;
   }
+  // Estas tablas no tienen clave natural para upsert: si ya tienen datos, volver
+  // a correr el script los duplicaría (pasó el 14/10/2026: todo quedó ×3).
+  const { count, error: errCount } = await supabase
+    .from(table)
+    .select('*', { count: 'exact', head: true });
+  if (errCount) {
+    console.error(`  ❌ No se pudo verificar "${table}":`, errCount.message);
+    return;
+  }
+  if ((count || 0) > 0 && !process.argv.includes('--forzar')) {
+    console.warn(`  ⚠️ "${table}" ya tiene ${count} filas: se omite para no duplicar (usá --forzar si es intencional).`);
+    return;
+  }
   for (let i = 0; i < records.length; i += 100) {
     const batch = records.slice(i, i + 100);
     const { error } = await supabase.from(table).insert(batch);

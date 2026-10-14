@@ -57,11 +57,24 @@ export function minutosDeRegistro(j: {
   return Math.round((Number(j.total_decimal) || 0) * 60);
 }
 
-/** Suma exacta en minutos enteros de un conjunto de jornadas. */
+/**
+ * Suma exacta en minutos enteros de un conjunto de jornadas. Dos registros con
+ * la misma fecha y los mismos horarios se cuentan una sola vez: es una carga
+ * repetida (doble clic, importación corrida dos veces), no dos turnos reales.
+ */
 export function totalMinutosJornadas(
-  jornadas: Parameters<typeof minutosDeRegistro>[0][]
+  jornadas: (Parameters<typeof minutosDeRegistro>[0] & { fecha?: string })[]
 ): number {
-  return jornadas.reduce((acc, j) => acc + minutosDeRegistro(j), 0);
+  const vistas = new Set<string>();
+  let total = 0;
+  for (const j of jornadas) {
+    const hhmm = (t?: string | null) => (t ? t.slice(0, 5) : '');
+    const clave = [j.fecha, hhmm(j.entrada_1), hhmm(j.salida_1), hhmm(j.entrada_2), hhmm(j.salida_2)].join('|');
+    if (vistas.has(clave)) continue;
+    vistas.add(clave);
+    total += minutosDeRegistro(j);
+  }
+  return total;
 }
 
 /** 1290 -> "21:30". Nunca produce "x:60". */

@@ -68,7 +68,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-4 mb-8">
             <div className="relative w-14 h-14 bg-white/10 rounded-2xl p-2 flex items-center justify-center border border-white/20 backdrop-blur-sm">
               <img
-                src="https://i.postimg.cc/fyMcjMcn/logo-uap.png"
+                src="/img/logo-uap.png"
                 alt="Logo UAP"
                 className="w-full h-full object-contain filter drop-shadow"
               />

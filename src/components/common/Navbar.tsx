@@ -69,7 +69,7 @@ export default function Navbar() {
             <a href="/" className="flex items-center gap-3 group">
               <div className="w-9 h-9 bg-white/10 rounded-xl p-1.5 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-all">
                 <img
-                  src="https://i.postimg.cc/fyMcjMcn/logo-uap.png"
+                  src="/img/logo-uap.png"
                   alt="UAP"
                   className="w-full h-full object-contain filter drop-shadow"
                 />

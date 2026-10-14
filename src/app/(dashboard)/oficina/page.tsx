@@ -471,7 +471,7 @@ export default function OficinaPage() {
             <div className="print-page-portrait space-y-4">
               <div className="text-center pb-4 border-b-2 border-uap-azul flex items-center justify-between">
                 <img
-                  src="https://i.postimg.cc/fyMcjMcn/logo-uap.png"
+                  src="/img/logo-uap.png"
                   alt="Logo UAP"
                   className="w-16 h-auto"
                 />

@@ -94,7 +94,7 @@ export function AlertasReservasProvider({ children }: { children: React.ReactNod
             try {
               new Notification('🔔 Reserva próxima - Recursos Áulicos UAP', {
                 body: texto,
-                icon: 'https://i.postimg.cc/fyMcjMcn/logo-uap.png',
+                icon: '/img/logo-uap.png',
               });
             } catch (e) {
               console.warn('Error al disparar notificación web:', e);

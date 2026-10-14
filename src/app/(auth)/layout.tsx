@@ -13,7 +13,7 @@ export default function AuthLayout({
         <div
           className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-overlay pointer-events-none"
           style={{
-            backgroundImage: `url('https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg')`,
+            backgroundImage: `url('/img/universidad-adventista-del-plata.jpg')`,
           }}
         />
         <div className="relative z-10 w-full flex items-center justify-center">

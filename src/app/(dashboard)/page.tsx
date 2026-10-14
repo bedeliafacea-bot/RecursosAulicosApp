@@ -105,7 +105,7 @@ export default function HomePage() {
         <div
           className="absolute inset-0 bg-cover bg-center opacity-15 mix-blend-overlay pointer-events-none"
           style={{
-            backgroundImage: `url('https://i.postimg.cc/WbBnrn8q/universidad-adventista-del-plata.jpg')`,
+            backgroundImage: `url('/img/universidad-adventista-del-plata.jpg')`,
           }}
         />
 

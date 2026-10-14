@@ -26,3 +26,6 @@ yarn-error.log*
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Backups locales de datos (contienen datos personales)
+/backups/

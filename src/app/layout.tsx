@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Recursos Áulicos | Bedelía - Universidad Adventista del Plata',
   description: 'Sistema Integral de Gestión de Alumnos Becarios, Recursos Áulicos, Reservas, Oficina y Cierre de Caja - UAP',
   icons: {
-    icon: 'https://i.postimg.cc/fyMcjMcn/logo-uap.png',
+    icon: '/img/logo-uap.png',
   },
 };
 
