@@ -138,7 +138,7 @@ export interface ReservaEspecial {
 
 export interface ReciboItem {
   numero: string;
-  tipo: 'efectivo' | 'transferencia' | 'anulado';
+  tipo: 'recibo' | 'efectivo' | 'transferencia' | 'anulado';
   monto: number;
 }
 

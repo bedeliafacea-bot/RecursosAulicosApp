@@ -30,6 +30,7 @@ import {
   Loader2,
   X,
   ArrowRight,
+  MoreHorizontal,
 } from 'lucide-react';
 
 export default function FacturacionPage() {
@@ -103,7 +104,7 @@ export default function FacturacionPage() {
     const generados: ReciboItem[] = [];
     for (let num = d; num <= h; num++) {
       const numStr = String(num);
-      let tipo: 'efectivo' | 'transferencia' | 'anulado' = 'efectivo';
+      let tipo: ReciboItem['tipo'] = 'recibo';
 
       if (anuladosSet.has(numStr)) {
         tipo = 'anulado';
@@ -194,11 +195,13 @@ export default function FacturacionPage() {
       prev.map((r) => {
         if (r.numero !== numero) return r;
         const nuevoTipo =
-          r.tipo === 'efectivo'
+          r.tipo === 'recibo'
+            ? 'efectivo'
+            : r.tipo === 'efectivo'
             ? 'transferencia'
             : r.tipo === 'transferencia'
             ? 'anulado'
-            : 'efectivo';
+            : 'recibo';
         return {
           ...r,
           tipo: nuevoTipo,
@@ -300,7 +303,7 @@ export default function FacturacionPage() {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-uap-azul">
-              Control y Cierre Diario de Caja
+              Control de Caja
             </h1>
             <p className="text-sm text-uap-gris mt-0.5">
               Balance de recibos emitidos, Mercado Pago, Banco Galicia y efectivo físico
@@ -349,7 +352,7 @@ export default function FacturacionPage() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
           <div>
             <label className="block text-[11px] font-black text-uap-texto uppercase mb-1">
               Desde N°
@@ -389,6 +392,19 @@ export default function FacturacionPage() {
 
           <div>
             <label className="block text-[11px] font-black text-uap-texto uppercase mb-1">
+              Efectivo (separar con coma)
+            </label>
+            <input
+              type="text"
+              value={inputEfectivo}
+              onChange={(e) => setInputEfectivo(e.target.value)}
+              placeholder="ej: 1003, 1010"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-black text-uap-texto uppercase mb-1">
               Transferencias (separar con coma)
             </label>
             <input
@@ -417,9 +433,16 @@ export default function FacturacionPage() {
         ======================================================== */}
         <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-            <div>
-              <h3 className="text-sm font-black text-uap-azul">1. Recibos Físicos</h3>
-              <p className="text-[11px] text-slate-400">Pulsá Enter para pasar al siguiente</p>
+            <div className="flex items-center gap-3">
+              <img
+                src="https://i.postimg.cc/fyMcjMcn/logo-uap.png"
+                alt="Logo UAP"
+                className="h-9 w-20 object-contain"
+              />
+              <div>
+                <h3 className="text-sm font-black text-uap-azul">1. Recibos Físicos</h3>
+                <p className="text-[11px] text-slate-400">Pulsá Enter para pasar al siguiente</p>
+              </div>
             </div>
             <span className="text-sm font-black text-uap-azul">
               ${totalRecibosValidos.toFixed(2)}
@@ -450,10 +473,14 @@ export default function FacturacionPage() {
                         ? 'bg-red-100 text-red-800 border-red-200'
                         : r.tipo === 'transferencia'
                         ? 'bg-purple-100 text-purple-800 border-purple-200'
-                        : 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                        : r.tipo === 'efectivo'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                        : 'text-slate-400 border-transparent hover:bg-slate-100'
                     }`}
+                    aria-label={`Cambiar tipo del recibo ${r.numero}`}
+                    title="Cambiar tipo de recibo"
                   >
-                    {r.tipo}
+                    {r.tipo === 'recibo' ? <MoreHorizontal className="w-3.5 h-3.5" /> : r.tipo}
                   </button>
                 </div>
 
@@ -485,9 +512,16 @@ export default function FacturacionPage() {
         ======================================================== */}
         <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-            <div>
-              <h3 className="text-sm font-black text-sky-700">2. Mercado Pago</h3>
-              <p className="text-[11px] text-slate-400">Cobros por QR / App</p>
+            <div className="flex items-center gap-3">
+              <img
+                src="https://i.postimg.cc/KYZcxG53/Mercado_pago.png"
+                alt="Mercado Pago"
+                className="h-9 w-24 object-contain"
+              />
+              <div>
+                <h3 className="text-sm font-black text-sky-700">2. Mercado Pago</h3>
+                <p className="text-[11px] text-slate-400">Cobros por QR / App</p>
+              </div>
             </div>
             <span className="text-sm font-black text-sky-700">
               ${totalMercadoPago.toFixed(2)}
@@ -549,9 +583,16 @@ export default function FacturacionPage() {
         ======================================================== */}
         <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-            <div>
-              <h3 className="text-sm font-black text-purple-700">3. Banco Galicia</h3>
-              <p className="text-[11px] text-slate-400">Transferencias acreditadas</p>
+            <div className="flex items-center gap-3">
+              <img
+                src="https://i.postimg.cc/s2Kb9TDd/Galicia.png"
+                alt="Banco Galicia"
+                className="h-9 w-24 object-contain"
+              />
+              <div>
+                <h3 className="text-sm font-black text-purple-700">3. Banco Galicia</h3>
+                <p className="text-[11px] text-slate-400">Transferencias acreditadas</p>
+              </div>
             </div>
             <span className="text-sm font-black text-purple-700">
               ${totalTransferencias.toFixed(2)}
