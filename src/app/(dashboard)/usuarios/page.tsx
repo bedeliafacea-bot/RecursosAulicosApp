@@ -261,7 +261,7 @@ export default function UsuariosPage() {
                 onChange={(e) => setNuevoRol(e.target.value as RolUsuario)}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-uap-borde rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uap-azul-medio"
               >
-                <option value="secretario">Secretario (Oficina, Reservas, Becuap)</option>
+                <option value="secretario">Secretario (Todos los módulos, excepto Gestión de Usuarios)</option>
                 <option value="alumno">Alumno Becario (Consulta de horas)</option>
                 <option value="admin">Administrador (Control total)</option>
               </select>

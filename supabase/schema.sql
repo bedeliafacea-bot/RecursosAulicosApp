@@ -469,8 +469,8 @@ CREATE POLICY "Lectura de horarios pactados para autenticados"
 CREATE POLICY "Solo admin puede pactar horarios"
     ON public.horarios_pactados FOR ALL
     TO authenticated
-    USING (public.current_user_role() = 'admin')
-    WITH CHECK (public.current_user_role() = 'admin');
+    USING (public.current_user_role() IN ('admin', 'secretario'))
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
 
 -- POLÍTICAS: evaluaciones_becuap
 CREATE POLICY "Lectura de evaluaciones para autenticados"
