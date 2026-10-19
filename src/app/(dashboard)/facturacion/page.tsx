@@ -68,17 +68,17 @@ export default function FacturacionPage() {
   const mpMontoRef = useRef<HTMLInputElement | null>(null);
 
   // Generar recibos iniciales
-  const generarRecibos = () => {
+  const generarRecibos = (mostrarErrores = false) => {
     const d = Number(desdeRecibo);
     const h = Number(hastaRecibo);
 
     if (isNaN(d) || isNaN(h) || h < d) {
-      alert('Ingresá un rango de recibos válido.');
+      if (mostrarErrores) alert('Ingresá un rango de recibos válido.');
       return;
     }
 
     if (h - d > 150) {
-      alert('El rango máximo permitido es de 150 recibos por cierre.');
+      if (mostrarErrores) alert('El rango máximo permitido es de 150 recibos por cierre.');
       return;
     }
 
@@ -418,7 +418,7 @@ export default function FacturacionPage() {
 
           <button
             type="button"
-            onClick={generarRecibos}
+            onClick={() => generarRecibos(true)}
             className="w-full py-2.5 px-4 bg-slate-800 hover:bg-black text-white text-xs font-black uppercase rounded-xl transition-all shadow-sm"
           >
             Generar Talonario
@@ -462,7 +462,9 @@ export default function FacturacionPage() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-xs text-uap-azul min-w-[50px]">
+                  <span className={`font-mono font-black text-xs min-w-[50px] ${
+                    r.tipo === 'anulado' ? 'text-slate-400 line-through' : 'text-uap-azul'
+                  }`}>
                     #{r.numero}
                   </span>
                   <button
@@ -470,7 +472,7 @@ export default function FacturacionPage() {
                     onClick={() => handleToggleTipoRecibo(r.numero)}
                     className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border transition-colors ${
                       r.tipo === 'anulado'
-                        ? 'bg-red-100 text-red-800 border-red-200'
+                        ? 'bg-red-100 text-red-800 border-red-200 line-through'
                         : r.tipo === 'transferencia'
                         ? 'bg-purple-100 text-purple-800 border-purple-200'
                         : r.tipo === 'efectivo'
@@ -484,24 +486,29 @@ export default function FacturacionPage() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1 w-28">
-                  <span className="text-xs font-bold text-slate-400">$</span>
-                  <input
-                    ref={(el) => {
-                      inputRefs.current[r.numero] = el;
-                    }}
-                    type="number"
-                    step="0.01"
-                    disabled={r.tipo === 'anulado'}
-                    value={r.tipo === 'anulado' ? 0 : r.monto || ''}
-                    onChange={(e) =>
-                      handleMontoReciboChange(r.numero, Number(e.target.value))
-                    }
-                    onKeyDown={(e) => handleReciboKeyDown(e, idx)}
-                    placeholder="0.00"
-                    className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-right text-xs font-extrabold focus:outline-none focus:ring-1 focus:ring-uap-azul"
-                  />
-                </div>
+                {r.tipo === 'anulado' ? (
+                  <span className="w-28 text-right text-[10px] font-black uppercase text-red-600 line-through">
+                    Anulado
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-1 w-28">
+                    <span className="text-xs font-bold text-slate-400">$</span>
+                    <input
+                      ref={(el) => {
+                        inputRefs.current[r.numero] = el;
+                      }}
+                      type="number"
+                      step="0.01"
+                      value={r.monto || ''}
+                      onChange={(e) =>
+                        handleMontoReciboChange(r.numero, Number(e.target.value))
+                      }
+                      onKeyDown={(e) => handleReciboKeyDown(e, idx)}
+                      placeholder="0.00"
+                      className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-right text-xs font-extrabold focus:outline-none focus:ring-1 focus:ring-uap-azul"
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
