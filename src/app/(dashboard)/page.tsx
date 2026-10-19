@@ -3,14 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import {
-  Clock,
-  FileSpreadsheet,
   FileText,
   Calendar,
   DollarSign,
   Gift,
   Tv,
   Users,
+  GraduationCap,
   ShieldCheck,
   ChevronRight,
   Sparkles,
@@ -37,20 +36,12 @@ export default function HomePage() {
 
   const modulos = [
     {
-      titulo: 'Mi Ficha / Progreso',
-      desc: 'Consulta de horas acumuladas, cronograma pactado y avance mensual.',
+      titulo: 'Alumnos',
+      desc: 'Consultá fichas y progreso; gestioná jornadas y horarios según tu perfil.',
       href: '/alumnos',
-      icono: Clock,
+      icono: GraduationCap,
       color: 'from-blue-600 to-uap-azul',
       roles: ['admin', 'secretario', 'alumno'],
-    },
-    {
-      titulo: 'Cargar Jornada Diaria',
-      desc: 'Registro de asistencia doble turno (e1/s1 y e2/s2) y tareas de becarios.',
-      href: '/alumnos',
-      icono: FileSpreadsheet,
-      color: 'from-emerald-600 to-teal-700',
-      roles: ['admin', 'secretario'],
     },
     {
       titulo: 'Gestión de Oficina',

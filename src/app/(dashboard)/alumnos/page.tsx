@@ -778,7 +778,7 @@ export default function AlumnosPage() {
           </>
         )}
 
-        {rol === 'admin' && (
+        {rol !== 'alumno' && (
           <>
             <button
               onClick={() => setTab('pactar')}
@@ -1341,9 +1341,9 @@ export default function AlumnosPage() {
       )}
 
       {/* ============================================================================
-          PESTAÑA 4: PACTAR HORARIOS (Solo Admin)
+          PESTAÑA 4: PACTAR HORARIOS (Admin y Secretario)
       ============================================================================ */}
-      {tab === 'pactar' && rol === 'admin' && (
+          {tab === 'pactar' && rol !== 'alumno' && (
         <div className="bg-white rounded-3xl p-6 md:p-8 shadow-uap border border-uap-borde max-w-2xl mx-auto space-y-6">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
             <CalendarDays className="w-6 h-6 text-uap-azul" />
@@ -1449,9 +1449,9 @@ export default function AlumnosPage() {
       )}
 
       {/* ============================================================================
-          PESTAÑA 5: NUEVO ALUMNO (Solo Admin)
+          PESTAÑA 5: NUEVO ALUMNO (Admin y Secretario)
       ============================================================================ */}
-      {tab === 'nuevo' && rol === 'admin' && (
+          {tab === 'nuevo' && rol !== 'alumno' && (
         <div className="bg-white rounded-3xl p-6 md:p-8 shadow-uap border border-uap-borde max-w-2xl mx-auto space-y-6">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
             <UserPlus className="w-6 h-6 text-uap-azul" />
