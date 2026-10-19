@@ -161,6 +161,12 @@ export default function FacturacionPage() {
     0
   );
 
+  const recibosEfectivo = recibos.filter((recibo) => recibo.tipo === 'efectivo');
+  const totalEfectivoInformado = recibosEfectivo.reduce(
+    (acc, recibo) => acc + (Number(recibo.monto) || 0),
+    0
+  );
+
   const diferenciaCaja = totalRecibosValidos - totalMercadoPago;
   const totalEfectivoCalculado = Math.max(diferenciaCaja - totalTransferencias, 0);
 
@@ -714,106 +720,114 @@ export default function FacturacionPage() {
       {/* ========================================================
           INFORME IMPRIMIBLE A4 OFICIAL DE CIERRE DE CAJA
       ======================================================== */}
-      <div className="hidden print:block print-page-portrait space-y-6">
-        <div className="text-center pb-4 border-b-2 border-black flex items-center justify-between">
-          <img
-            src="/img/logo-uap.png"
-            alt="Logo UAP"
-            className="w-16 h-auto"
-          />
-          <div className="text-center flex-1 px-4">
-            <h3 className="font-extrabold text-xs uppercase tracking-widest text-slate-600">
-              Universidad Adventista del Plata
-            </h3>
-            <h2 className="text-lg font-black uppercase text-black">
-              INFORME DE CIERRE DE CAJA DIARIO
-            </h2>
-            <p className="text-xs font-bold text-slate-700">
-              Recursos Áulicos | Bedelía • Fecha: {fechaHoy}
-            </p>
+      <div className="hidden print:block print-cash-report">
+        <header className="print-cash-header">
+          <img src="/img/logo-uap.png" alt="Logo UAP" />
+          <div>
+            <h1>INFORME DE CIERRE DE CAJA</h1>
+            <p>Fecha: {fechaHoy}</p>
           </div>
-          <div className="text-right text-[11px] font-mono">
-            Operador: {perfil?.nombre || 'Bedelía'}
-          </div>
-        </div>
+          <span aria-hidden="true" />
+        </header>
 
-        {/* Resumen General */}
-        <div className="grid grid-cols-4 gap-2 text-xs border border-black p-3 bg-slate-50">
-          <div>
-            <span className="font-bold block text-slate-600">Total Recibos:</span>
-            <span className="text-sm font-black">${totalRecibosValidos.toFixed(2)}</span>
-          </div>
-          <div>
-            <span className="font-bold block text-slate-600">Mercado Pago:</span>
-            <span className="text-sm font-black">${totalMercadoPago.toFixed(2)}</span>
-          </div>
-          <div>
-            <span className="font-bold block text-slate-600">Transferencias Galicia:</span>
-            <span className="text-sm font-black">${totalTransferencias.toFixed(2)}</span>
-          </div>
-          <div>
-            <span className="font-bold block text-slate-600">Diferencia (Efectivo+Tr.):</span>
-            <span className="text-sm font-black text-black">${diferenciaCaja.toFixed(2)}</span>
-          </div>
-        </div>
-
-        {/* Detalle de Recibos */}
-        <div>
-          <h4 className="font-black text-xs uppercase border-b border-black pb-1 mb-2">
-            Detalle de Talonario de Recibos
-          </h4>
-          <div className="grid grid-cols-4 gap-1 text-[11px]">
-            {recibos.map((r) => (
-              <div key={r.numero} className="border border-slate-300 p-1 flex justify-between">
-                <span>
-                  #{r.numero} <small>({r.tipo.charAt(0).toUpperCase()})</small>
-                </span>
-                <b className={r.tipo === 'anulado' ? 'line-through text-slate-400' : ''}>
-                  ${Number(r.monto).toFixed(2)}
-                </b>
+        <div className="print-cash-columns">
+          <section className="print-cash-column">
+            <header className="print-cash-column-title">
+              <img src="/img/logo-uap.png" alt="" />
+              <div>
+                <h2>Recibos físicos</h2>
+                <p>Control por numeración</p>
               </div>
-            ))}
-          </div>
+            </header>
+            <div>
+              {recibos.map((recibo, index) => (
+                <div
+                  key={recibo.numero}
+                  className={`print-cash-row ${recibo.tipo === 'anulado' ? 'print-cash-void' : ''}`}
+                >
+                  <span>#{index + 1}</span>
+                  <span>{recibo.numero.padStart(6, '0')}</span>
+                  <strong>${Number(recibo.monto).toFixed(2)}</strong>
+                </div>
+              ))}
+              {recibos.length === 0 && (
+                <p className="print-cash-empty">No se generaron recibos.</p>
+              )}
+            </div>
+            <p className="print-cash-column-total">
+              Total recibos válidos: <strong>${totalRecibosValidos.toFixed(2)}</strong>
+            </p>
+          </section>
+
+          <section className="print-cash-column">
+            <header className="print-cash-column-title print-cash-mp-title">
+              <h2>Mercado Pago</h2>
+            </header>
+            <div>
+              {mercadoPagoList.map((item, index) => (
+                <div key={item.id || index} className="print-cash-row">
+                  <span>#{index + 1}</span>
+                  <span>{item.fecha ? item.fecha.split('-').reverse().join('/') : ''}</span>
+                  <strong>${Number(item.monto).toFixed(2)}</strong>
+                </div>
+              ))}
+              {mercadoPagoList.length === 0 && (
+                <p className="print-cash-empty">No se informó Mercado Pago.</p>
+              )}
+            </div>
+            <p className="print-cash-column-total">
+              Total Mercado Pago: <strong>${totalMercadoPago.toFixed(2)}</strong>
+            </p>
+          </section>
         </div>
 
-        {/* Detalle de Transferencias Banco Galicia */}
-        {transferenciasList.length > 0 && (
-          <div>
-            <h4 className="font-black text-xs uppercase border-b border-black pb-1 mb-2">
-              Detalle de Transferencias Banco Galicia
-            </h4>
-            <table className="w-full text-xs text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-300">
-                  <th className="py-1">N° Recibo</th>
-                  <th className="py-1">Fecha</th>
-                  <th className="py-1 text-right">Importe Transferido</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transferenciasList.map((t, i) => (
-                  <tr key={i} className="border-b border-slate-200">
-                    <td className="py-1 font-mono">#{t.recibo}</td>
-                    <td className="py-1">{t.fecha}</td>
-                    <td className="py-1 text-right font-bold">${t.monto.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pie de firmas */}
-        <div className="pt-16 grid grid-cols-2 gap-12 text-center text-xs">
-          <div className="border-t border-black pt-2">
-            <p className="font-bold">Firma y Aclaración</p>
-            <p className="text-[10px] text-slate-500">Responsable de Caja</p>
-          </div>
-          <div className="border-t border-black pt-2">
-            <p className="font-bold">Rafael Carro</p>
-            <p className="text-[10px] text-slate-500">Recursos Áulicos | Bedelía UAP</p>
-          </div>
+        <div className="print-cash-difference">
+          <strong>DIFERENCIA FINAL</strong>
+          <strong>${diferenciaCaja.toFixed(2)}</strong>
         </div>
+
+        <section className="print-cash-section print-cash-cash-section">
+          <h2>Efectivo informado</h2>
+          {recibosEfectivo.length > 0 ? (
+            <div>
+              {recibosEfectivo.map((recibo, index) => (
+                <div key={recibo.numero} className="print-cash-row">
+                  <span>#{index + 1}</span>
+                  <span>Recibo {recibo.numero.padStart(6, '0')}</span>
+                  <strong>${Number(recibo.monto).toFixed(2)}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="print-cash-empty">No se informó efectivo.</p>
+          )}
+          <p className="print-cash-section-total">
+            Total efectivo informado: <strong>${totalEfectivoInformado.toFixed(2)}</strong>
+          </p>
+        </section>
+
+        <section className="print-cash-section print-cash-transfer-section">
+          <h2>Transferencias</h2>
+          {transferenciasList.length > 0 ? (
+            <div>
+              {transferenciasList.map((transferencia, index) => (
+                <div key={`${transferencia.recibo}-${index}`} className="print-cash-row">
+                  <span>#{index + 1}</span>
+                  <span>
+                    Recibo {transferencia.recibo} •{' '}
+                    {transferencia.fecha.split('-').reverse().join('/')}
+                  </span>
+                  <strong>${Number(transferencia.monto).toFixed(2)}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="print-cash-empty">No se informaron transferencias.</p>
+          )}
+          <p className="print-cash-section-total">
+            Total transferencias: <strong>${totalTransferencias.toFixed(2)}</strong>
+          </p>
+        </section>
       </div>
 
       {/* ========================================================
