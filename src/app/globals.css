@@ -89,7 +89,7 @@ body {
   }
 
   .print-cash-header {
-    display: grid;
+    display: grid !important;
     grid-template-columns: 22mm 1fr 22mm;
     align-items: center;
     gap: 4mm;
@@ -127,7 +127,7 @@ body {
   }
 
   .print-cash-column-title {
-    display: flex;
+    display: flex !important;
     min-height: 19mm;
     align-items: center;
     gap: 3mm;

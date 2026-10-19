@@ -36,6 +36,7 @@ import {
 export default function FacturacionPage() {
   const { rol, perfil } = useAuth();
   const fechaHoy = fechaHoyAR();
+  const fechaCierre = fechaHoy.split('-').reverse().join('/');
 
   // 1. GENERADOR DE RECIBOS
   const [desdeRecibo, setDesdeRecibo] = useState<number>(1001);
@@ -725,7 +726,7 @@ export default function FacturacionPage() {
           <img src="/img/logo-uap.png" alt="Logo UAP" />
           <div>
             <h1>INFORME DE CIERRE DE CAJA</h1>
-            <p>Fecha: {fechaHoy}</p>
+            <p>Fecha de cierre: {fechaCierre}</p>
           </div>
           <span aria-hidden="true" />
         </header>
