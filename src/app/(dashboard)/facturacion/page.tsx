@@ -36,6 +36,7 @@ import {
 export default function FacturacionPage() {
   const { rol, perfil } = useAuth();
   const fechaHoy = fechaHoyAR();
+  const fechaCierre = fechaHoy.split('-').reverse().join('/');
 
   // 1. GENERADOR DE RECIBOS
   const [desdeRecibo, setDesdeRecibo] = useState<number>(1001);
@@ -68,17 +69,17 @@ export default function FacturacionPage() {
   const mpMontoRef = useRef<HTMLInputElement | null>(null);
 
   // Generar recibos iniciales
-  const generarRecibos = () => {
+  const generarRecibos = (mostrarErrores = false) => {
     const d = Number(desdeRecibo);
     const h = Number(hastaRecibo);
 
     if (isNaN(d) || isNaN(h) || h < d) {
-      alert('Ingresá un rango de recibos válido.');
+      if (mostrarErrores) alert('Ingresá un rango de recibos válido.');
       return;
     }
 
     if (h - d > 150) {
-      alert('El rango máximo permitido es de 150 recibos por cierre.');
+      if (mostrarErrores) alert('El rango máximo permitido es de 150 recibos por cierre.');
       return;
     }
 
@@ -158,6 +159,12 @@ export default function FacturacionPage() {
 
   const totalTransferencias = transferenciasList.reduce(
     (acc, cur) => acc + (Number(cur.monto) || 0),
+    0
+  );
+
+  const recibosEfectivo = recibos.filter((recibo) => recibo.tipo === 'efectivo');
+  const totalEfectivoInformado = recibosEfectivo.reduce(
+    (acc, recibo) => acc + (Number(recibo.monto) || 0),
     0
   );
 
@@ -418,7 +425,7 @@ export default function FacturacionPage() {
 
           <button
             type="button"
-            onClick={generarRecibos}
+            onClick={() => generarRecibos(true)}
             className="w-full py-2.5 px-4 bg-slate-800 hover:bg-black text-white text-xs font-black uppercase rounded-xl transition-all shadow-sm"
           >
             Generar Talonario
@@ -431,8 +438,8 @@ export default function FacturacionPage() {
         {/* ========================================================
             COLUMNA 1: RECIBOS FÍSICOS
         ======================================================== */}
-        <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="bg-blue-50 rounded-3xl p-5 shadow-uap border border-blue-200 flex flex-col max-h-[640px]">
+          <div className="flex items-center justify-between pb-3 border-b border-blue-200 mb-3">
             <div className="flex items-center gap-3">
               <img
                 src="https://i.postimg.cc/fyMcjMcn/logo-uap.png"
@@ -458,11 +465,13 @@ export default function FacturacionPage() {
                     ? 'bg-slate-100 border-slate-200 opacity-60'
                     : r.tipo === 'transferencia'
                     ? 'bg-blue-50/80 border-blue-200'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
+                    : 'bg-white border-blue-200 hover:border-blue-300'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-xs text-uap-azul min-w-[50px]">
+                  <span className={`font-mono font-black text-xs min-w-[50px] ${
+                    r.tipo === 'anulado' ? 'text-slate-400 line-through' : 'text-uap-azul'
+                  }`}>
                     #{r.numero}
                   </span>
                   <button
@@ -470,7 +479,7 @@ export default function FacturacionPage() {
                     onClick={() => handleToggleTipoRecibo(r.numero)}
                     className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border transition-colors ${
                       r.tipo === 'anulado'
-                        ? 'bg-red-100 text-red-800 border-red-200'
+                        ? 'bg-red-100 text-red-800 border-red-200 line-through'
                         : r.tipo === 'transferencia'
                         ? 'bg-purple-100 text-purple-800 border-purple-200'
                         : r.tipo === 'efectivo'
@@ -484,24 +493,29 @@ export default function FacturacionPage() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1 w-28">
-                  <span className="text-xs font-bold text-slate-400">$</span>
-                  <input
-                    ref={(el) => {
-                      inputRefs.current[r.numero] = el;
-                    }}
-                    type="number"
-                    step="0.01"
-                    disabled={r.tipo === 'anulado'}
-                    value={r.tipo === 'anulado' ? 0 : r.monto || ''}
-                    onChange={(e) =>
-                      handleMontoReciboChange(r.numero, Number(e.target.value))
-                    }
-                    onKeyDown={(e) => handleReciboKeyDown(e, idx)}
-                    placeholder="0.00"
-                    className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-right text-xs font-extrabold focus:outline-none focus:ring-1 focus:ring-uap-azul"
-                  />
-                </div>
+                {r.tipo === 'anulado' ? (
+                  <span className="w-28 text-right text-[10px] font-black uppercase text-red-600 line-through">
+                    Anulado
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-1 w-28">
+                    <span className="text-xs font-bold text-slate-400">$</span>
+                    <input
+                      ref={(el) => {
+                        inputRefs.current[r.numero] = el;
+                      }}
+                      type="number"
+                      step="0.01"
+                      value={r.monto || ''}
+                      onChange={(e) =>
+                        handleMontoReciboChange(r.numero, Number(e.target.value))
+                      }
+                      onKeyDown={(e) => handleReciboKeyDown(e, idx)}
+                      placeholder="0.00"
+                      className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-right text-xs font-extrabold focus:outline-none focus:ring-1 focus:ring-uap-azul"
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -510,8 +524,8 @@ export default function FacturacionPage() {
         {/* ========================================================
             COLUMNA 2: MERCADO PAGO
         ======================================================== */}
-        <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="bg-amber-50 rounded-3xl p-5 shadow-uap border border-amber-300 flex flex-col max-h-[640px]">
+          <div className="flex items-center justify-between pb-3 border-b border-amber-200 mb-3">
             <div className="flex items-center gap-3">
               <img
                 src="https://i.postimg.cc/KYZcxG53/Mercado_pago.png"
@@ -519,16 +533,16 @@ export default function FacturacionPage() {
                 className="h-9 w-24 object-contain"
               />
               <div>
-                <h3 className="text-sm font-black text-sky-700">2. Mercado Pago</h3>
+                <h3 className="text-sm font-black text-amber-800">2. Mercado Pago</h3>
                 <p className="text-[11px] text-slate-400">Cobros por QR / App</p>
               </div>
             </div>
-            <span className="text-sm font-black text-sky-700">
+            <span className="text-sm font-black text-amber-800">
               ${totalMercadoPago.toFixed(2)}
             </span>
           </div>
 
-          <form onSubmit={handleAgregarMP} className="space-y-2 mb-3 bg-sky-50/60 p-3 rounded-2xl border border-sky-100">
+          <form onSubmit={handleAgregarMP} className="space-y-2 mb-3 bg-amber-100/70 p-3 rounded-2xl border border-amber-200">
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="date"
@@ -548,7 +562,7 @@ export default function FacturacionPage() {
             </div>
             <button
               type="submit"
-              className="w-full py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-black uppercase rounded-lg shadow-sm"
+              className="w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase rounded-lg shadow-sm"
             >
               + Agregar MP
             </button>
@@ -558,7 +572,7 @@ export default function FacturacionPage() {
             {mercadoPagoList.map((m, idx) => (
               <div
                 key={m.id || idx}
-                className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs"
+                className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between text-xs"
               >
                 <div>
                   <div className="font-extrabold text-slate-700">${m.monto.toFixed(2)}</div>
@@ -581,8 +595,8 @@ export default function FacturacionPage() {
         {/* ========================================================
             COLUMNA 3: TRANSFERENCIAS BANCO GALICIA
         ======================================================== */}
-        <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="bg-orange-50 rounded-3xl p-5 shadow-uap border border-orange-200 flex flex-col max-h-[640px]">
+          <div className="flex items-center justify-between pb-3 border-b border-orange-200 mb-3">
             <div className="flex items-center gap-3">
               <img
                 src="https://i.postimg.cc/s2Kb9TDd/Galicia.png"
@@ -590,16 +604,16 @@ export default function FacturacionPage() {
                 className="h-9 w-24 object-contain"
               />
               <div>
-                <h3 className="text-sm font-black text-purple-700">3. Banco Galicia</h3>
+                <h3 className="text-sm font-black text-orange-800">3. Banco Galicia</h3>
                 <p className="text-[11px] text-slate-400">Transferencias acreditadas</p>
               </div>
             </div>
-            <span className="text-sm font-black text-purple-700">
+            <span className="text-sm font-black text-orange-800">
               ${totalTransferencias.toFixed(2)}
             </span>
           </div>
 
-          <form onSubmit={handleAgregarTransferencia} className="space-y-2 mb-3 bg-purple-50/60 p-3 rounded-2xl border border-purple-100">
+          <form onSubmit={handleAgregarTransferencia} className="space-y-2 mb-3 bg-orange-100/70 p-3 rounded-2xl border border-orange-200">
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="text"
@@ -625,7 +639,7 @@ export default function FacturacionPage() {
             />
             <button
               type="submit"
-              className="w-full py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black uppercase rounded-lg shadow-sm"
+              className="w-full py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-black uppercase rounded-lg shadow-sm"
             >
               + Agregar Transferencia
             </button>
@@ -635,7 +649,7 @@ export default function FacturacionPage() {
             {transferenciasList.map((t, idx) => (
               <div
                 key={idx}
-                className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs"
+                className="p-2.5 bg-orange-50 rounded-xl border border-orange-200 flex items-center justify-between text-xs"
               >
                 <div>
                   <div className="font-extrabold text-slate-700">${t.monto.toFixed(2)}</div>
@@ -707,106 +721,114 @@ export default function FacturacionPage() {
       {/* ========================================================
           INFORME IMPRIMIBLE A4 OFICIAL DE CIERRE DE CAJA
       ======================================================== */}
-      <div className="hidden print:block print-page-portrait space-y-6">
-        <div className="text-center pb-4 border-b-2 border-black flex items-center justify-between">
-          <img
-            src="/img/logo-uap.png"
-            alt="Logo UAP"
-            className="w-16 h-auto"
-          />
-          <div className="text-center flex-1 px-4">
-            <h3 className="font-extrabold text-xs uppercase tracking-widest text-slate-600">
-              Universidad Adventista del Plata
-            </h3>
-            <h2 className="text-lg font-black uppercase text-black">
-              INFORME DE CIERRE DE CAJA DIARIO
-            </h2>
-            <p className="text-xs font-bold text-slate-700">
-              Recursos Áulicos | Bedelía • Fecha: {fechaHoy}
-            </p>
+      <div className="hidden print:block print-cash-report">
+        <header className="print-cash-header">
+          <img src="/img/logo-uap.png" alt="Logo UAP" />
+          <div>
+            <h1>INFORME DE CIERRE DE CAJA</h1>
+            <p>Fecha de cierre: {fechaCierre}</p>
           </div>
-          <div className="text-right text-[11px] font-mono">
-            Operador: {perfil?.nombre || 'Bedelía'}
-          </div>
-        </div>
+          <span aria-hidden="true" />
+        </header>
 
-        {/* Resumen General */}
-        <div className="grid grid-cols-4 gap-2 text-xs border border-black p-3 bg-slate-50">
-          <div>
-            <span className="font-bold block text-slate-600">Total Recibos:</span>
-            <span className="text-sm font-black">${totalRecibosValidos.toFixed(2)}</span>
-          </div>
-          <div>
-            <span className="font-bold block text-slate-600">Mercado Pago:</span>
-            <span className="text-sm font-black">${totalMercadoPago.toFixed(2)}</span>
-          </div>
-          <div>
-            <span className="font-bold block text-slate-600">Transferencias Galicia:</span>
-            <span className="text-sm font-black">${totalTransferencias.toFixed(2)}</span>
-          </div>
-          <div>
-            <span className="font-bold block text-slate-600">Diferencia (Efectivo+Tr.):</span>
-            <span className="text-sm font-black text-black">${diferenciaCaja.toFixed(2)}</span>
-          </div>
-        </div>
-
-        {/* Detalle de Recibos */}
-        <div>
-          <h4 className="font-black text-xs uppercase border-b border-black pb-1 mb-2">
-            Detalle de Talonario de Recibos
-          </h4>
-          <div className="grid grid-cols-4 gap-1 text-[11px]">
-            {recibos.map((r) => (
-              <div key={r.numero} className="border border-slate-300 p-1 flex justify-between">
-                <span>
-                  #{r.numero} <small>({r.tipo.charAt(0).toUpperCase()})</small>
-                </span>
-                <b className={r.tipo === 'anulado' ? 'line-through text-slate-400' : ''}>
-                  ${Number(r.monto).toFixed(2)}
-                </b>
+        <div className="print-cash-columns">
+          <section className="print-cash-column">
+            <header className="print-cash-column-title">
+              <img src="/img/logo-uap.png" alt="" />
+              <div>
+                <h2>Recibos físicos</h2>
+                <p>Control por numeración</p>
               </div>
-            ))}
-          </div>
+            </header>
+            <div>
+              {recibos.map((recibo, index) => (
+                <div
+                  key={recibo.numero}
+                  className={`print-cash-row ${recibo.tipo === 'anulado' ? 'print-cash-void' : ''}`}
+                >
+                  <span>#{index + 1}</span>
+                  <span>{recibo.numero.padStart(6, '0')}</span>
+                  <strong>${Number(recibo.monto).toFixed(2)}</strong>
+                </div>
+              ))}
+              {recibos.length === 0 && (
+                <p className="print-cash-empty">No se generaron recibos.</p>
+              )}
+            </div>
+            <p className="print-cash-column-total">
+              Total recibos válidos: <strong>${totalRecibosValidos.toFixed(2)}</strong>
+            </p>
+          </section>
+
+          <section className="print-cash-column">
+            <header className="print-cash-column-title print-cash-mp-title">
+              <h2>Mercado Pago</h2>
+            </header>
+            <div>
+              {mercadoPagoList.map((item, index) => (
+                <div key={item.id || index} className="print-cash-row">
+                  <span>#{index + 1}</span>
+                  <span>{item.fecha ? item.fecha.split('-').reverse().join('/') : ''}</span>
+                  <strong>${Number(item.monto).toFixed(2)}</strong>
+                </div>
+              ))}
+              {mercadoPagoList.length === 0 && (
+                <p className="print-cash-empty">No se informó Mercado Pago.</p>
+              )}
+            </div>
+            <p className="print-cash-column-total">
+              Total Mercado Pago: <strong>${totalMercadoPago.toFixed(2)}</strong>
+            </p>
+          </section>
         </div>
 
-        {/* Detalle de Transferencias Banco Galicia */}
-        {transferenciasList.length > 0 && (
-          <div>
-            <h4 className="font-black text-xs uppercase border-b border-black pb-1 mb-2">
-              Detalle de Transferencias Banco Galicia
-            </h4>
-            <table className="w-full text-xs text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-300">
-                  <th className="py-1">N° Recibo</th>
-                  <th className="py-1">Fecha</th>
-                  <th className="py-1 text-right">Importe Transferido</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transferenciasList.map((t, i) => (
-                  <tr key={i} className="border-b border-slate-200">
-                    <td className="py-1 font-mono">#{t.recibo}</td>
-                    <td className="py-1">{t.fecha}</td>
-                    <td className="py-1 text-right font-bold">${t.monto.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pie de firmas */}
-        <div className="pt-16 grid grid-cols-2 gap-12 text-center text-xs">
-          <div className="border-t border-black pt-2">
-            <p className="font-bold">Firma y Aclaración</p>
-            <p className="text-[10px] text-slate-500">Responsable de Caja</p>
-          </div>
-          <div className="border-t border-black pt-2">
-            <p className="font-bold">Rafael Carro</p>
-            <p className="text-[10px] text-slate-500">Recursos Áulicos | Bedelía UAP</p>
-          </div>
+        <div className="print-cash-difference">
+          <strong>DIFERENCIA FINAL</strong>
+          <strong>${diferenciaCaja.toFixed(2)}</strong>
         </div>
+
+        <section className="print-cash-section print-cash-cash-section">
+          <h2>Efectivo informado</h2>
+          {recibosEfectivo.length > 0 ? (
+            <div>
+              {recibosEfectivo.map((recibo, index) => (
+                <div key={recibo.numero} className="print-cash-row">
+                  <span>#{index + 1}</span>
+                  <span>Recibo {recibo.numero.padStart(6, '0')}</span>
+                  <strong>${Number(recibo.monto).toFixed(2)}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="print-cash-empty">No se informó efectivo.</p>
+          )}
+          <p className="print-cash-section-total">
+            Total efectivo informado: <strong>${totalEfectivoInformado.toFixed(2)}</strong>
+          </p>
+        </section>
+
+        <section className="print-cash-section print-cash-transfer-section">
+          <h2>Transferencias</h2>
+          {transferenciasList.length > 0 ? (
+            <div>
+              {transferenciasList.map((transferencia, index) => (
+                <div key={`${transferencia.recibo}-${index}`} className="print-cash-row">
+                  <span>#{index + 1}</span>
+                  <span>
+                    Recibo {transferencia.recibo} •{' '}
+                    {transferencia.fecha.split('-').reverse().join('/')}
+                  </span>
+                  <strong>${Number(transferencia.monto).toFixed(2)}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="print-cash-empty">No se informaron transferencias.</p>
+          )}
+          <p className="print-cash-section-total">
+            Total transferencias: <strong>${totalTransferencias.toFixed(2)}</strong>
+          </p>
+        </section>
       </div>
 
       {/* ========================================================
