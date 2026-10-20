@@ -88,11 +88,23 @@
   /* Evaluación: 1 sola hoja A4 apaisada (@page margin 5mm). */
   .print-portal .planilla-eval {
     width: 287mm !important; max-width: 287mm !important;
-    height: 200mm !important; min-height: 200mm !important;
-    margin: 0 !important; padding: 0 !important; overflow: hidden !important;
+    height: auto !important; min-height: 0 !important;
+    margin: 0 !important; padding: 0 !important; overflow: visible !important;
     box-sizing: border-box !important; break-inside: avoid; page-break-inside: avoid;
   }
-  .print-portal .planilla-eval .fila-firmas td { height: 30mm !important; }
+  .print-portal .planilla-eval .eval-header { margin-bottom: 8px !important; }
+  .print-portal .planilla-eval .eval-datos-alumno { margin-bottom: 8px !important; }
+  .print-portal .planilla-eval .tabla-evaluacion { font-size: 10px !important; }
+  .print-portal .planilla-eval .tabla-evaluacion th,
+  .print-portal .planilla-eval .tabla-evaluacion td {
+    padding: 3px !important; overflow: visible !important;
+  }
+  .print-portal .planilla-eval .tabla-evaluacion .sub-headers th { height: 75px !important; }
+  .print-portal .planilla-eval .tabla-evaluacion .text-left { font-size: 10px !important; }
+  .print-portal .planilla-eval .fila-firmas td {
+    height: 26mm !important; font-size: 9px !important;
+    overflow-wrap: anywhere; white-space: normal;
+  }
 
   .planilla-horas *, .planilla-eval * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
