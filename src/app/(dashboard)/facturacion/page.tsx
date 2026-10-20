@@ -33,14 +33,17 @@ import {
   MoreHorizontal,
 } from 'lucide-react';
 
+const formatearNumeroRecibo = (numero: string | number) =>
+  String(numero).padStart(6, '0');
+
 export default function FacturacionPage() {
   const { rol, perfil } = useAuth();
   const fechaHoy = fechaHoyAR();
   const fechaCierre = fechaHoy.split('-').reverse().join('/');
 
   // 1. GENERADOR DE RECIBOS
-  const [desdeRecibo, setDesdeRecibo] = useState<number>(1001);
-  const [hastaRecibo, setHastaRecibo] = useState<number>(1020);
+  const [desdeRecibo, setDesdeRecibo] = useState('001001');
+  const [hastaRecibo, setHastaRecibo] = useState('001020');
   const [inputAnulados, setInputAnulados] = useState<string>('');
   const [inputEfectivo, setInputEfectivo] = useState<string>('');
   const [inputTransfer, setInputTransfer] = useState<string>('');
@@ -70,10 +73,20 @@ export default function FacturacionPage() {
 
   // Generar recibos iniciales
   const generarRecibos = (mostrarErrores = false) => {
+    if (
+      !/^\d+$/.test(desdeRecibo) ||
+      !/^\d+$/.test(hastaRecibo) ||
+      !Number.isSafeInteger(Number(desdeRecibo)) ||
+      !Number.isSafeInteger(Number(hastaRecibo))
+    ) {
+      if (mostrarErrores) alert('Ingresá un rango de recibos válido.');
+      return;
+    }
+
     const d = Number(desdeRecibo);
     const h = Number(hastaRecibo);
 
-    if (isNaN(d) || isNaN(h) || h < d) {
+    if (h < d) {
       if (mostrarErrores) alert('Ingresá un rango de recibos válido.');
       return;
     }
@@ -88,23 +101,26 @@ export default function FacturacionPage() {
         .split(',')
         .map((n) => n.trim())
         .filter(Boolean)
+        .map(formatearNumeroRecibo)
     );
     const efSet = new Set(
       inputEfectivo
         .split(',')
         .map((n) => n.trim())
         .filter(Boolean)
+        .map(formatearNumeroRecibo)
     );
     const trSet = new Set(
       inputTransfer
         .split(',')
         .map((n) => n.trim())
         .filter(Boolean)
+        .map(formatearNumeroRecibo)
     );
 
     const generados: ReciboItem[] = [];
     for (let num = d; num <= h; num++) {
-      const numStr = String(num);
+      const numStr = formatearNumeroRecibo(num);
       let tipo: ReciboItem['tipo'] = 'recibo';
 
       if (anuladosSet.has(numStr)) {
@@ -116,7 +132,9 @@ export default function FacturacionPage() {
       }
 
       // Si ya existía un monto previamente ingresado, preservarlo
-      const previo = recibos.find((r) => r.numero === numStr);
+      const previo = recibos.find(
+        (r) => formatearNumeroRecibo(r.numero) === numStr
+      );
       generados.push({
         numero: numStr,
         tipo,
@@ -365,9 +383,10 @@ export default function FacturacionPage() {
               Desde N°
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={desdeRecibo}
-              onChange={(e) => setDesdeRecibo(Number(e.target.value))}
+              onChange={(e) => setDesdeRecibo(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold"
             />
           </div>
@@ -377,9 +396,10 @@ export default function FacturacionPage() {
               Hasta N°
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={hastaRecibo}
-              onChange={(e) => setHastaRecibo(Number(e.target.value))}
+              onChange={(e) => setHastaRecibo(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold"
             />
           </div>
@@ -392,7 +412,7 @@ export default function FacturacionPage() {
               type="text"
               value={inputAnulados}
               onChange={(e) => setInputAnulados(e.target.value)}
-              placeholder="ej: 1005, 1012"
+              placeholder="ej: 001005, 001012"
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
             />
           </div>
@@ -405,7 +425,7 @@ export default function FacturacionPage() {
               type="text"
               value={inputEfectivo}
               onChange={(e) => setInputEfectivo(e.target.value)}
-              placeholder="ej: 1003, 1010"
+              placeholder="ej: 001003, 001010"
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
             />
           </div>
@@ -418,7 +438,7 @@ export default function FacturacionPage() {
               type="text"
               value={inputTransfer}
               onChange={(e) => setInputTransfer(e.target.value)}
-              placeholder="ej: 1008, 1014"
+              placeholder="ej: 001008, 001014"
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
             />
           </div>
