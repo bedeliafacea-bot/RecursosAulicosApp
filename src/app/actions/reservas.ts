@@ -5,6 +5,7 @@ import {
   ReservaMatriz,
   ReservaEspecial,
   Profesor,
+  Recurso,
   DiaSemana,
   EstadoReserva,
 } from '@/lib/types/database.types';
@@ -165,6 +166,26 @@ export async function obtenerProfesoresActivosAction(): Promise<{
     return { ok: true, data: data as Profesor[] };
   } catch (err: any) {
     return { ok: false, error: err?.message || 'Error al obtener profesores.' };
+  }
+}
+
+export async function obtenerRecursosActivosAction(): Promise<{
+  ok: boolean;
+  data?: Recurso[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('recursos')
+      .select('*')
+      .eq('activo', true)
+      .order('nombre', { ascending: true });
+
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, data: data as Recurso[] };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'Error al obtener recursos.' };
   }
 }
 

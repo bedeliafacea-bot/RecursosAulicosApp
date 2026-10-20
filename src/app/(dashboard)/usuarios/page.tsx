@@ -6,6 +6,7 @@ import {
   Departamento,
   PerfilUsuario,
   Profesor,
+  Recurso,
   RolUsuario,
 } from '@/lib/types/database.types';
 import {
@@ -24,6 +25,7 @@ import {
   UserPlus,
   Building2,
   GraduationCap,
+  Package,
   ShieldAlert,
   ShieldCheck,
   KeyRound,
@@ -37,8 +39,8 @@ import {
   X,
 } from 'lucide-react';
 
-type SeccionAdmin = 'usuarios' | 'profesores' | 'departamentos';
-type ElementoCatalogo = Profesor | Departamento;
+type SeccionAdmin = 'usuarios' | 'profesores' | 'departamentos' | 'recursos';
+type ElementoCatalogo = Profesor | Departamento | Recurso;
 
 export default function UsuariosPage() {
   const { rol, isLoading: authLoading, perfil: perfilSesion } = useAuth();
@@ -48,6 +50,7 @@ export default function UsuariosPage() {
   const [busqueda, setBusqueda] = useState('');
   const [profesores, setProfesores] = useState<Profesor[]>([]);
   const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loadingCatalogos, setLoadingCatalogos] = useState(false);
   const [nombreCatalogo, setNombreCatalogo] = useState('');
   const [editandoCatalogo, setEditandoCatalogo] = useState<{ id: string; nombre: string } | null>(null);
@@ -85,9 +88,10 @@ export default function UsuariosPage() {
     if (res.ok) {
       setProfesores(res.profesores || []);
       setDepartamentos(res.departamentos || []);
+      setRecursos(res.recursos || []);
       setErrorCatalogo('');
     } else {
-      setErrorCatalogo(res.error || 'No se pudieron cargar profesores y departamentos.');
+      setErrorCatalogo(res.error || 'No se pudieron cargar los catálogos.');
     }
     setLoadingCatalogos(false);
   };
@@ -196,9 +200,29 @@ export default function UsuariosPage() {
   };
 
   const tipoCatalogo: CatalogoAdminTipo =
-    seccionActiva === 'profesores' ? 'profesor' : 'departamento';
+    seccionActiva === 'profesores'
+      ? 'profesor'
+      : seccionActiva === 'departamentos'
+        ? 'departamento'
+        : 'recurso';
   const elementosCatalogo: ElementoCatalogo[] =
-    tipoCatalogo === 'profesor' ? profesores : departamentos;
+    tipoCatalogo === 'profesor'
+      ? profesores
+      : tipoCatalogo === 'departamento'
+        ? departamentos
+        : recursos;
+  const nombreTipoCatalogo =
+    tipoCatalogo === 'profesor'
+      ? 'Profesor'
+      : tipoCatalogo === 'departamento'
+        ? 'Departamento'
+        : 'Recurso';
+  const pluralTipoCatalogo =
+    tipoCatalogo === 'profesor'
+      ? 'Profesores'
+      : tipoCatalogo === 'departamento'
+        ? 'Departamentos'
+        : 'Recursos';
 
   const handleGuardarCatalogo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -217,9 +241,7 @@ export default function UsuariosPage() {
       setNombreCatalogo('');
       setEditandoCatalogo(null);
       setExitoCatalogo(
-        `${tipoCatalogo === 'profesor' ? 'Profesor' : 'Departamento'} ${
-          editandoCatalogo ? 'actualizado' : 'agregado'
-        } correctamente.`
+        `${nombreTipoCatalogo} ${editandoCatalogo ? 'actualizado' : 'agregado'} correctamente.`
       );
       await cargarCatalogos();
     }
@@ -284,7 +306,7 @@ export default function UsuariosPage() {
               Administración del Sistema
             </h1>
             <p className="text-sm text-uap-gris mt-0.5">
-              Administrá usuarios, profesores y departamentos
+              Administrá usuarios, profesores, departamentos y recursos
             </p>
           </div>
         </div>
@@ -304,7 +326,7 @@ export default function UsuariosPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-white p-2 rounded-2xl shadow-sm border border-uap-borde">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-2 bg-white p-2 rounded-2xl shadow-sm border border-uap-borde">
         <button
           type="button"
           onClick={() => cambiarSeccion('usuarios')}
@@ -340,6 +362,18 @@ export default function UsuariosPage() {
         >
           <Building2 className="w-4 h-4" />
           Departamentos
+        </button>
+        <button
+          type="button"
+          onClick={() => cambiarSeccion('recursos')}
+          className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+            seccionActiva === 'recursos'
+              ? 'bg-uap-azul text-white shadow-sm'
+              : 'text-uap-azul hover:bg-slate-100'
+          }`}
+        >
+          <Package className="w-4 h-4" />
+          Recursos
         </button>
       </div>
 
@@ -553,13 +587,15 @@ export default function UsuariosPage() {
             <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-5">
               {tipoCatalogo === 'profesor' ? (
                 <GraduationCap className="w-5 h-5 text-uap-azul-medio" />
-              ) : (
+              ) : tipoCatalogo === 'departamento' ? (
                 <Building2 className="w-5 h-5 text-uap-azul-medio" />
+              ) : (
+                <Package className="w-5 h-5 text-uap-azul-medio" />
               )}
               <h2 className="text-lg font-black text-uap-azul">
                 {editandoCatalogo
-                  ? `Editar ${tipoCatalogo}`
-                  : `Nuevo ${tipoCatalogo === 'profesor' ? 'Profesor' : 'Departamento'}`}
+                  ? `Editar ${nombreTipoCatalogo}`
+                  : `Nuevo ${nombreTipoCatalogo}`}
               </h2>
             </div>
 
@@ -585,7 +621,13 @@ export default function UsuariosPage() {
                   onChange={(e) => setNombreCatalogo(e.target.value)}
                   maxLength={150}
                   required
-                  placeholder={tipoCatalogo === 'profesor' ? 'Nombre y apellido' : 'Nombre del departamento'}
+                  placeholder={
+                    tipoCatalogo === 'profesor'
+                      ? 'Nombre y apellido'
+                      : tipoCatalogo === 'departamento'
+                        ? 'Nombre del departamento'
+                        : 'Ej.: Proyector Epson'
+                  }
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-uap-borde rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uap-azul-medio"
                 />
               </div>
@@ -602,7 +644,9 @@ export default function UsuariosPage() {
                   ) : (
                     <UserPlus className="w-4 h-4" />
                   )}
-                  {editandoCatalogo ? 'Guardar cambios' : `Agregar ${tipoCatalogo}`}
+                  {editandoCatalogo
+                    ? 'Guardar cambios'
+                    : `Agregar ${nombreTipoCatalogo.toLocaleLowerCase()}`}
                 </button>
                 {editandoCatalogo && (
                   <button
@@ -625,7 +669,7 @@ export default function UsuariosPage() {
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div>
                 <h2 className="text-lg font-black text-uap-azul">
-                  Directorio de {tipoCatalogo === 'profesor' ? 'Profesores' : 'Departamentos'}
+                  Directorio de {pluralTipoCatalogo}
                 </h2>
                 <p className="text-xs text-uap-gris">
                   Registros: <b>{elementosCatalogo.length}</b>
@@ -638,7 +682,7 @@ export default function UsuariosPage() {
               <div className="py-12 text-center text-sm text-slate-500">Cargando directorio...</div>
             ) : elementosCatalogo.length === 0 ? (
               <div className="py-12 text-center text-sm text-slate-500">
-                Todavía no hay {tipoCatalogo === 'profesor' ? 'profesores' : 'departamentos'} registrados.
+                Todavía no hay registros.
               </div>
             ) : (
               <div className="overflow-x-auto">

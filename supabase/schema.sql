@@ -158,6 +158,26 @@ CREATE TABLE IF NOT EXISTS public.profesores (
 
 CREATE INDEX IF NOT EXISTS idx_profesores_nombre ON public.profesores(nombre);
 
+-- ============================================================================
+-- 10.1 CATÁLOGO DE RECURSOS PARA RESERVAS DE LA MATRIZ
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.recursos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL UNIQUE,
+    activo BOOLEAN NOT NULL DEFAULT true,
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_recursos_nombre ON public.recursos(nombre);
+
+INSERT INTO public.recursos (nombre, activo) VALUES
+('Proyector', true),
+('Audio', true),
+('Proyector + Audio', true),
+('Notebook ASSUS', true),
+('TV Móvil', true)
+ON CONFLICT (nombre) DO NOTHING;
+
 -- ==============================================================================
 -- 11. TABLA DE RESERVAS SEMANALES (MATRIZ IAP / UAP)
 -- ==============================================================================
@@ -418,6 +438,7 @@ ALTER TABLE public.departamentos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.fotocopias ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pagos_efectivo ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profesores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recursos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservas_matriz ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservas_especiales ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cierres_caja ENABLE ROW LEVEL SECURITY;
@@ -515,6 +536,11 @@ CREATE POLICY "Admin y Secretario gestionan pagos en efectivo"
 -- POLÍTICAS: profesores, reservas_matriz y reservas_especiales
 CREATE POLICY "Lectura de profesores para autenticados"
     ON public.profesores FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "Lectura de recursos para autenticados"
+    ON public.recursos FOR SELECT
     TO authenticated
     USING (true);
 

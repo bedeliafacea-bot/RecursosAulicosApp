@@ -8,6 +8,7 @@ import {
   cambiarEstadoReservaMatrizAction,
   eliminarReservaMatrizAction,
   obtenerProfesoresActivosAction,
+  obtenerRecursosActivosAction,
   obtenerReservasEspecialesAction,
   registrarReservaEspecialAction,
   toggleEstadoReservaEspecialAction,
@@ -16,6 +17,7 @@ import {
   ReservaMatriz,
   ReservaEspecial,
   Profesor,
+  Recurso,
   DiaSemana,
   EstadoReserva,
 } from '@/lib/types/database.types';
@@ -76,6 +78,8 @@ export default function ReservasPage() {
   const [diaActual, setDiaActual] = useState<DiaSemana>('Lunes');
   const [reservas, setReservas] = useState<ReservaMatriz[]>([]);
   const [profesores, setProfesores] = useState<Profesor[]>([]);
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const [errorRecursos, setErrorRecursos] = useState('');
   const [reservasEspeciales, setReservasEspeciales] = useState<ReservaEspecial[]>([]);
   const [vistaActiva, setVistaActiva] = useState<'matriz' | 'especiales'>('matriz');
   const [loading, setLoading] = useState(true);
@@ -104,14 +108,21 @@ export default function ReservasPage() {
 
   const cargarDatos = async () => {
     setLoading(true);
-    const [resMatriz, resProfes, resEsp] = await Promise.all([
+    const [resMatriz, resProfes, resRecursos, resEsp] = await Promise.all([
       obtenerReservasPorDiaAction(diaActual),
       obtenerProfesoresActivosAction(),
+      obtenerRecursosActivosAction(),
       obtenerReservasEspecialesAction(),
     ]);
 
     if (resMatriz.ok && resMatriz.data) setReservas(resMatriz.data);
     if (resProfes.ok && resProfes.data) setProfesores(resProfes.data);
+    if (resRecursos.ok && resRecursos.data) {
+      setRecursos(resRecursos.data);
+      setErrorRecursos('');
+    } else if (!resRecursos.ok) {
+      setErrorRecursos(resRecursos.error || 'No se pudieron cargar los recursos.');
+    }
     if (resEsp.ok && resEsp.data) setReservasEspeciales(resEsp.data);
     setLoading(false);
   };
@@ -578,14 +589,29 @@ export default function ReservasPage() {
                   <select
                     value={recursoInput}
                     onChange={(e) => setRecursoInput(e.target.value)}
+                    required
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-uap-borde rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uap-azul-medio font-semibold"
                   >
-                    <option value="Proyector">Proyector</option>
-                    <option value="Audio">Audio</option>
-                    <option value="Proyector + Audio">Proyector + Audio</option>
-                    <option value="Notebook ASSUS">Notebook ASSUS</option>
-                    <option value="TV Móvil">TV Móvil</option>
+                    {!recursos.some((recurso) => recurso.nombre === recursoInput) && (
+                      <option value={recursoInput}>{recursoInput}</option>
+                    )}
+                    {recursos.map((recurso) => (
+                      <option key={recurso.id} value={recurso.nombre}>
+                        {recurso.nombre}
+                      </option>
+                    ))}
                   </select>
+                  {errorRecursos && (
+                    <p role="alert" className="mt-1 text-xs text-red-600">
+                      {errorRecursos}. Revisá que esté aplicada la migración del catálogo de recursos.
+                    </p>
+                  )}
+                  <a
+                    href="/usuarios"
+                    className="mt-1 inline-flex text-xs font-semibold text-uap-azul hover:underline"
+                  >
+                    Administrar recursos
+                  </a>
                 </div>
               </div>
 

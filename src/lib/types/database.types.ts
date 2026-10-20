@@ -105,6 +105,13 @@ export interface Profesor {
   creado_en: string;
 }
 
+export interface Recurso {
+  id: string;
+  nombre: string;
+  activo: boolean;
+  creado_en: string;
+}
+
 export type EstadoReserva = 'Pendiente' | 'Pausado' | 'Finalizado';
 export type DiaSemana = 'Lunes' | 'Martes' | 'Miércoles' | 'Jueves' | 'Viernes';
 
