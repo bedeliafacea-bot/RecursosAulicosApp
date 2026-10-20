@@ -596,56 +596,51 @@ export default function FacturacionPage() {
             COLUMNA 3: TRANSFERENCIAS BANCO GALICIA
         ======================================================== */}
         <div className="bg-orange-50 rounded-3xl p-5 shadow-uap border border-orange-200 flex flex-col max-h-[640px]">
-          <div className="flex items-center justify-between pb-3 border-b border-orange-200 mb-3">
-            <div className="flex items-center gap-3">
-              <img
-                src="https://i.postimg.cc/s2Kb9TDd/Galicia.png"
-                alt="Banco Galicia"
-                className="h-9 w-24 object-contain"
-              />
-              <div>
-                <h3 className="text-sm font-black text-orange-800">3. Banco Galicia</h3>
-                <p className="text-[11px] text-slate-400">Transferencias acreditadas</p>
-              </div>
-            </div>
-            <span className="text-sm font-black text-orange-800">
-              ${totalTransferencias.toFixed(2)}
-            </span>
+          <div className="pb-3 border-b-[3px] border-uap-azul mb-3">
+            <img
+              src="https://i.postimg.cc/s2Kb9TDd/Galicia.png"
+              alt="Banco Galicia"
+              className="h-9 w-24 object-contain"
+            />
           </div>
 
-          <form onSubmit={handleAgregarTransferencia} className="space-y-2 mb-3 bg-orange-100/70 p-3 rounded-2xl border border-orange-200">
-            <div className="grid grid-cols-2 gap-2">
+          <form onSubmit={handleAgregarTransferencia} className="space-y-3 mb-3">
+            <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
                 placeholder="N° Recibo"
                 value={trRecibo}
                 onChange={(e) => setTrRecibo(e.target.value)}
-                className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs"
+                className="w-full min-w-0 px-3 py-3 bg-white border border-slate-300 rounded-xl text-xs"
               />
+              <input
+                type="date"
+                value={trFecha}
+                onChange={(e) => setTrFecha(e.target.value)}
+                className="w-full min-w-0 px-3 py-3 bg-white border border-slate-300 rounded-xl text-xs"
+              />
+            </div>
+            <div className="flex gap-3">
               <input
                 type="number"
                 step="0.01"
-                placeholder="Monto $"
+                placeholder="Valor transferido $"
                 value={trMonto}
                 onChange={(e) => setTrMonto(e.target.value ? Number(e.target.value) : '')}
-                className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                className="w-full min-w-0 px-3 py-3 bg-white border border-slate-300 rounded-xl text-xs font-bold"
               />
+              <button
+                type="submit"
+                aria-label="Agregar transferencia"
+                title="Agregar transferencia"
+                className="w-12 h-12 shrink-0 bg-orange-500 hover:bg-orange-600 text-white text-2xl font-bold rounded-xl shadow-sm transition-colors"
+              >
+                +
+              </button>
             </div>
-            <input
-              type="date"
-              value={trFecha}
-              onChange={(e) => setTrFecha(e.target.value)}
-              className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs"
-            />
-            <button
-              type="submit"
-              className="w-full py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-black uppercase rounded-lg shadow-sm"
-            >
-              + Agregar Transferencia
-            </button>
           </form>
 
-          <div className="overflow-y-auto space-y-1.5 flex-1 pr-1">
+          <div className="overflow-y-auto space-y-1.5 flex-1 min-h-0 pr-1">
             {transferenciasList.map((t, idx) => (
               <div
                 key={idx}
@@ -668,6 +663,11 @@ export default function FacturacionPage() {
                 </button>
               </div>
             ))}
+          </div>
+
+          <div className="mt-3 pt-4 border-t-[3px] border-uap-azul flex items-center justify-between gap-2 text-uap-azul font-black uppercase">
+            <span className="text-xs">Total transferencias</span>
+            <span className="text-sm">${totalTransferencias.toFixed(2)}</span>
           </div>
         </div>
 
