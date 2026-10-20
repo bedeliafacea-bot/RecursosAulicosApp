@@ -170,9 +170,14 @@ export default function AlumnosPage() {
 
   // Si el usuario conectado tiene rol 'alumno', preestablecer su legajo si coincide
   useEffect(() => {
-    if (rol === 'alumno' && perfil?.usuario) {
-      setBusquedaFicha(perfil.usuario);
-      handleBuscarFicha(perfil.usuario);
+    const usuarioPerfil = perfil?.usuario?.trim();
+    if (
+      rol === 'alumno' &&
+      usuarioPerfil &&
+      usuarioPerfil.toLocaleLowerCase() !== 'alumno'
+    ) {
+      setBusquedaFicha(usuarioPerfil);
+      handleBuscarFicha(usuarioPerfil);
     }
   }, [rol, perfil]);
 
@@ -822,7 +827,6 @@ export default function AlumnosPage() {
                 value={busquedaFicha}
                 onChange={(e) => setBusquedaFicha(e.target.value)}
                 placeholder="Ingresá N° de Legajo o Nombre..."
-                disabled={rol === 'alumno'}
                 className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-uap-azul"
               />
               <button
