@@ -2,7 +2,134 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { PerfilUsuario, RolUsuario } from '@/lib/types/database.types';
+import {
+  Departamento,
+  PerfilUsuario,
+  Profesor,
+  RolUsuario,
+} from '@/lib/types/database.types';
+
+export type CatalogoAdminTipo = 'profesor' | 'departamento';
+
+async function esAdministradorActual(): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+
+  const { data: perfilActual } = await supabase
+    .from('perfiles_usuarios')
+    .select('rol')
+    .eq('id', user.id)
+    .single();
+
+  return perfilActual?.rol === 'admin';
+}
+
+export async function listarCatalogosAdminAction(): Promise<{
+  ok: boolean;
+  profesores?: Profesor[];
+  departamentos?: Departamento[];
+  error?: string;
+}> {
+  if (!(await esAdministradorActual())) {
+    return { ok: false, error: 'No tenés permisos de administrador.' };
+  }
+
+  const adminClient = createAdminClient();
+  const [profesoresRes, departamentosRes] = await Promise.all([
+    adminClient.from('profesores').select('*').order('nombre', { ascending: true }),
+    adminClient.from('departamentos').select('*').order('nombre', { ascending: true }),
+  ]);
+
+  if (profesoresRes.error) return { ok: false, error: profesoresRes.error.message };
+  if (departamentosRes.error) return { ok: false, error: departamentosRes.error.message };
+
+  return {
+    ok: true,
+    profesores: profesoresRes.data as Profesor[],
+    departamentos: departamentosRes.data as Departamento[],
+  };
+}
+
+export async function guardarCatalogoAdminAction(
+  tipo: CatalogoAdminTipo,
+  datos: { id?: string; nombre: string }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!(await esAdministradorActual())) {
+    return { ok: false, error: 'No tenés permisos de administrador.' };
+  }
+
+  const nombre = datos.nombre.trim();
+  if (!nombre) return { ok: false, error: 'Ingresá un nombre.' };
+  if (nombre.length > 150) {
+    return { ok: false, error: 'El nombre no puede superar los 150 caracteres.' };
+  }
+
+  const adminClient = createAdminClient();
+  const tabla = tipo === 'profesor' ? 'profesores' : 'departamentos';
+  const { data: coincidencias, error: errorDuplicados } = await adminClient
+    .from(tabla)
+    .select('id, nombre')
+    .ilike('nombre', nombre);
+
+  if (errorDuplicados) return { ok: false, error: errorDuplicados.message };
+  if (
+    coincidencias?.some(
+      (registro) =>
+        registro.nombre.toLocaleLowerCase() === nombre.toLocaleLowerCase() &&
+        registro.id !== datos.id
+    )
+  ) {
+    return {
+      ok: false,
+      error: `Ya existe ${tipo === 'profesor' ? 'un profesor' : 'un departamento'} con ese nombre.`,
+    };
+  }
+
+  const resultado = datos.id
+    ? await adminClient.from(tabla).update({ nombre }).eq('id', datos.id).select('id').maybeSingle()
+    : await adminClient
+        .from(tabla)
+        .insert(
+          tipo === 'profesor'
+            ? { id: crypto.randomUUID(), nombre, activo: true }
+            : { nombre, activo: true }
+        )
+        .select('id')
+        .single();
+
+  if (resultado.error) return { ok: false, error: resultado.error.message };
+  if (!resultado.data) return { ok: false, error: 'No se encontró el registro para actualizar.' };
+
+  return { ok: true };
+}
+
+export async function cambiarEstadoCatalogoAdminAction(
+  tipo: CatalogoAdminTipo,
+  id: string,
+  activo: boolean
+): Promise<{ ok: boolean; error?: string }> {
+  if (!(await esAdministradorActual())) {
+    return { ok: false, error: 'No tenés permisos de administrador.' };
+  }
+  if (!id) return { ok: false, error: 'Registro no válido.' };
+
+  const tabla = tipo === 'profesor' ? 'profesores' : 'departamentos';
+  const { data, error } = await createAdminClient()
+    .from(tabla)
+    .update({ activo })
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+
+  if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: false, error: 'No se encontró el registro para actualizar.' };
+
+  return { ok: true };
+}
 
 export async function listarUsuariosAction(): Promise<{ ok: boolean; data?: PerfilUsuario[]; error?: string }> {
   const supabase = await createClient();
