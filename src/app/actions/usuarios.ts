@@ -6,10 +6,11 @@ import {
   Departamento,
   PerfilUsuario,
   Profesor,
+  Recurso,
   RolUsuario,
 } from '@/lib/types/database.types';
 
-export type CatalogoAdminTipo = 'profesor' | 'departamento';
+export type CatalogoAdminTipo = 'profesor' | 'departamento' | 'recurso';
 
 async function esAdministradorActual(): Promise<boolean> {
   const supabase = await createClient();
@@ -32,6 +33,7 @@ export async function listarCatalogosAdminAction(): Promise<{
   ok: boolean;
   profesores?: Profesor[];
   departamentos?: Departamento[];
+  recursos?: Recurso[];
   error?: string;
 }> {
   if (!(await esAdministradorActual())) {
@@ -39,18 +41,21 @@ export async function listarCatalogosAdminAction(): Promise<{
   }
 
   const adminClient = createAdminClient();
-  const [profesoresRes, departamentosRes] = await Promise.all([
+  const [profesoresRes, departamentosRes, recursosRes] = await Promise.all([
     adminClient.from('profesores').select('*').order('nombre', { ascending: true }),
     adminClient.from('departamentos').select('*').order('nombre', { ascending: true }),
+    adminClient.from('recursos').select('*').order('nombre', { ascending: true }),
   ]);
 
   if (profesoresRes.error) return { ok: false, error: profesoresRes.error.message };
   if (departamentosRes.error) return { ok: false, error: departamentosRes.error.message };
+  if (recursosRes.error) return { ok: false, error: recursosRes.error.message };
 
   return {
     ok: true,
     profesores: profesoresRes.data as Profesor[],
     departamentos: departamentosRes.data as Departamento[],
+    recursos: recursosRes.data as Recurso[],
   };
 }
 
@@ -69,7 +74,8 @@ export async function guardarCatalogoAdminAction(
   }
 
   const adminClient = createAdminClient();
-  const tabla = tipo === 'profesor' ? 'profesores' : 'departamentos';
+  const tabla =
+    tipo === 'profesor' ? 'profesores' : tipo === 'departamento' ? 'departamentos' : 'recursos';
   const { data: coincidencias, error: errorDuplicados } = await adminClient
     .from(tabla)
     .select('id, nombre')
@@ -85,7 +91,9 @@ export async function guardarCatalogoAdminAction(
   ) {
     return {
       ok: false,
-      error: `Ya existe ${tipo === 'profesor' ? 'un profesor' : 'un departamento'} con ese nombre.`,
+      error: `Ya existe ${
+        tipo === 'profesor' ? 'un profesor' : tipo === 'departamento' ? 'un departamento' : 'un recurso'
+      } con ese nombre.`,
     };
   }
 
@@ -117,7 +125,8 @@ export async function cambiarEstadoCatalogoAdminAction(
   }
   if (!id) return { ok: false, error: 'Registro no válido.' };
 
-  const tabla = tipo === 'profesor' ? 'profesores' : 'departamentos';
+  const tabla =
+    tipo === 'profesor' ? 'profesores' : tipo === 'departamento' ? 'departamentos' : 'recursos';
   const { data, error } = await createAdminClient()
     .from(tabla)
     .update({ activo })
