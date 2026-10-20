@@ -438,8 +438,8 @@ export default function FacturacionPage() {
         {/* ========================================================
             COLUMNA 1: RECIBOS FÍSICOS
         ======================================================== */}
-        <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="bg-blue-50 rounded-3xl p-5 shadow-uap border border-blue-200 flex flex-col max-h-[640px]">
+          <div className="flex items-center justify-between pb-3 border-b border-blue-200 mb-3">
             <div className="flex items-center gap-3">
               <img
                 src="https://i.postimg.cc/fyMcjMcn/logo-uap.png"
@@ -465,7 +465,7 @@ export default function FacturacionPage() {
                     ? 'bg-slate-100 border-slate-200 opacity-60'
                     : r.tipo === 'transferencia'
                     ? 'bg-blue-50/80 border-blue-200'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
+                    : 'bg-white border-blue-200 hover:border-blue-300'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -524,8 +524,8 @@ export default function FacturacionPage() {
         {/* ========================================================
             COLUMNA 2: MERCADO PAGO
         ======================================================== */}
-        <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="bg-amber-50 rounded-3xl p-5 shadow-uap border border-amber-300 flex flex-col max-h-[640px]">
+          <div className="flex items-center justify-between pb-3 border-b border-amber-200 mb-3">
             <div className="flex items-center gap-3">
               <img
                 src="https://i.postimg.cc/KYZcxG53/Mercado_pago.png"
@@ -533,16 +533,16 @@ export default function FacturacionPage() {
                 className="h-9 w-24 object-contain"
               />
               <div>
-                <h3 className="text-sm font-black text-sky-700">2. Mercado Pago</h3>
+                <h3 className="text-sm font-black text-amber-800">2. Mercado Pago</h3>
                 <p className="text-[11px] text-slate-400">Cobros por QR / App</p>
               </div>
             </div>
-            <span className="text-sm font-black text-sky-700">
+            <span className="text-sm font-black text-amber-800">
               ${totalMercadoPago.toFixed(2)}
             </span>
           </div>
 
-          <form onSubmit={handleAgregarMP} className="space-y-2 mb-3 bg-sky-50/60 p-3 rounded-2xl border border-sky-100">
+          <form onSubmit={handleAgregarMP} className="space-y-2 mb-3 bg-amber-100/70 p-3 rounded-2xl border border-amber-200">
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="date"
@@ -562,7 +562,7 @@ export default function FacturacionPage() {
             </div>
             <button
               type="submit"
-              className="w-full py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-black uppercase rounded-lg shadow-sm"
+              className="w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase rounded-lg shadow-sm"
             >
               + Agregar MP
             </button>
@@ -572,7 +572,7 @@ export default function FacturacionPage() {
             {mercadoPagoList.map((m, idx) => (
               <div
                 key={m.id || idx}
-                className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs"
+                className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between text-xs"
               >
                 <div>
                   <div className="font-extrabold text-slate-700">${m.monto.toFixed(2)}</div>
@@ -595,8 +595,8 @@ export default function FacturacionPage() {
         {/* ========================================================
             COLUMNA 3: TRANSFERENCIAS BANCO GALICIA
         ======================================================== */}
-        <div className="bg-white rounded-3xl p-5 shadow-uap border border-uap-borde flex flex-col max-h-[640px]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="bg-orange-50 rounded-3xl p-5 shadow-uap border border-orange-200 flex flex-col max-h-[640px]">
+          <div className="flex items-center justify-between pb-3 border-b border-orange-200 mb-3">
             <div className="flex items-center gap-3">
               <img
                 src="https://i.postimg.cc/s2Kb9TDd/Galicia.png"
@@ -604,16 +604,16 @@ export default function FacturacionPage() {
                 className="h-9 w-24 object-contain"
               />
               <div>
-                <h3 className="text-sm font-black text-purple-700">3. Banco Galicia</h3>
+                <h3 className="text-sm font-black text-orange-800">3. Banco Galicia</h3>
                 <p className="text-[11px] text-slate-400">Transferencias acreditadas</p>
               </div>
             </div>
-            <span className="text-sm font-black text-purple-700">
+            <span className="text-sm font-black text-orange-800">
               ${totalTransferencias.toFixed(2)}
             </span>
           </div>
 
-          <form onSubmit={handleAgregarTransferencia} className="space-y-2 mb-3 bg-purple-50/60 p-3 rounded-2xl border border-purple-100">
+          <form onSubmit={handleAgregarTransferencia} className="space-y-2 mb-3 bg-orange-100/70 p-3 rounded-2xl border border-orange-200">
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="text"
@@ -639,7 +639,7 @@ export default function FacturacionPage() {
             />
             <button
               type="submit"
-              className="w-full py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black uppercase rounded-lg shadow-sm"
+              className="w-full py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-black uppercase rounded-lg shadow-sm"
             >
               + Agregar Transferencia
             </button>
@@ -649,7 +649,7 @@ export default function FacturacionPage() {
             {transferenciasList.map((t, idx) => (
               <div
                 key={idx}
-                className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs"
+                className="p-2.5 bg-orange-50 rounded-xl border border-orange-200 flex items-center justify-between text-xs"
               >
                 <div>
                   <div className="font-extrabold text-slate-700">${t.monto.toFixed(2)}</div>
