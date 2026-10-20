@@ -589,26 +589,29 @@ export default function FacturacionPage() {
           </form>
 
           <div className="overflow-y-auto space-y-1.5 flex-1 pr-1">
-            {mercadoPagoList.map((m, idx) => (
-              <div
-                key={m.id || idx}
-                className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between text-xs"
-              >
-                <div>
-                  <div className="font-extrabold text-slate-700">${m.monto.toFixed(2)}</div>
-                  <div className="text-[10px] text-slate-400">{m.fecha}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setMercadoPagoList(mercadoPagoList.filter((_, i) => i !== idx))
-                  }
-                  className="p-1 text-red-500 hover:bg-red-50 rounded"
+            {mercadoPagoList
+              .map((item, index) => ({ item, index }))
+              .reverse()
+              .map(({ item: m, index }) => (
+                <div
+                  key={m.id || index}
+                  className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between text-xs"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
+                  <div>
+                    <div className="font-extrabold text-slate-700">${m.monto.toFixed(2)}</div>
+                    <div className="text-[10px] text-slate-400">{m.fecha}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMercadoPagoList(mercadoPagoList.filter((_, i) => i !== index))
+                    }
+                    className="p-1 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
 
@@ -782,7 +785,14 @@ export default function FacturacionPage() {
 
           <section className="print-cash-column">
             <header className="print-cash-column-title print-cash-mp-title">
-              <h2>Mercado Pago</h2>
+              <img
+                src="https://i.postimg.cc/KYZcxG53/Mercado_pago.png"
+                alt="Mercado Pago"
+              />
+              <div>
+                <h2>Mercado Pago</h2>
+                <p>Pagos recibidos</p>
+              </div>
             </header>
             <div>
               {mercadoPagoList.map((item, index) => (
