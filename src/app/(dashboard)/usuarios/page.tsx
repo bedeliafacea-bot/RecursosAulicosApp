@@ -2,17 +2,28 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { PerfilUsuario, RolUsuario } from '@/lib/types/database.types';
+import {
+  Departamento,
+  PerfilUsuario,
+  Profesor,
+  RolUsuario,
+} from '@/lib/types/database.types';
 import {
   listarUsuariosAction,
   crearUsuarioAction,
   cambiarPasswordAction,
   cambiarEstadoAction,
   actualizarRolAction,
+  listarCatalogosAdminAction,
+  guardarCatalogoAdminAction,
+  cambiarEstadoCatalogoAdminAction,
+  CatalogoAdminTipo,
 } from '@/app/actions/usuarios';
 import {
   Users,
   UserPlus,
+  Building2,
+  GraduationCap,
   ShieldAlert,
   ShieldCheck,
   KeyRound,
@@ -21,13 +32,28 @@ import {
   Loader2,
   RefreshCw,
   Search,
+  Pencil,
+  Save,
+  X,
 } from 'lucide-react';
+
+type SeccionAdmin = 'usuarios' | 'profesores' | 'departamentos';
+type ElementoCatalogo = Profesor | Departamento;
 
 export default function UsuariosPage() {
   const { rol, isLoading: authLoading, perfil: perfilSesion } = useAuth();
+  const [seccionActiva, setSeccionActiva] = useState<SeccionAdmin>('usuarios');
   const [usuarios, setUsuarios] = useState<PerfilUsuario[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [busqueda, setBusqueda] = useState('');
+  const [profesores, setProfesores] = useState<Profesor[]>([]);
+  const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
+  const [loadingCatalogos, setLoadingCatalogos] = useState(false);
+  const [nombreCatalogo, setNombreCatalogo] = useState('');
+  const [editandoCatalogo, setEditandoCatalogo] = useState<{ id: string; nombre: string } | null>(null);
+  const [guardandoCatalogo, setGuardandoCatalogo] = useState(false);
+  const [errorCatalogo, setErrorCatalogo] = useState('');
+  const [exitoCatalogo, setExitoCatalogo] = useState('');
 
   // Formulario nuevo usuario
   const [nuevoUsuario, setNuevoUsuario] = useState('');
@@ -53,9 +79,23 @@ export default function UsuariosPage() {
     setLoadingList(false);
   };
 
+  const cargarCatalogos = async () => {
+    setLoadingCatalogos(true);
+    const res = await listarCatalogosAdminAction();
+    if (res.ok) {
+      setProfesores(res.profesores || []);
+      setDepartamentos(res.departamentos || []);
+      setErrorCatalogo('');
+    } else {
+      setErrorCatalogo(res.error || 'No se pudieron cargar profesores y departamentos.');
+    }
+    setLoadingCatalogos(false);
+  };
+
   useEffect(() => {
     if (rol === 'admin') {
       cargarUsuarios();
+      cargarCatalogos();
     }
   }, [rol]);
 
@@ -155,6 +195,75 @@ export default function UsuariosPage() {
     setCambiandoPass(false);
   };
 
+  const tipoCatalogo: CatalogoAdminTipo =
+    seccionActiva === 'profesores' ? 'profesor' : 'departamento';
+  const elementosCatalogo: ElementoCatalogo[] =
+    tipoCatalogo === 'profesor' ? profesores : departamentos;
+
+  const handleGuardarCatalogo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorCatalogo('');
+    setExitoCatalogo('');
+    setGuardandoCatalogo(true);
+
+    const res = await guardarCatalogoAdminAction(tipoCatalogo, {
+      id: editandoCatalogo?.id,
+      nombre: nombreCatalogo,
+    });
+
+    if (!res.ok) {
+      setErrorCatalogo(res.error || 'No se pudo guardar el registro.');
+    } else {
+      setNombreCatalogo('');
+      setEditandoCatalogo(null);
+      setExitoCatalogo(
+        `${tipoCatalogo === 'profesor' ? 'Profesor' : 'Departamento'} ${
+          editandoCatalogo ? 'actualizado' : 'agregado'
+        } correctamente.`
+      );
+      await cargarCatalogos();
+    }
+    setGuardandoCatalogo(false);
+  };
+
+  const handleCambiarEstadoCatalogo = async (elemento: ElementoCatalogo) => {
+    const activo = !elemento.activo;
+    if (!confirm(`¿Deseás ${activo ? 'activar' : 'dar de baja'} a ${elemento.nombre}?`)) {
+      return;
+    }
+
+    const res = await cambiarEstadoCatalogoAdminAction(tipoCatalogo, elemento.id, activo);
+    if (!res.ok) {
+      setErrorCatalogo(res.error || 'No se pudo cambiar el estado.');
+      return;
+    }
+
+    setErrorCatalogo('');
+    setExitoCatalogo(`${elemento.nombre} ${activo ? 'activado' : 'dado de baja'} correctamente.`);
+    await cargarCatalogos();
+  };
+
+  const iniciarEdicionCatalogo = (elemento: ElementoCatalogo) => {
+    setEditandoCatalogo({ id: elemento.id, nombre: elemento.nombre });
+    setNombreCatalogo(elemento.nombre);
+    setErrorCatalogo('');
+    setExitoCatalogo('');
+  };
+
+  const cancelarEdicionCatalogo = () => {
+    setEditandoCatalogo(null);
+    setNombreCatalogo('');
+    setErrorCatalogo('');
+  };
+
+  const cambiarSeccion = (seccion: SeccionAdmin) => {
+    setSeccionActiva(seccion);
+    setEditandoCatalogo(null);
+    setNombreCatalogo('');
+    setErrorCatalogo('');
+    setExitoCatalogo('');
+  };
+
   const usuariosFiltrados = usuarios.filter(
     (u) =>
       u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -172,24 +281,69 @@ export default function UsuariosPage() {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-uap-azul">
-              Gestión de Usuarios del Sistema
+              Administración del Sistema
             </h1>
             <p className="text-sm text-uap-gris mt-0.5">
-              Administrá los accesos, contraseñas y permisos del personal de Bedelía
+              Administrá usuarios, profesores y departamentos
             </p>
           </div>
         </div>
 
         <button
-          onClick={cargarUsuarios}
+          onClick={seccionActiva === 'usuarios' ? cargarUsuarios : cargarCatalogos}
           className="self-start md:self-auto flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-uap-azul text-xs font-bold rounded-xl transition-colors"
         >
-          <RefreshCw className={`w-4 h-4 ${loadingList ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-4 h-4 ${
+              (seccionActiva === 'usuarios' ? loadingList : loadingCatalogos)
+                ? 'animate-spin'
+                : ''
+            }`}
+          />
           <span>Actualizar lista</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-white p-2 rounded-2xl shadow-sm border border-uap-borde">
+        <button
+          type="button"
+          onClick={() => cambiarSeccion('usuarios')}
+          className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+            seccionActiva === 'usuarios'
+              ? 'bg-uap-azul text-white shadow-sm'
+              : 'text-uap-azul hover:bg-slate-100'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          Usuarios
+        </button>
+        <button
+          type="button"
+          onClick={() => cambiarSeccion('profesores')}
+          className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+            seccionActiva === 'profesores'
+              ? 'bg-uap-azul text-white shadow-sm'
+              : 'text-uap-azul hover:bg-slate-100'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          Profesores
+        </button>
+        <button
+          type="button"
+          onClick={() => cambiarSeccion('departamentos')}
+          className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+            seccionActiva === 'departamentos'
+              ? 'bg-uap-azul text-white shadow-sm'
+              : 'text-uap-azul hover:bg-slate-100'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          Departamentos
+        </button>
+      </div>
+
+      <div className={seccionActiva === 'usuarios' ? 'grid grid-cols-1 lg:grid-cols-3 gap-8 items-start' : 'hidden'}>
         {/* Formulario Crear Usuario (1 Columna) */}
         <div className="bg-white rounded-3xl p-6 md:p-7 shadow-uap border border-uap-borde">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-5">
@@ -392,6 +546,158 @@ export default function UsuariosPage() {
           )}
         </div>
       </div>
+
+      {seccionActiva !== 'usuarios' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <section className="bg-white rounded-3xl p-6 md:p-7 shadow-uap border border-uap-borde">
+            <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-5">
+              {tipoCatalogo === 'profesor' ? (
+                <GraduationCap className="w-5 h-5 text-uap-azul-medio" />
+              ) : (
+                <Building2 className="w-5 h-5 text-uap-azul-medio" />
+              )}
+              <h2 className="text-lg font-black text-uap-azul">
+                {editandoCatalogo
+                  ? `Editar ${tipoCatalogo}`
+                  : `Nuevo ${tipoCatalogo === 'profesor' ? 'Profesor' : 'Departamento'}`}
+              </h2>
+            </div>
+
+            {errorCatalogo && (
+              <div role="alert" className="mb-4 p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+                {errorCatalogo}
+              </div>
+            )}
+            {exitoCatalogo && (
+              <div role="status" className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl font-medium">
+                {exitoCatalogo}
+              </div>
+            )}
+
+            <form onSubmit={handleGuardarCatalogo} className="space-y-4">
+              <div>
+                <label className="block text-xs font-black text-uap-texto uppercase tracking-wider mb-1.5">
+                  Nombre
+                </label>
+                <input
+                  type="text"
+                  value={nombreCatalogo}
+                  onChange={(e) => setNombreCatalogo(e.target.value)}
+                  maxLength={150}
+                  required
+                  placeholder={tipoCatalogo === 'profesor' ? 'Nombre y apellido' : 'Nombre del departamento'}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-uap-borde rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uap-azul-medio"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={guardandoCatalogo}
+                  className="flex-1 py-3 px-4 bg-uap-azul hover:bg-uap-azul-oscuro text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {guardandoCatalogo ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : editandoCatalogo ? (
+                    <Save className="w-4 h-4" />
+                  ) : (
+                    <UserPlus className="w-4 h-4" />
+                  )}
+                  {editandoCatalogo ? 'Guardar cambios' : `Agregar ${tipoCatalogo}`}
+                </button>
+                {editandoCatalogo && (
+                  <button
+                    type="button"
+                    onClick={cancelarEdicionCatalogo}
+                    disabled={guardandoCatalogo}
+                    className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </form>
+            <p className="mt-5 text-xs text-slate-500">
+              Dar de baja desactiva el registro sin borrar su historial; podés volver a activarlo cuando lo necesites.
+            </p>
+          </section>
+
+          <section className="lg:col-span-2 bg-white rounded-3xl p-6 md:p-7 shadow-uap border border-uap-borde">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div>
+                <h2 className="text-lg font-black text-uap-azul">
+                  Directorio de {tipoCatalogo === 'profesor' ? 'Profesores' : 'Departamentos'}
+                </h2>
+                <p className="text-xs text-uap-gris">
+                  Registros: <b>{elementosCatalogo.length}</b>
+                </p>
+              </div>
+              {loadingCatalogos && <Loader2 className="w-5 h-5 animate-spin text-uap-azul" />}
+            </div>
+
+            {loadingCatalogos ? (
+              <div className="py-12 text-center text-sm text-slate-500">Cargando directorio...</div>
+            ) : elementosCatalogo.length === 0 ? (
+              <div className="py-12 text-center text-sm text-slate-500">
+                Todavía no hay {tipoCatalogo === 'profesor' ? 'profesores' : 'departamentos'} registrados.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500 text-xs font-extrabold uppercase tracking-wider">
+                      <th className="py-3 px-3">Nombre</th>
+                      <th className="py-3 px-3 text-center">Estado</th>
+                      <th className="py-3 px-3 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {elementosCatalogo.map((elemento) => (
+                      <tr key={elemento.id} className="hover:bg-slate-50">
+                        <td className="py-3 px-3 font-semibold text-uap-texto">{elemento.nombre}</td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`inline-flex px-2.5 py-1 rounded-full text-[11px] font-extrabold ${
+                            elemento.activo
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            {elemento.activo ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => iniciarEdicionCatalogo(elemento)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 mr-2 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-uap-azul font-bold rounded-lg border border-slate-200"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCambiarEstadoCatalogo(elemento)}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-bold rounded-lg border ${
+                              elemento.activo
+                                ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            {elemento.activo ? (
+                              <XCircle className="w-3.5 h-3.5" />
+                            ) : (
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            )}
+                            {elemento.activo ? 'Dar de baja' : 'Activar'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
 
       {/* Modal Cambiar Contraseña */}
       {usuarioModalPass && (
