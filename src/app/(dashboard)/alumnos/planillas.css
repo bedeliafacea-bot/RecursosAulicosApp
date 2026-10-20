@@ -87,10 +87,12 @@
 
   /* Evaluación: 1 sola hoja A4 apaisada (@page margin 5mm). */
   .print-portal .planilla-eval {
-    width: 100vw !important; max-width: 100vw !important; height: 97vh !important; min-height: 0 !important;
-    padding: 0 !important; overflow: hidden !important; break-inside: avoid; page-break-inside: avoid;
+    width: 287mm !important; max-width: 287mm !important;
+    height: 200mm !important; min-height: 200mm !important;
+    margin: 0 !important; padding: 0 !important; overflow: hidden !important;
+    box-sizing: border-box !important; break-inside: avoid; page-break-inside: avoid;
   }
-  .print-portal .planilla-eval .fila-firmas td { height: 18vh; }
+  .print-portal .planilla-eval .fila-firmas td { height: 30mm !important; }
 
   .planilla-horas *, .planilla-eval * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
