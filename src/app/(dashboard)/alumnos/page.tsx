@@ -846,8 +846,10 @@ export default function AlumnosPage() {
         : null;
   }
 
-  const modoImpresion: 'horas' | 'eval' | null =
-    tab === 'informe' && alumnoInforme
+  const modoImpresion: 'horas' | 'eval' | 'pactados' | null =
+    tab === 'pactar' && alumnoPactar && periodoCargadoPactar === clavePeriodoPactar
+      ? 'pactados'
+      : tab === 'informe' && alumnoInforme
       ? 'horas'
       : tab === 'evaluacion' && alumnoEval
       ? 'eval'
@@ -1727,53 +1729,24 @@ export default function AlumnosPage() {
               {alumnoPactar && periodoCargadoPactar === clavePeriodoPactar && (
                 <>
                   <section className="rounded-3xl border border-uap-borde bg-white p-5 shadow-uap md:p-7">
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                      <h3 className="font-black text-uap-azul">
-                        Almanaque pactado · {nombresMeses[mesActual - 1]} {anioActual}
-                      </h3>
-                      <span className="text-[11px] font-semibold text-slate-500">
-                        Las horas de este almanaque son solo planificación
-                      </span>
+                    <div className="mb-4 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={imprimirPlanilla}
+                        className="no-print inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white transition hover:bg-emerald-700"
+                      >
+                        <Printer className="h-4 w-4" />
+                        Imprimir calendario
+                      </button>
                     </div>
-                    <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-                      {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia) => (
-                        <div
-                          key={dia}
-                          className="py-1 text-center text-[9px] font-black uppercase tracking-wide text-slate-400 sm:text-[10px]"
-                        >
-                          {dia}
-                        </div>
-                      ))}
-                      {Array.from({ length: espaciosAntesDelPrimerDia }, (_, index) => (
-                        <div key={`pactado-vacio-${index}`} aria-hidden="true" />
-                      ))}
-                      {diasCalendario.map((dia) => {
-                        const horarios = horariosPorDiaPlanificado.get(dia) || [];
-                        const fecha = `${anioActual}-${String(mesActual).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-                        return (
-                          <div
-                            key={fecha}
-                            className={`min-h-16 rounded-xl border p-1 sm:min-h-20 sm:p-1.5 ${
-                              fecha === fechaHoy
-                                ? 'border-uap-azul-medio bg-blue-50'
-                                : 'border-slate-100 bg-slate-50/70'
-                            }`}
-                          >
-                            <span className="block text-[10px] font-black text-slate-600">{dia}</span>
-                            <div className="mt-1 space-y-1">
-                              {horarios.map((horario, index) => (
-                                <div
-                                  key={`${horario}-${index}`}
-                                  className="break-words rounded-md bg-blue-100 px-1 py-0.5 text-center text-[8px] font-bold leading-tight text-uap-azul sm:text-[10px]"
-                                >
-                                  {horario}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <CalendarioPactado
+                      mes={mesActual}
+                      anio={anioActual}
+                      dias={diasCalendario}
+                      espaciosAntesDelPrimerDia={espaciosAntesDelPrimerDia}
+                      horariosPorDia={horariosPorDiaPlanificado}
+                      fechaHoy={fechaHoy}
+                    />
                   </section>
 
                   <section className="rounded-3xl border border-uap-borde bg-white p-5 shadow-uap md:p-7">
@@ -1982,6 +1955,19 @@ export default function AlumnosPage() {
                     </div>
                   </section>
                 </>
+              )}
+              {alumnoPactar && periodoCargadoPactar === clavePeriodoPactar && (
+                <PortalImpresion tipo="pactados">
+                  <CalendarioPactado
+                    mes={mesActual}
+                    anio={anioActual}
+                    dias={diasCalendario}
+                    espaciosAntesDelPrimerDia={espaciosAntesDelPrimerDia}
+                    horariosPorDia={horariosPorDiaPlanificado}
+                    fechaHoy={fechaHoy}
+                    alumno={alumnoPactar}
+                  />
+                </PortalImpresion>
               )}
             </div>
           )}
@@ -2379,7 +2365,13 @@ const MESES_MAYUSCULA = [
 const LOGO_UAP = '/img/logo-uap.png';
 
 /** Copia de la planilla montada directo en <body>: es lo único que se imprime. */
-function PortalImpresion({ tipo, children }: { tipo: 'horas' | 'eval'; children: React.ReactNode }) {
+function PortalImpresion({
+  tipo,
+  children,
+}: {
+  tipo: 'horas' | 'eval' | 'pactados';
+  children: React.ReactNode;
+}) {
   const [montado, setMontado] = useState(false);
   useEffect(() => setMontado(true), []);
   if (!montado) return null;
@@ -2388,6 +2380,66 @@ function PortalImpresion({ tipo, children }: { tipo: 'horas' | 'eval'; children:
       {children}
     </div>,
     document.body
+  );
+}
+
+function CalendarioPactado({
+  mes,
+  anio,
+  dias,
+  espaciosAntesDelPrimerDia,
+  horariosPorDia,
+  fechaHoy,
+  alumno,
+}: {
+  mes: number;
+  anio: number;
+  dias: number[];
+  espaciosAntesDelPrimerDia: number;
+  horariosPorDia: Map<number, string[]>;
+  fechaHoy: string;
+  alumno?: Alumno;
+}) {
+  return (
+    <section className="calendario-pactado">
+      <header className="calendario-pactado-titulo">
+        <h1>Almanaque de horarios pactados</h1>
+        {alumno && (
+          <p>
+            {alumno.nombre} · Legajo {alumno.id} · Plan {alumno.plan}
+          </p>
+        )}
+        <p>{MESES_MAYUSCULA[mes - 1]} {anio}</p>
+      </header>
+      <div className="calendario-pactado-grilla">
+        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia) => (
+          <div key={dia} className="calendario-pactado-dia-semana">{dia}</div>
+        ))}
+        {Array.from({ length: espaciosAntesDelPrimerDia }, (_, index) => (
+          <div key={`pactado-vacio-${index}`} aria-hidden="true" />
+        ))}
+        {dias.map((dia) => {
+          const horarios = horariosPorDia.get(dia) || [];
+          const fecha = `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+          return (
+            <div
+              key={fecha}
+              className={`calendario-pactado-celda ${fecha === fechaHoy ? 'es-hoy' : ''}`}
+            >
+              <span className="calendario-pactado-numero">{dia}</span>
+              <div className="calendario-pactado-horarios">
+                {horarios.map((horario, index) => (
+                  <div key={`${horario}-${index}`} className="calendario-pactado-horario">
+                    {horario}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="calendario-pactado-nota">Los horarios corresponden a la planificación pactada.</p>
+    </section>
   );
 }
 
