@@ -10,8 +10,9 @@ import {
   registrarJornadasBatchAction,
   actualizarJornadaAction,
   eliminarJornadaAction,
+  obtenerHistorialHorariosPactadosAction,
   obtenerHorariosPactadosAction,
-  registrarHorariosPactadosMasivosAction,
+  reemplazarHorariosPactadosMesAction,
   obtenerInfoEvaluacionAction,
   guardarMesEvaluacionAction,
 } from '@/app/actions/alumnos';
@@ -51,9 +52,50 @@ import {
   mesAnioActualAR,
   metaHorasMensual,
   minutosDeRegistro,
+  minutosRangosPactados,
+  saldoPactadoArrastrado,
   totalMinutosJornadas,
 } from '@/lib/horas';
 import './planillas.css';
+
+type BloqueHorarioPactado = { rango: string; diasTexto: string };
+
+function expandirBloquesPactados(
+  bloques: BloqueHorarioPactado[],
+  anio: number,
+  mes: number
+): { horariosPorDia: Map<number, string[]>; minutos: number } {
+  const horariosPorDia = new Map<number, string[]>();
+  const registrosUnicos = new Set<string>();
+  let minutos = 0;
+
+  for (const bloque of bloques) {
+    const rango = bloque.rango.trim();
+    const tokensDias = bloque.diasTexto.split(',').map((dia) => dia.trim());
+    if (
+      !rango ||
+      !bloque.diasTexto.trim() ||
+      tokensDias.some((dia) => !/^\d+$/.test(dia))
+    ) {
+      continue;
+    }
+
+    const minutosRango = minutosRangosPactados(rango);
+    const dias = [...new Set(tokensDias.map(Number))].filter(
+      (dia) => dia >= 1 && dia <= diasDelMes(anio, mes)
+    );
+
+    for (const dia of dias) {
+      const clave = `${dia}|${rango}`;
+      if (registrosUnicos.has(clave)) continue;
+      registrosUnicos.add(clave);
+      horariosPorDia.set(dia, [...(horariosPorDia.get(dia) || []), rango]);
+      if (minutosRango !== null) minutos += minutosRango;
+    }
+  }
+
+  return { horariosPorDia, minutos };
+}
 
 export default function AlumnosPage() {
   const { rol, user, perfil } = useAuth();
@@ -123,11 +165,16 @@ export default function AlumnosPage() {
   // 4. ESTADO: PACTAR HORARIOS
   // ============================================================================
   const [legajoPactar, setLegajoPactar] = useState('');
-  const [bloquesPactar, setBloquesPactar] = useState<
-    Array<{ rango: string; diasTexto: string }>
-  >([{ rango: '07:30 - 11:30', diasTexto: '' }]);
+  const [bloquesPactar, setBloquesPactar] = useState<BloqueHorarioPactado[]>([
+    { rango: '07:30 - 11:30', diasTexto: '' },
+  ]);
+  const [alumnoPactar, setAlumnoPactar] = useState<Alumno | null>(null);
+  const [cargandoPactar, setCargandoPactar] = useState(false);
   const [guardandoPactar, setGuardandoPactar] = useState(false);
   const [msgPactar, setMsgPactar] = useState('');
+  const [errorPactar, setErrorPactar] = useState('');
+  const [periodoCargadoPactar, setPeriodoCargadoPactar] = useState('');
+  const [excesoMesAnteriorPactado, setExcesoMesAnteriorPactado] = useState(0);
 
   // ============================================================================
   // 5. ESTADO: NUEVO ALUMNO
@@ -422,28 +469,150 @@ export default function AlumnosPage() {
   // ============================================================================
   // HANDLERS: PACTAR HORARIOS
   // ============================================================================
+  const clavePeriodoPactar = `${anioActual}-${String(mesActual).padStart(2, '0')}`;
+
+  const handleCargarCronogramaPactado = async () => {
+    if (!legajoPactar.trim()) {
+      setErrorPactar('Ingresá el legajo del alumno.');
+      return;
+    }
+
+    setCargandoPactar(true);
+    setErrorPactar('');
+    setMsgPactar('');
+    setAlumnoPactar(null);
+    setPeriodoCargadoPactar('');
+
+    const resAlumno = await buscarInfoAlumnoAction(legajoPactar.trim());
+    if (!resAlumno.ok || !resAlumno.data) {
+      setAlumnoPactar(null);
+      setPeriodoCargadoPactar('');
+      setCargandoPactar(false);
+      setErrorPactar(resAlumno.error || 'No se encontró el alumno.');
+      return;
+    }
+
+    const [resMes, resHistorial] = await Promise.all([
+      obtenerHorariosPactadosAction(resAlumno.data.id, mesActual, anioActual),
+      obtenerHistorialHorariosPactadosAction(resAlumno.data.id, anioActual, mesActual),
+    ]);
+
+    if (!resMes.ok || !resMes.data || !resHistorial.ok || !resHistorial.data) {
+      setCargandoPactar(false);
+      setErrorPactar(
+        resMes.error ||
+          resHistorial.error ||
+          'No se pudo consultar el cronograma guardado en Supabase.'
+      );
+      return;
+    }
+
+    const bloquesPorRango = new Map<string, Set<number>>();
+    for (const horario of resMes.data) {
+      const dia = Number(horario.fecha.split('-')[2]);
+      const dias = bloquesPorRango.get(horario.rango_horario) || new Set<number>();
+      dias.add(dia);
+      bloquesPorRango.set(horario.rango_horario, dias);
+    }
+
+    const bloques = [...bloquesPorRango.entries()].map(([rango, dias]) => ({
+      rango,
+      diasTexto: [...dias].sort((a, b) => a - b).join(', '),
+    }));
+    setBloquesPactar(bloques.length ? bloques : [{ rango: '07:30 - 11:30', diasTexto: '' }]);
+    setAlumnoPactar(resAlumno.data);
+
+    setExcesoMesAnteriorPactado(
+      saldoPactadoArrastrado(resHistorial.data, resAlumno.data.plan, anioActual, mesActual)
+    );
+    setPeriodoCargadoPactar(clavePeriodoPactar);
+    setCargandoPactar(false);
+  };
+
+  const refrescarFichaSiCorresponde = async (alumnoId: string) => {
+    pactadosCargaRef.current = {};
+    mesesPactadosRef.current = new Set();
+    if (alumnoFicha?.id === alumnoId) await handleBuscarFicha(alumnoId);
+  };
+
   const handleGuardarPactar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!legajoPactar.trim()) {
-      alert('Ingresá el legajo del alumno.');
+    if (!alumnoPactar) {
+      setErrorPactar('Primero buscá el alumno y cargá el cronograma del mes.');
+      return;
+    }
+    if (periodoCargadoPactar !== clavePeriodoPactar) {
+      setErrorPactar('Cambió el mes seleccionado. Volvé a cargar el cronograma antes de guardarlo.');
+      return;
+    }
+
+    const planificacion = expandirBloquesPactados(bloquesPactar, anioActual, mesActual);
+    const metaMes = metaHorasMensual(alumnoPactar.plan, anioActual, mesActual) * 60;
+    const excesoTotal = Math.max(
+      0,
+      excesoMesAnteriorPactado + planificacion.minutos - metaMes
+    );
+    const horasDisponibles = Math.max(0, metaMes - excesoMesAnteriorPactado);
+    if (
+      planificacion.minutos > horasDisponibles &&
+      !window.confirm(
+        `El plan suma ${formatearMinutos(planificacion.minutos)} y el máximo disponible para este mes es ${formatearMinutos(horasDisponibles)}. ¿Querés guardar igual y dejar el excedente visible para el mes siguiente?`
+      )
+    ) {
       return;
     }
 
     setGuardandoPactar(true);
+    setErrorPactar('');
     setMsgPactar('');
 
-    const res = await registrarHorariosPactadosMasivosAction({
-      alumnoId: legajoPactar.trim(),
+    const res = await reemplazarHorariosPactadosMesAction({
+      alumnoId: alumnoPactar.id,
       mes: mesActual,
       anio: anioActual,
       bloques: bloquesPactar,
     });
 
     if (res.ok) {
-      setMsgPactar('✅ Cronograma mensual guardado exitosamente.');
-      setBloquesPactar([{ rango: '07:30 - 11:30', diasTexto: '' }]);
+      setMsgPactar(
+        `Cronograma de ${alumnoPactar.nombre} guardado. ${formatearMinutos(excesoTotal)} quedarán a compensar en la planificación del mes siguiente.`
+      );
+      setPeriodoCargadoPactar(clavePeriodoPactar);
+      await refrescarFichaSiCorresponde(alumnoPactar.id);
     } else {
-      alert(res.error || 'Error al guardar.');
+      setErrorPactar(res.error || 'No se pudo guardar el cronograma.');
+    }
+    setGuardandoPactar(false);
+  };
+
+  const handleLimpiarCronogramaPactado = async () => {
+    if (!alumnoPactar || periodoCargadoPactar !== clavePeriodoPactar) {
+      setErrorPactar('Primero cargá el cronograma del alumno y del mes que querés limpiar.');
+      return;
+    }
+    if (
+      !window.confirm(
+        `Se eliminarán todos los horarios pactados de ${alumnoPactar.nombre} para ${nombresMeses[mesActual - 1]} ${anioActual}. Esta acción no modifica las horas trabajadas. ¿Continuar?`
+      )
+    ) {
+      return;
+    }
+
+    setGuardandoPactar(true);
+    setErrorPactar('');
+    const res = await reemplazarHorariosPactadosMesAction({
+      alumnoId: alumnoPactar.id,
+      mes: mesActual,
+      anio: anioActual,
+      bloques: [],
+      limpiar: true,
+    });
+    if (res.ok) {
+      setBloquesPactar([{ rango: '07:30 - 11:30', diasTexto: '' }]);
+      setMsgPactar('Se limpiaron los horarios pactados de este mes. Las horas trabajadas no fueron modificadas.');
+      await refrescarFichaSiCorresponde(alumnoPactar.id);
+    } else {
+      setErrorPactar(res.error || 'No se pudo limpiar el cronograma.');
     }
     setGuardandoPactar(false);
   };
@@ -685,6 +854,22 @@ export default function AlumnosPage() {
     horariosDelDia.push(horario);
     horariosPorDia.set(dia, horariosDelDia);
   }
+  const planificacionPactada = expandirBloquesPactados(
+    bloquesPactar,
+    anioActual,
+    mesActual
+  );
+  const metaMensualPactada = alumnoPactar
+    ? metaHorasMensual(alumnoPactar.plan, anioActual, mesActual) * 60
+    : 0;
+  const horasDisponiblesPactadas = Math.max(
+    0,
+    metaMensualPactada - excesoMesAnteriorPactado
+  );
+  const excesoPactadoProximoMes = Math.max(
+    0,
+    excesoMesAnteriorPactado + planificacionPactada.minutos - metaMensualPactada
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -1387,109 +1572,296 @@ export default function AlumnosPage() {
           PESTAÑA 4: PACTAR HORARIOS (Admin y Secretario)
       ============================================================================ */}
           {tab === 'pactar' && rol !== 'alumno' && (
-        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-uap border border-uap-borde max-w-2xl mx-auto space-y-6">
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-            <CalendarDays className="w-6 h-6 text-uap-azul" />
-            <div>
-              <h2 className="text-lg font-black text-uap-azul">Pactar Horarios Mensuales</h2>
-              <p className="text-xs text-slate-400">
-                Definí los rangos horarios y días separados por comas para el mes seleccionado
-              </p>
-            </div>
-          </div>
-
-          {msgPactar && (
-            <div className="p-3 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200">
-              {msgPactar}
-            </div>
-          )}
-
-          <form onSubmit={handleGuardarPactar} className="space-y-4">
-            <div>
-              <label className="block text-xs font-black text-uap-texto uppercase mb-1">
-                Legajo del Alumno
-              </label>
-              <input
-                type="text"
-                value={legajoPactar}
-                onChange={(e) => setLegajoPactar(e.target.value)}
-                placeholder="ej: 12345"
-                required
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-uap-azul uppercase">
-                  Bloques Horarios Pactados
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setBloquesPactar([...bloquesPactar, { rango: '', diasTexto: '' }])
-                  }
-                  className="text-xs font-black text-uap-azul hover:underline flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Agregar otro bloque</span>
-                </button>
-              </div>
-
-              {bloquesPactar.map((b, idx) => (
-                <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                        Rango Horario
-                      </label>
-                      <input
-                        type="text"
-                        value={b.rango}
-                        onChange={(e) => {
-                          const copia = [...bloquesPactar];
-                          copia[idx].rango = e.target.value;
-                          setBloquesPactar(copia);
-                        }}
-                        placeholder="ej: 07:30 - 11:30"
-                        required
-                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                        Días (separar con coma)
-                      </label>
-                      <input
-                        type="text"
-                        value={b.diasTexto}
-                        onChange={(e) => {
-                          const copia = [...bloquesPactar];
-                          copia[idx].diasTexto = e.target.value;
-                          setBloquesPactar(copia);
-                        }}
-                        placeholder="ej: 1, 2, 3, 6, 7"
-                        required
-                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold"
-                      />
-                    </div>
+            <div className="space-y-6">
+              <section className="rounded-3xl border border-uap-borde bg-white p-6 shadow-uap md:p-8">
+                <div className="mb-5 flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <CalendarDays className="h-6 w-6 text-uap-azul" />
+                  <div>
+                    <h2 className="text-lg font-black text-uap-azul">Planificación mensual de horas pactadas</h2>
+                    <p className="text-xs text-slate-500">
+                      Organización del becario y del sector. No modifica las horas trabajadas.
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            <button
-              type="submit"
-              disabled={guardandoPactar}
-              className="w-full py-3.5 bg-uap-azul hover:bg-uap-azul-oscuro text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
-            >
-              {guardandoPactar ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              <span>Guardar Cronograma Completo</span>
-            </button>
-          </form>
-        </div>
-      )}
+                {msgPactar && (
+                  <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-bold text-emerald-800">
+                    {msgPactar}
+                  </div>
+                )}
+                {errorPactar && (
+                  <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{errorPactar}</span>
+                  </div>
+                )}
+
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                  <div>
+                    <label
+                      className="mb-1 block text-xs font-black uppercase text-uap-texto"
+                      htmlFor="legajo-pactar"
+                    >
+                      Legajo del alumno
+                    </label>
+                    <input
+                      id="legajo-pactar"
+                      type="text"
+                      value={legajoPactar}
+                      onChange={(event) => {
+                        setLegajoPactar(event.target.value);
+                        setAlumnoPactar(null);
+                        setPeriodoCargadoPactar('');
+                        setMsgPactar('');
+                      }}
+                      placeholder="Ingresá el legajo"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCargarCronogramaPactado}
+                    disabled={cargandoPactar || !legajoPactar.trim()}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-uap-azul px-5 py-2.5 text-xs font-black text-white transition hover:bg-uap-azul-oscuro disabled:opacity-50"
+                  >
+                    {cargandoPactar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                    Cargar alumno y mes
+                  </button>
+                </div>
+                {alumnoPactar && (
+                  <p className="mt-3 text-xs font-bold text-slate-600">
+                    Alumno: <span className="text-uap-azul">{alumnoPactar.nombre}</span>
+                    <span className="mx-2 text-slate-300">|</span>
+                    Legajo {alumnoPactar.id}
+                    <span className="mx-2 text-slate-300">|</span>
+                    Plan {alumnoPactar.plan}
+                  </p>
+                )}
+              </section>
+
+              {alumnoPactar && periodoCargadoPactar !== clavePeriodoPactar && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-semibold text-amber-900">
+                  Cambiaste el mes o el año. Pulsá <strong>Cargar alumno y mes</strong> para traer la planificación de{' '}
+                  {nombresMeses[mesActual - 1]} {anioActual} antes de editarla.
+                </div>
+              )}
+
+              {alumnoPactar && periodoCargadoPactar === clavePeriodoPactar && (
+                <>
+                  <section className="rounded-3xl border border-uap-borde bg-white p-5 shadow-uap md:p-7">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                      <h3 className="font-black text-uap-azul">
+                        Almanaque pactado · {nombresMeses[mesActual - 1]} {anioActual}
+                      </h3>
+                      <span className="text-[11px] font-semibold text-slate-500">
+                        Las horas de este almanaque son solo planificación
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+                      {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia) => (
+                        <div
+                          key={dia}
+                          className="py-1 text-center text-[9px] font-black uppercase tracking-wide text-slate-400 sm:text-[10px]"
+                        >
+                          {dia}
+                        </div>
+                      ))}
+                      {Array.from({ length: espaciosAntesDelPrimerDia }, (_, index) => (
+                        <div key={`pactado-vacio-${index}`} aria-hidden="true" />
+                      ))}
+                      {diasCalendario.map((dia) => {
+                        const horarios = planificacionPactada.horariosPorDia.get(dia) || [];
+                        const fecha = `${anioActual}-${String(mesActual).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                        return (
+                          <div
+                            key={fecha}
+                            className={`min-h-16 rounded-xl border p-1 sm:min-h-20 sm:p-1.5 ${
+                              fecha === fechaHoy
+                                ? 'border-uap-azul-medio bg-blue-50'
+                                : 'border-slate-100 bg-slate-50/70'
+                            }`}
+                          >
+                            <span className="block text-[10px] font-black text-slate-600">{dia}</span>
+                            <div className="mt-1 space-y-1">
+                              {horarios.map((horario, index) => (
+                                <div
+                                  key={`${horario}-${index}`}
+                                  className="break-words rounded-md bg-blue-100 px-1 py-0.5 text-center text-[8px] font-bold leading-tight text-uap-azul sm:text-[10px]"
+                                >
+                                  {horario}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+
+                  <section className="rounded-3xl border border-uap-borde bg-white p-5 shadow-uap md:p-7">
+                    <div className="mb-4">
+                      <h3 className="font-black text-uap-azul">Bloques de horarios pactados</h3>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Escribí los turnos y los días del mes. El almanaque y la suma se actualizan al editar.
+                      </p>
+                    </div>
+                    <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <p className="text-[10px] font-black uppercase text-slate-500">Meta pactada del mes</p>
+                        <p className="mt-1 text-xl font-black text-uap-azul">
+                          {formatearMinutos(metaMensualPactada)}
+                        </p>
+                        <p className="text-[10px] text-slate-500">horas · solo planificación</p>
+                      </div>
+                      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                        <p className="text-[10px] font-black uppercase text-amber-700">A compensar del mes anterior</p>
+                        <p className="mt-1 text-xl font-black text-amber-800">
+                          {formatearMinutos(excesoMesAnteriorPactado)}
+                        </p>
+                        <p className="text-[10px] text-amber-700">calculado desde horarios pactados</p>
+                      </div>
+                      <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
+                        <p className="text-[10px] font-black uppercase text-indigo-700">Disponible para pactar</p>
+                        <p className="mt-1 text-xl font-black text-indigo-900">
+                          {formatearMinutos(horasDisponiblesPactadas)}
+                        </p>
+                        <p className="text-[10px] text-indigo-700">meta menos compensación anterior</p>
+                      </div>
+                      <div className={`rounded-2xl border p-4 ${
+                        planificacionPactada.minutos > horasDisponiblesPactadas
+                          ? 'border-red-200 bg-red-50'
+                          : 'border-emerald-200 bg-emerald-50'
+                      }`}>
+                        <p className={`text-[10px] font-black uppercase ${
+                          planificacionPactada.minutos > horasDisponiblesPactadas
+                            ? 'text-red-700'
+                            : 'text-emerald-700'
+                        }`}>Total pactado del mes</p>
+                        <p className={`mt-1 text-xl font-black ${
+                          planificacionPactada.minutos > horasDisponiblesPactadas
+                            ? 'text-red-800'
+                            : 'text-emerald-800'
+                        }`}>{formatearMinutos(planificacionPactada.minutos)}</p>
+                        <p className="text-[10px] text-slate-500">
+                          {planificacionPactada.minutos > horasDisponiblesPactadas
+                            ? `Excedente: ${formatearMinutos(planificacionPactada.minutos - horasDisponiblesPactadas)}`
+                            : `Restan: ${formatearMinutos(horasDisponiblesPactadas - planificacionPactada.minutos)}`}
+                        </p>
+                      </div>
+                    </div>
+
+                    {planificacionPactada.minutos > horasDisponiblesPactadas && (
+                      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
+                        Atención: el plan supera las horas disponibles. Podés continuar con confirmación; el excedente de{' '}
+                        <strong>{formatearMinutos(excesoPactadoProximoMes)}</strong> quedará indicado para la planificación del mes siguiente.
+                      </div>
+                    )}
+
+                    <form onSubmit={handleGuardarPactar} className="space-y-4">
+                      {bloquesPactar.map((bloque, index) => (
+                        <div
+                          key={index}
+                          className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                        >
+                          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+                            <div>
+                              <label className="mb-1 block text-[11px] font-bold text-slate-600">
+                                Turno u horario
+                              </label>
+                              <input
+                                type="text"
+                                value={bloque.rango}
+                                onChange={(event) =>
+                                  setBloquesPactar((actuales) =>
+                                    actuales.map((item, itemIndex) =>
+                                      itemIndex === index ? { ...item, rango: event.target.value } : item
+                                    )
+                                  )
+                                }
+                                placeholder="07:30 - 11:30"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1 block text-[11px] font-bold text-slate-600">
+                                Días del mes
+                              </label>
+                              <input
+                                type="text"
+                                value={bloque.diasTexto}
+                                onChange={(event) =>
+                                  setBloquesPactar((actuales) =>
+                                    actuales.map((item, itemIndex) =>
+                                      itemIndex === index ? { ...item, diasTexto: event.target.value } : item
+                                    )
+                                  )
+                                }
+                                placeholder="1, 2, 3, 6"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              aria-label={`Quitar bloque ${index + 1}`}
+                              onClick={() =>
+                                setBloquesPactar((actuales) =>
+                                  actuales.filter((_, itemIndex) => itemIndex !== index)
+                                )
+                              }
+                              className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 hover:border-red-200 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Quitar
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setBloquesPactar((actuales) => [
+                              ...actuales,
+                              { rango: '', diasTexto: '' },
+                            ])
+                          }
+                          className="inline-flex items-center gap-1 rounded-xl border border-uap-azul/20 bg-blue-50 px-4 py-2.5 text-xs font-black text-uap-azul hover:bg-blue-100"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Agregar otro horario
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={guardandoPactar || periodoCargadoPactar !== clavePeriodoPactar}
+                          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-uap-azul px-5 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-md transition hover:bg-uap-azul-oscuro disabled:opacity-50"
+                        >
+                          {guardandoPactar ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                          Guardar y reemplazar mes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleLimpiarCronogramaPactado}
+                          disabled={guardandoPactar}
+                          className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          Limpiar mes
+                        </button>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-slate-500">
+                        Al guardar se reemplaza todo el cronograma pactado de este alumno para el mes seleccionado. Las asistencias y horas reales no se modifican.
+                      </p>
+                    </form>
+
+                    <div className="mt-5 flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-600">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-uap-azul" />
+                      Las metas son las del plan del alumno. El saldo se arrastra entre meses consecutivos usando únicamente horarios pactados; no se consulta ni altera la asistencia real.
+                    </div>
+                  </section>
+                </>
+              )}
+            </div>
+          )}
 
       {/* ============================================================================
           PESTAÑA 5: NUEVO ALUMNO (Admin y Secretario)

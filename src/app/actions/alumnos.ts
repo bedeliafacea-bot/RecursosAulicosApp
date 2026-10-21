@@ -8,7 +8,12 @@ import {
   EvaluacionBecuap,
   MesEvaluacionData,
 } from '@/lib/types/database.types';
-import { calcularHorasDecimales, diasDelMes, rangoMes } from '@/lib/horas';
+import {
+  calcularHorasDecimales,
+  diasDelMes,
+  minutosRangosPactados,
+  rangoMes,
+} from '@/lib/horas';
 
 // ==============================================================================
 // 1. GESTIÓN DE ALUMNOS (CONSULTA Y ALTA)
@@ -291,42 +296,131 @@ export async function obtenerHorariosPactadosAction(
   }
 }
 
-export async function registrarHorariosPactadosMasivosAction(datos: {
+export async function obtenerHistorialHorariosPactadosAction(
+  alumnoId: string,
+  anio: number,
+  mes: number
+): Promise<{
+  ok: boolean;
+  data?: Array<Pick<HorarioPactado, 'fecha' | 'rango_horario'>>;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const fechaInicioMes = rangoMes(anio, mes).inicio;
+    const horarios: Array<Pick<HorarioPactado, 'fecha' | 'rango_horario'>> = [];
+    const pageSize = 1000;
+
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabase
+        .from('horarios_pactados')
+        .select('fecha, rango_horario')
+        .eq('alumno_id', alumnoId)
+        .lt('fecha', fechaInicioMes)
+        .order('fecha', { ascending: true })
+        .range(offset, offset + pageSize - 1);
+
+      if (error) return { ok: false, error: error.message };
+      const page = (data || []) as Array<Pick<HorarioPactado, 'fecha' | 'rango_horario'>>;
+      horarios.push(...page);
+      if (page.length < pageSize) break;
+    }
+
+    return { ok: true, data: horarios };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'Error al obtener el historial de horarios pactados.' };
+  }
+}
+
+export async function reemplazarHorariosPactadosMesAction(datos: {
   alumnoId: string;
   mes: number;
   anio: number;
   bloques: Array<{ rango: string; diasTexto: string }>;
+  limpiar?: boolean;
 }): Promise<{ ok: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return { ok: false, error: 'Necesitás iniciar sesión para guardar horarios pactados.' };
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('perfiles_usuarios')
+      .select('rol')
+      .eq('id', user.id)
+      .single();
+    if (profileError || !['admin', 'secretario'].includes(profile?.rol || '')) {
+      return { ok: false, error: 'Solo administradores y secretarios pueden pactar horarios.' };
+    }
+
+    if (
+      !datos.alumnoId.trim() ||
+      !Number.isInteger(datos.mes) ||
+      datos.mes < 1 ||
+      datos.mes > 12 ||
+      !Number.isInteger(datos.anio) ||
+      datos.anio < 2000 ||
+      datos.anio > 2100
+    ) {
+      return { ok: false, error: 'El alumno o el período seleccionado no es válido.' };
+    }
+
     const registros: Array<{ alumno_id: string; fecha: string; rango_horario: string }> = [];
+    const registrosUnicos = new Set<string>();
 
     for (const b of datos.bloques) {
       if (!b.rango.trim() || !b.diasTexto.trim()) continue;
+      const minutosRango = minutosRangosPactados(b.rango);
+      if (minutosRango === null) {
+        return {
+          ok: false,
+          error: `El rango "${b.rango}" no es válido. Usá uno o dos turnos completos, por ejemplo 07:30 - 11:30.`,
+        };
+      }
 
-      const dias = b.diasTexto
-        .split(',')
-        .map((d) => parseInt(d.trim(), 10))
-        .filter((d) => !isNaN(d) && d >= 1 && d <= diasDelMes(datos.anio, datos.mes));
+      const diasTexto = b.diasTexto.split(',').map((d) => d.trim());
+      if (diasTexto.some((d) => !/^\d+$/.test(d))) {
+        return { ok: false, error: 'Ingresá los días separados por coma, por ejemplo: 1, 2, 3.' };
+      }
+      const dias = [...new Set(diasTexto.map(Number))];
+      if (dias.some((dia) => dia < 1 || dia > diasDelMes(datos.anio, datos.mes))) {
+        return {
+          ok: false,
+          error: `Los días deben estar entre 1 y ${diasDelMes(datos.anio, datos.mes)} para el mes elegido.`,
+        };
+      }
 
       for (const d of dias) {
         const diaStr = d < 10 ? `0${d}` : `${d}`;
         const mesStr = datos.mes < 10 ? `0${datos.mes}` : `${datos.mes}`;
         const fechaStr = `${datos.anio}-${mesStr}-${diaStr}`;
+        const clave = `${fechaStr}|${b.rango.trim()}`;
+        if (registrosUnicos.has(clave)) continue;
+        registrosUnicos.add(clave);
 
         registros.push({
-          alumno_id: datos.alumnoId,
+          alumno_id: datos.alumnoId.trim(),
           fecha: fechaStr,
           rango_horario: b.rango.trim(),
         });
       }
     }
 
-    if (registros.length === 0) {
-      return { ok: false, error: 'No se ingresaron días válidos.' };
+    if (registros.length === 0 && !datos.limpiar) {
+      return { ok: false, error: 'Agregá al menos un horario o usá la opción para limpiar el mes.' };
     }
 
-    const { error } = await supabase.from('horarios_pactados').insert(registros);
+    const { error } = await supabase.rpc('reemplazar_horarios_pactados_mes', {
+      p_alumno_id: datos.alumnoId.trim(),
+      p_anio: datos.anio,
+      p_mes: datos.mes,
+      p_horarios: registros.map(({ fecha, rango_horario }) => ({ fecha, rango_horario })),
+    });
     if (error) return { ok: false, error: error.message };
 
     return { ok: true };

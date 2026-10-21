@@ -81,6 +81,18 @@ Para habilitar la limpieza, aplicar una sola vez
 `supabase/migrations/20261021_monthly_backup_cleanup.sql` en Supabase. Generar y consultar
 ZIPs no requieren esa migración.
 
+### Planificación mensual de horas pactadas
+
+La pestaña **Pactar Horarios** permite cargar los horarios previstos de un alumno en
+Supabase, verlos en un almanaque y sumar las horas planificadas según su meta mensual.
+La compensación de excesos se calcula únicamente a partir de horarios pactados en meses
+consecutivos; no modifica ni consulta las jornadas realmente trabajadas.
+
+Al guardar, se reemplaza el cronograma completo de ese alumno para el mes seleccionado.
+Para habilitar el guardado atómico, aplicar una sola vez
+`supabase/migrations/20261021_replace_monthly_pact_schedule.sql` en Supabase. La pantalla
+de lectura de los horarios existentes no requiere esta migración.
+
 3. Levantar el servidor de desarrollo:
    ```bash
    npm run dev
