@@ -1746,6 +1746,7 @@ export default function AlumnosPage() {
                       espaciosAntesDelPrimerDia={espaciosAntesDelPrimerDia}
                       horariosPorDia={horariosPorDiaPlanificado}
                       fechaHoy={fechaHoy}
+                      alumno={alumnoPactar}
                     />
                   </section>
 
@@ -2405,13 +2406,26 @@ function CalendarioPactado({
       <header className="calendario-pactado-titulo">
         <h1>Almanaque de horarios pactados</h1>
         {alumno && (
-          <div className="calendario-pactado-datos">
-            <p>Nombre y apellido: <strong>{alumno.nombre}</strong></p>
-            <p>Número de alumno: <strong>{alumno.id}</strong></p>
-            <p>Plan: <strong>{alumno.plan}</strong></p>
+          <div className="calendario-pactado-identificacion">
+            <div>
+              <span>Nombre y apellido</span>
+              <strong>{alumno.nombre}</strong>
+            </div>
+            <div>
+              <span>Número de alumno</span>
+              <strong>{alumno.id}</strong>
+            </div>
+            <div>
+              <span>Plan</span>
+              <strong>{alumno.plan}</strong>
+            </div>
+            <div>
+              <span>Mes y año</span>
+              <strong>{MESES_MAYUSCULA[mes - 1]} {anio}</strong>
+            </div>
           </div>
         )}
-        <p>Mes y año: <strong>{MESES_MAYUSCULA[mes - 1]} {anio}</strong></p>
+        {!alumno && <p>Mes y año: <strong>{MESES_MAYUSCULA[mes - 1]} {anio}</strong></p>}
       </header>
       <div className="calendario-pactado-grilla">
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia) => (
