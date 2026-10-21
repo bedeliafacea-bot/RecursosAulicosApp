@@ -91,6 +91,10 @@ en la raíz del Drive autorizado, que será el destino compartido para los admin
 Una falla al subir no borra datos; si una falla ocurre durante el borrado, el enlace al
 archivo ya subido se muestra para conservar el respaldo.
 
+En la pantalla de respaldo se pueden seleccionar individualmente las tablas a incluir y
+limpiar; las no seleccionadas quedan intactas en Supabase. La página también muestra si
+faltan variables de entorno o aplicar la migración de tokens de Google.
+
 3. Levantar el servidor de desarrollo:
    ```bash
    npm run dev

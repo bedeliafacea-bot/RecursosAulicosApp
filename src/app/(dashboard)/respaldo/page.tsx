@@ -8,6 +8,7 @@ import {
   DatabaseBackup,
   ExternalLink,
   Loader2,
+  Settings2,
   ShieldAlert,
 } from 'lucide-react';
 import {
@@ -32,25 +33,32 @@ function currentArgentinaMonth(): string {
 }
 
 const monthTables = [
-  'Jornadas de becarios',
-  'Horarios pactados',
-  'Fotocopias',
-  'Pagos en efectivo',
-  'Reservas especiales',
-  'Cierres de caja',
-];
+  { name: 'jornadas_becuap', label: 'Jornadas de becarios' },
+  { name: 'horarios_pactados', label: 'Horarios pactados' },
+  { name: 'fotocopias', label: 'Fotocopias' },
+  { name: 'pagos_efectivo', label: 'Pagos en efectivo' },
+  { name: 'reservas_especiales', label: 'Reservas especiales' },
+  { name: 'cierres_caja', label: 'Cierres de caja' },
+] as const;
+type MonthlyTableName = (typeof monthTables)[number]['name'];
 
 export default function RespaldoMensualPage() {
   const { rol } = useAuth();
   const [month, setMonth] = useState('');
   const [currentMonth, setCurrentMonth] = useState('');
   const [connected, setConnected] = useState(false);
+  const [driveReady, setDriveReady] = useState(false);
+  const [missingSettings, setMissingSettings] = useState<string[]>([]);
+  const [migrationApplied, setMigrationApplied] = useState<boolean | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [fileUrl, setFileUrl] = useState('');
   const [confirmed, setConfirmed] = useState(false);
+  const [selectedTables, setSelectedTables] = useState<MonthlyTableName[]>(
+    monthTables.map((table) => table.name)
+  );
 
   useEffect(() => {
     setMonth(previousMonth());
@@ -60,7 +68,9 @@ export default function RespaldoMensualPage() {
       setSuccess('Google Drive quedó conectado correctamente.');
     } else if (driveStatus) {
       setError(
-        'No se pudo conectar Google Drive. Verificá la configuración OAuth del servidor e intentá nuevamente.'
+        driveStatus === 'access-denied'
+          ? 'Se canceló el permiso de Google Drive. Para conectarlo, acepta el acceso solicitado y vuelve a esta página.'
+          : 'Google no pudo completar la autorización. Revisa que el URI de redirección coincida exactamente con el registrado en Google Cloud y que la cuenta esté habilitada como usuario de prueba.'
       );
     }
     if (driveStatus) {
@@ -74,12 +84,18 @@ export default function RespaldoMensualPage() {
     setLoadingStatus(true);
     const result = await obtenerEstadoRespaldoAction();
     setConnected(result.ok && Boolean(result.connected));
+    setDriveReady(result.ok && Boolean(result.readyToConnect));
+    setMissingSettings(result.missingSettings || []);
+    setMigrationApplied(result.migrationApplied ?? null);
     if (!result.ok) setError(result.error || 'No se pudo consultar la conexión con Drive.');
     setLoadingStatus(false);
   }
 
   async function runBackup() {
-    if (!month || !confirmed) return;
+    if (!month || !confirmed || selectedTables.length === 0) return;
+    const selectedLabels = monthTables
+      .filter((table) => selectedTables.includes(table.name))
+      .map((table) => table.label);
     const monthLabel = new Intl.DateTimeFormat('es-AR', {
       month: 'long',
       year: 'numeric',
@@ -88,7 +104,7 @@ export default function RespaldoMensualPage() {
 
     if (
       !window.confirm(
-        `Se creará un JSON en Google Drive y luego se borrarán los registros operativos de ${monthLabel}. Los datos maestros y las evaluaciones se conservarán. ¿Continuar?`
+        `Se creará un JSON en Google Drive con: ${selectedLabels.join(', ')}. Luego se borrarán de Supabase únicamente esas tablas del mes ${monthLabel}. Las tablas no seleccionadas y los datos maestros se conservarán. ¿Continuar?`
       )
     ) {
       return;
@@ -98,7 +114,7 @@ export default function RespaldoMensualPage() {
     setError('');
     setSuccess('');
     setFileUrl('');
-    const result = await respaldarYLimpiarMesAction(month);
+    const result = await respaldarYLimpiarMesAction(month, selectedTables);
     setRunning(false);
 
     if (!result.ok) {
@@ -167,7 +183,7 @@ export default function RespaldoMensualPage() {
                 Reautorizar
               </a>
             </div>
-          ) : (
+          ) : driveReady ? (
             <a
               href="/api/google/drive/authorize"
               className="inline-flex items-center gap-2 rounded-xl bg-uap-azul px-4 py-2.5 text-sm font-bold text-white transition hover:bg-uap-azul-medio"
@@ -175,8 +191,61 @@ export default function RespaldoMensualPage() {
               <CloudUpload className="h-4 w-4" />
               Conectar Google Drive
             </a>
+          ) : (
+            <span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800">
+              Falta configurar
+            </span>
           )}
         </div>
+
+        {!loadingStatus && !connected && (
+          <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <div className="flex items-center gap-2 text-sm font-black text-amber-950">
+              <Settings2 className="h-4 w-4" />
+              {driveReady
+                ? 'Configuración lista: falta autorizar la cuenta de Google'
+                : 'Pasos pendientes para activar Google Drive'}
+            </div>
+            <ol className="list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-amber-950">
+              {missingSettings.length > 0 && (
+                <li>
+                  Configurar en el servidor: <code>{missingSettings.join(', ')}</code>. Reiniciar
+                  la app después de agregar las variables.
+                </li>
+              )}
+              {migrationApplied === false && (
+                <li>
+                  Aplicar la migración{' '}
+                  <code>supabase/migrations/20261021_google_drive_backup_tokens.sql</code> en
+                  Supabase.
+                </li>
+              )}
+              {migrationApplied === null && (
+                <li>
+                  Configurar <code>SUPABASE_SERVICE_ROLE_KEY</code> para que el servidor pueda
+                  comprobar la migración.
+                </li>
+              )}
+              {missingSettings.some((setting) => setting.startsWith('GOOGLE_TOKEN_ENCRYPTION_KEY')) && (
+                <li>
+                  Generar una clave Base64 de 32 bytes; mantenerla privada y estable. En el
+                  README están los pasos.
+                </li>
+              )}
+              {driveReady && (
+                <li>
+                  Pulsar <strong>Conectar Google Drive</strong> y aceptar los permisos con la
+                  cuenta que será el destino compartido de respaldos.
+                </li>
+              )}
+            </ol>
+            <p className="text-[11px] leading-relaxed text-amber-900">
+              En Google Cloud debe estar habilitada Google Drive API, y el URI de callback
+              configurado en la app tiene que coincidir exactamente con el autorizado en
+              OAuth. No compartas client secrets, tokens ni claves por chat.
+            </p>
+          </div>
+        )}
 
         <div className="border-t border-slate-100 pt-5">
           <label htmlFor="backup-month" className="block text-sm font-bold text-slate-800">
@@ -195,23 +264,74 @@ export default function RespaldoMensualPage() {
           />
         </div>
 
-        <div className="rounded-2xl bg-slate-50 p-4">
-          <p className="text-sm font-bold text-slate-800">
-            Se incluirán únicamente registros con fecha de estas tablas:
-          </p>
-          <ul className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-            {monthTables.map((table) => (
-              <li key={table} className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                {table}
-              </li>
-            ))}
+        <fieldset className="rounded-2xl bg-slate-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <legend className="text-sm font-bold text-slate-800">
+              Seleccioná qué guardar y limpiar
+            </legend>
+            <div className="flex gap-3 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedTables(monthTables.map((table) => table.name));
+                  setConfirmed(false);
+                }}
+                className="text-uap-azul underline underline-offset-2"
+              >
+                Seleccionar todas
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedTables([]);
+                  setConfirmed(false);
+                }}
+                className="text-slate-500 underline underline-offset-2"
+              >
+                Quitar selección
+              </button>
+            </div>
+          </div>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {monthTables.map((table) => {
+              const isSelected = selectedTables.includes(table.name);
+              return (
+                <li key={table.name}>
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-transparent px-2 py-1.5 text-sm text-slate-700 transition hover:border-slate-200 hover:bg-white">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(event) => {
+                        setSelectedTables((current) =>
+                          event.target.checked
+                            ? [...current, table.name]
+                            : current.filter((name) => name !== table.name)
+                        );
+                        setConfirmed(false);
+                      }}
+                      className="h-4 w-4 accent-emerald-600"
+                    />
+                    <CheckCircle2
+                      className={`h-4 w-4 shrink-0 ${
+                        isSelected ? 'text-emerald-600' : 'text-slate-300'
+                      }`}
+                    />
+                    <span>{table.label}</span>
+                  </label>
+                </li>
+              );
+            })}
           </ul>
           <p className="mt-3 text-xs leading-relaxed text-slate-500">
-            Se conservarán alumnos, evaluaciones, usuarios, catálogos, la matriz semanal de
-            reservas y la configuración del sistema.
+            Solo se borrarán de Supabase las tablas marcadas, y únicamente para el mes
+            elegido. Las que queden sin marcar se conservarán.
           </p>
-        </div>
+        </fieldset>
+
+        <p className="text-xs leading-relaxed text-slate-500">
+          Alumnos, evaluaciones, usuarios, catálogos, la matriz semanal de reservas y la
+          configuración del sistema se conservan siempre.
+        </p>
 
         <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
           <input
@@ -221,15 +341,15 @@ export default function RespaldoMensualPage() {
             className="mt-0.5 h-4 w-4 accent-amber-700"
           />
           <span>
-            Entiendo que los registros del mes elegido se eliminarán de Supabase después de
-            guardarse en Drive.
+            Entiendo que solo los registros de las tablas seleccionadas y del mes elegido se
+            eliminarán de Supabase después de guardarse en Drive.
           </span>
         </label>
 
         <button
           type="button"
           onClick={runBackup}
-          disabled={!connected || loadingStatus || running || !month || !confirmed}
+          disabled={!connected || loadingStatus || running || !month || !confirmed || selectedTables.length === 0}
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-700 px-4 py-3 text-sm font-black text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           {running ? (
