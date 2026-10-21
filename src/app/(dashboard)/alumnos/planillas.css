@@ -58,6 +58,8 @@
 .calendario-pactado-titulo { margin-bottom: 12px; text-align: center; }
 .calendario-pactado-titulo h1 { color: #003c71; font-size: 18px; font-weight: 800; }
 .calendario-pactado-titulo p { margin-top: 3px; font-size: 12px; font-weight: 600; }
+.calendario-pactado-datos { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px; margin-top: 5px; }
+.calendario-pactado-datos p { margin: 0; }
 .calendario-pactado-grilla { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .calendario-pactado-dia-semana { padding: 4px; color: #64748b; font-size: 10px; font-weight: 800; text-align: center; text-transform: uppercase; }
 .calendario-pactado-celda { min-height: 68px; padding: 5px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
@@ -128,6 +130,7 @@
   .print-portal .calendario-pactado-titulo { margin-bottom: 8mm; }
   .print-portal .calendario-pactado-titulo h1 { font-size: 20px; }
   .print-portal .calendario-pactado-titulo p { font-size: 12px; }
+  .print-portal .calendario-pactado-datos { gap: 2mm 8mm; margin-top: 2mm; }
   .print-portal .calendario-pactado-grilla { gap: 2mm; }
   .print-portal .calendario-pactado-dia-semana { padding: 2mm; border-bottom: 1px solid #64748b; font-size: 10px; }
   .print-portal .calendario-pactado-celda { min-height: 29mm; padding: 2mm; border-radius: 0; background: #fff; }
