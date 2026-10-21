@@ -2403,7 +2403,7 @@ function CalendarioPactado({
 }) {
   return (
     <section className="calendario-pactado">
-      <header className="calendario-pactado-titulo">
+      <div className="calendario-pactado-titulo">
         <h1>Almanaque de horarios pactados</h1>
         {alumno && (
           <div className="calendario-pactado-identificacion">
@@ -2426,7 +2426,7 @@ function CalendarioPactado({
           </div>
         )}
         {!alumno && <p>Mes y año: <strong>{MESES_MAYUSCULA[mes - 1]} {anio}</strong></p>}
-      </header>
+      </div>
       <div className="calendario-pactado-grilla">
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia) => (
           <div key={dia} className="calendario-pactado-dia-semana">{dia}</div>

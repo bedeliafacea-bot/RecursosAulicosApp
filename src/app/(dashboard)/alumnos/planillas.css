@@ -129,7 +129,14 @@
     width: 287mm; max-width: 287mm; margin: 0 auto; color: #000;
     break-inside: avoid; page-break-inside: avoid;
   }
-  .print-portal .calendario-pactado-titulo { margin-bottom: 8mm; }
+  .print-portal[data-tipo="pactados"] .calendario-pactado-titulo {
+    display: block !important; visibility: visible !important; margin-bottom: 8mm !important;
+    color: #000 !important; text-align: center !important;
+  }
+  .print-portal[data-tipo="pactados"] .calendario-pactado-titulo h1,
+  .print-portal[data-tipo="pactados"] .calendario-pactado-titulo p {
+    display: block !important; visibility: visible !important; color: #000 !important;
+  }
   .print-portal .calendario-pactado-titulo h1 { font-size: 20px; }
   .print-portal .calendario-pactado-titulo p { font-size: 12px; }
   .print-portal[data-tipo="pactados"] .calendario-pactado-identificacion {
