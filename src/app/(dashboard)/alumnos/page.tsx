@@ -1267,7 +1267,7 @@ export default function AlumnosPage() {
             <div>
               <h2 className="text-lg font-black text-uap-azul">Registrar Jornada Diaria</h2>
               <p className="text-xs text-slate-400">
-                Cargá la asistencia del becario con turnos simples o dobles
+                El horario pactado se carga como base editable para registrar la asistencia real
               </p>
             </div>
           </div>
@@ -1358,9 +1358,25 @@ export default function AlumnosPage() {
                         className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold"
                       />
                       {j.pactado && (
-                        <span className="mt-1 inline-block text-[10px] font-bold text-uap-azul-medio">
-                          Pactado: {j.pactado}
-                        </span>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="text-[10px] font-bold text-uap-azul-medio">
+                            Pactado: {j.pactado}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setJornadasInput((actuales) =>
+                                actuales.map((fila, indice) =>
+                                  indice === idx ? aplicarPactado(fila) : fila
+                                )
+                              )
+                            }
+                            className="text-[10px] font-black text-uap-azul underline underline-offset-2 hover:text-uap-azul-oscuro"
+                            aria-label={`Volver a copiar el horario pactado del ${j.fecha} a los turnos`}
+                          >
+                            Usar horario pactado
+                          </button>
+                        </div>
                       )}
                     </div>
 
