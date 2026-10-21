@@ -144,3 +144,86 @@ export function parsearRangoPactado(rango: string): { e1: string; s1: string; e2
   if (horas.length < 2) return null;
   return { e1: horas[0], s1: horas[1], e2: horas[2] || '', s2: horas[3] || '' };
 }
+
+export interface RangoHorarioPactado {
+  entrada: string;
+  salida: string;
+}
+
+/** Valida uno o dos turnos pactados expresados como "07:30 - 11:30 / 14:00 - 16:00". */
+export function parsearRangosPactados(rango: string): RangoHorarioPactado[] | null {
+  const horas = rango.match(/\d{1,2}[:.]\d{2}/g);
+  if (!horas || (horas.length !== 2 && horas.length !== 4)) return null;
+
+  const rangos: RangoHorarioPactado[] = [];
+  for (let index = 0; index < horas.length; index += 2) {
+    const normalizarHora = (hora: string) => {
+      const [horaTexto, minutoTexto] = hora.replace('.', ':').split(':');
+      const horaNumero = Number(horaTexto);
+      const minutoNumero = Number(minutoTexto);
+      if (
+        !Number.isInteger(horaNumero) ||
+        !Number.isInteger(minutoNumero) ||
+        horaNumero < 0 ||
+        horaNumero > 23 ||
+        minutoNumero < 0 ||
+        minutoNumero > 59
+      ) {
+        return null;
+      }
+      return `${String(horaNumero).padStart(2, '0')}:${String(minutoNumero).padStart(2, '0')}`;
+    };
+
+    const entrada = normalizarHora(horas[index]);
+    const salida = normalizarHora(horas[index + 1]);
+    if (!entrada || !salida || aMinutos(salida)! <= aMinutos(entrada)!) return null;
+    rangos.push({ entrada, salida });
+  }
+
+  return rangos;
+}
+
+export function minutosRangosPactados(rango: string): number | null {
+  const rangos = parsearRangosPactados(rango);
+  if (!rangos) return null;
+  return rangos.reduce((total, turno) => total + minutosTurno(turno.entrada, turno.salida), 0);
+}
+
+/** Saldo de horas pactadas excedidas que se arrastra desde meses consecutivos anteriores. */
+export function saldoPactadoArrastrado(
+  horarios: { fecha: string; rango_horario: string }[],
+  plan: string | null | undefined,
+  anio: number,
+  mes: number
+): number {
+  const mesActualIndice = anio * 12 + mes - 1;
+  const minutosPorMes = new Map<number, number>();
+
+  for (const horario of horarios) {
+    const [anioHorario, mesHorario] = horario.fecha.split('-').map(Number);
+    if (!anioHorario || !mesHorario) continue;
+    const indice = anioHorario * 12 + mesHorario - 1;
+    if (indice >= mesActualIndice) continue;
+    const minutos = minutosRangosPactados(horario.rango_horario);
+    if (minutos === null) continue;
+    minutosPorMes.set(indice, (minutosPorMes.get(indice) || 0) + minutos);
+  }
+
+  const mesesAnteriores = [...minutosPorMes.entries()].sort(([a], [b]) => a - b);
+  let saldo = 0;
+  let mesAnteriorIndice: number | null = null;
+
+  for (const [indice, minutosPactados] of mesesAnteriores) {
+    if (mesAnteriorIndice !== null && indice !== mesAnteriorIndice + 1) {
+      saldo = 0;
+    }
+    const anioHorario = Math.floor(indice / 12);
+    const mesHorario = (indice % 12) + 1;
+    const meta = metaHorasMensual(plan, anioHorario, mesHorario) * 60;
+    saldo = Math.max(0, saldo + minutosPactados - meta);
+    mesAnteriorIndice = indice;
+  }
+
+  if (mesAnteriorIndice !== mesActualIndice - 1) return 0;
+  return saldo;
+}
