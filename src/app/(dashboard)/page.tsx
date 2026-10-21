@@ -14,7 +14,6 @@ import {
   ChevronRight,
   Sparkles,
   X,
-  Cake,
 } from 'lucide-react';
 import PlanoSecundario from '@/components/plano/PlanoSecundario';
 import { obtenerCumpleanosProximosAction, Cumpleanero } from '@/app/actions/cumpleanos';
@@ -133,30 +132,50 @@ export default function HomePage() {
 
       {/* Widget Cumpleaños Rápidos si hay */}
       {cumpleaneros.length > 0 && (
-        <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-3xl p-5 border border-pink-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center text-lg">
-              🎂
+        cumpleaneros.some((c) => c.esHoy) ? (
+          <div className="p-6 bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 rounded-3xl text-white shadow-xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl">
+                🎂
+              </div>
+              <div>
+                <div className="text-xs uppercase font-black tracking-widest text-white/80">
+                  ¡Festejo Especial Hoy!
+                </div>
+                <h3 className="text-xl md:text-2xl font-black">
+                  {cumpleaneros.filter((c) => c.esHoy).map((c) => c.nombre).join(', ')}
+                </h3>
+                <p className="text-xs text-white/90 mt-0.5">
+                  ¡No te olvides de saludarlo en su jornada de hoy en Bedelía!
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-sm font-black text-rose-900">
-                {cumpleaneros.some((c) => c.esHoy)
-                  ? '¡Cumpleaños hoy!'
-                  : 'Próximos Cumpleaños de Becarios'}
-              </h4>
-              <p className="text-xs text-rose-700">
-                {cumpleaneros.map((c) => `${c.nombre} (${c.fechaTexto})`).join(' • ')}
-              </p>
-            </div>
+            <Sparkles className="w-8 h-8 text-amber-200 hidden sm:block animate-pulse" />
           </div>
-          <a
-            href="/cumpleanos"
-            className="text-xs font-bold text-rose-700 hover:underline flex items-center gap-1 self-start sm:self-auto"
-          >
-            <span>Ver todos</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
+        ) : (
+          <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-3xl p-5 border border-pink-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center text-lg">
+                🎂
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-rose-900">
+                  Próximos Cumpleaños de Becarios
+                </h4>
+                <p className="text-xs text-rose-700">
+                  {cumpleaneros.map((c) => `${c.nombre} (${c.fechaTexto})`).join(' • ')}
+                </p>
+              </div>
+            </div>
+            <a
+              href="/cumpleanos"
+              className="text-xs font-bold text-rose-700 hover:underline flex items-center gap-1 self-start sm:self-auto"
+            >
+              <span>Ver todos</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        )
       )}
 
       {/* Grid de Tarjetas Principales según Rol */}
