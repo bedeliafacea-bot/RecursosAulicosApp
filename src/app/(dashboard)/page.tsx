@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Sparkles,
   X,
+  DatabaseBackup,
 } from 'lucide-react';
 import PlanoSecundario from '@/components/plano/PlanoSecundario';
 import { obtenerCumpleanosProximosAction, Cumpleanero } from '@/app/actions/cumpleanos';
@@ -80,6 +81,14 @@ export default function HomePage() {
       href: '/usuarios',
       icono: Users,
       color: 'from-purple-600 to-indigo-900',
+      roles: ['admin'],
+    },
+    {
+      titulo: 'Respaldo mensual',
+      desc: 'Archiva los registros operativos en Google Drive y limpia el mes seleccionado.',
+      href: '/respaldo',
+      icono: DatabaseBackup,
+      color: 'from-emerald-600 to-teal-800',
       roles: ['admin'],
     },
   ];
