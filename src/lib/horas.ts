@@ -189,7 +189,7 @@ export function minutosRangosPactados(rango: string): number | null {
   return rangos.reduce((total, turno) => total + minutosTurno(turno.entrada, turno.salida), 0);
 }
 
-/** Saldo de horas pactadas excedidas que se arrastra desde meses consecutivos anteriores. */
+/** Saldo pactado acumulado: positivo si sobran horas y negativo si faltan. */
 export function saldoPactadoArrastrado(
   horarios: { fecha: string; rango_horario: string }[],
   plan: string | null | undefined,
@@ -220,7 +220,7 @@ export function saldoPactadoArrastrado(
     const anioHorario = Math.floor(indice / 12);
     const mesHorario = (indice % 12) + 1;
     const meta = metaHorasMensual(plan, anioHorario, mesHorario) * 60;
-    saldo = Math.max(0, saldo + minutosPactados - meta);
+    saldo += minutosPactados - meta;
     mesAnteriorIndice = indice;
   }
 

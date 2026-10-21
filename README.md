@@ -85,8 +85,9 @@ ZIPs no requieren esa migración.
 
 La pestaña **Pactar Horarios** permite cargar los horarios previstos de un alumno en
 Supabase, verlos en un almanaque y sumar las horas planificadas según su meta mensual.
-La compensación de excesos se calcula únicamente a partir de horarios pactados en meses
-consecutivos; no modifica ni consulta las jornadas realmente trabajadas.
+El saldo se calcula únicamente a partir de horarios pactados en meses consecutivos:
+los excesos reducen la meta del mes siguiente y las horas faltantes se agregan como
+pendientes de planificación. No modifica ni consulta las jornadas realmente trabajadas.
 
 Al guardar, se reemplaza el cronograma completo de ese alumno para el mes seleccionado.
 Para habilitar el guardado atómico, aplicar una sola vez
