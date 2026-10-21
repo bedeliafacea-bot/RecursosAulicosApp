@@ -75,10 +75,6 @@ body {
   display: none;
 }
 
-.print-qr-report {
-  display: none;
-}
-
 @media print {
   @page {
     size: A4 portrait;
@@ -90,69 +86,6 @@ body {
     color: #111111 !important;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13.5pt;
-  }
-
-  body.print-qr-only .print-cash-report {
-    display: none !important;
-  }
-
-  .print-qr-report {
-    display: block !important;
-    color: #111111 !important;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 10pt;
-  }
-
-  .print-qr-header {
-    display: flex;
-    align-items: center;
-    gap: 8mm;
-    padding-bottom: 5mm;
-    border-bottom: 1mm solid #222222;
-  }
-
-  .print-qr-header img {
-    width: 22mm;
-  }
-
-  .print-qr-header h1 {
-    margin: 0;
-    font-size: 18pt;
-  }
-
-  .print-qr-header p,
-  .print-qr-summary {
-    margin: 2mm 0 0;
-    font-size: 11pt;
-  }
-
-  .print-qr-summary {
-    margin: 5mm 0;
-    font-weight: 700;
-  }
-
-  .print-qr-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .print-qr-table th,
-  .print-qr-table td {
-    padding: 2.5mm;
-    border: 0.25mm solid #bbbbbb;
-    text-align: left;
-  }
-
-  .print-qr-table th:last-child,
-  .print-qr-table td:last-child {
-    text-align: right;
-    white-space: nowrap;
-  }
-
-  .print-qr-note {
-    margin-top: 6mm;
-    color: #555555;
-    font-size: 9pt;
   }
 
   .print-cash-header {
