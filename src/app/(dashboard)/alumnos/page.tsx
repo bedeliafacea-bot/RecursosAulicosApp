@@ -673,6 +673,18 @@ export default function AlumnosPage() {
       obsGeneral={obsGeneralInput}
     />
   ) : null;
+  const diasCalendario = Array.from(
+    { length: diasDelMes(anioActual, mesActual) },
+    (_, index) => index + 1
+  );
+  const espaciosAntesDelPrimerDia = new Date(anioActual, mesActual - 1, 1).getDay();
+  const horariosPorDia = new Map<number, HorarioPactado[]>();
+  for (const horario of horariosFicha) {
+    const dia = Number(horario.fecha.split('-')[2]);
+    const horariosDelDia = horariosPorDia.get(dia) || [];
+    horariosDelDia.push(horario);
+    horariosPorDia.set(dia, horariosDelDia);
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -941,29 +953,56 @@ export default function AlumnosPage() {
                   </span>
                 </div>
 
-                {horariosFicha.length === 0 ? (
-                  <p className="py-8 text-center text-xs text-slate-400">
+                <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+                  {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia) => (
+                    <div
+                      key={dia}
+                      className="py-1 text-center text-[9px] sm:text-[10px] font-black uppercase tracking-wide text-slate-400"
+                    >
+                      {dia}
+                    </div>
+                  ))}
+                  {Array.from({ length: espaciosAntesDelPrimerDia }, (_, index) => (
+                    <div key={`vacio-${index}`} aria-hidden="true" />
+                  ))}
+                  {diasCalendario.map((dia) => {
+                    const fecha = `${anioActual}-${String(mesActual).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                    const horariosDelDia = horariosPorDia.get(dia) || [];
+                    const esHoy = fecha === fechaHoy;
+                    return (
+                      <div
+                        key={fecha}
+                        className={`min-h-16 sm:min-h-20 p-1 sm:p-1.5 rounded-xl border ${
+                          esHoy
+                            ? 'bg-blue-50 border-uap-azul-medio'
+                            : 'bg-slate-50/70 border-slate-100'
+                        }`}
+                      >
+                        <span
+                          className={`block text-[10px] sm:text-xs font-black ${
+                            esHoy ? 'text-uap-azul' : 'text-slate-500'
+                          }`}
+                        >
+                          {dia}
+                        </span>
+                        <div className="mt-1 space-y-1">
+                          {horariosDelDia.map((horario) => (
+                            <div
+                              key={horario.id}
+                              className="rounded-md bg-blue-100 px-1 py-0.5 text-center text-[8px] sm:text-[10px] font-bold leading-tight text-uap-azul break-words"
+                            >
+                              {horario.rango_horario}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {horariosFicha.length === 0 && (
+                  <p className="text-center text-xs text-slate-400">
                     No hay horarios pactados registrados para este mes.
                   </p>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[340px] overflow-y-auto pr-1">
-                    {horariosFicha.map((h) => {
-                      const diaNum = h.fecha.split('-')[2];
-                      return (
-                        <div
-                          key={h.id}
-                          className="p-3 bg-blue-50/70 border border-blue-100 rounded-2xl text-center"
-                        >
-                          <span className="text-xs font-black text-uap-azul block">
-                            Día {diaNum}
-                          </span>
-                          <span className="text-[11px] font-bold text-slate-600">
-                            {h.rango_horario}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
                 )}
               </div>
             </div>

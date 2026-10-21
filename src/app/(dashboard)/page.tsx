@@ -52,7 +52,7 @@ export default function HomePage() {
       roles: ['admin', 'secretario', 'alumno'],
     },
     {
-      titulo: 'Matriz de Reservas',
+      titulo: 'Reservas',
       desc: 'Cronograma semanal IAP Mañana y UAP Tarde, proyectores y equipos.',
       href: '/reservas',
       icono: Calendar,
@@ -140,7 +140,9 @@ export default function HomePage() {
             </div>
             <div>
               <h4 className="text-sm font-black text-rose-900">
-                Próximos Cumpleaños de Becarios
+                {cumpleaneros.some((c) => c.esHoy)
+                  ? '¡Cumpleaños hoy!'
+                  : 'Próximos Cumpleaños de Becarios'}
               </h4>
               <p className="text-xs text-rose-700">
                 {cumpleaneros.map((c) => `${c.nombre} (${c.fechaTexto})`).join(' • ')}
