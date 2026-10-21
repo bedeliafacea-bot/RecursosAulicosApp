@@ -148,7 +148,7 @@ export default function AlumnosPage() {
   const [msgPactar, setMsgPactar] = useState('');
   const [errorPactar, setErrorPactar] = useState('');
   const [periodoCargadoPactar, setPeriodoCargadoPactar] = useState('');
-  const [excesoMesAnteriorPactado, setExcesoMesAnteriorPactado] = useState(0);
+  const [saldoMesAnteriorPactado, setSaldoMesAnteriorPactado] = useState(0);
 
   // ============================================================================
   // 5. ESTADO: NUEVO ALUMNO
@@ -529,7 +529,7 @@ export default function AlumnosPage() {
     setHorariosDiasPactar(planilla);
     setAlumnoPactar(resAlumno.data);
 
-    setExcesoMesAnteriorPactado(
+    setSaldoMesAnteriorPactado(
       saldoPactadoArrastrado(resHistorial.data, resAlumno.data.plan, anioActual, mesActual)
     );
     setPeriodoCargadoPactar(clavePeriodoPactar);
@@ -589,11 +589,8 @@ export default function AlumnosPage() {
       return total + (minutosRangosPactados(rangoDiaPactado(horario)) || 0);
     }, 0);
     const metaMes = metaHorasMensual(alumnoPactar.plan, anioActual, mesActual) * 60;
-    const excesoTotal = Math.max(
-      0,
-      excesoMesAnteriorPactado + totalPlanificadoMinutos - metaMes
-    );
-    const horasDisponibles = Math.max(0, metaMes - excesoMesAnteriorPactado);
+    const saldoAlCierre = saldoMesAnteriorPactado + totalPlanificadoMinutos - metaMes;
+    const horasDisponibles = Math.max(0, metaMes - saldoMesAnteriorPactado);
     if (
       totalPlanificadoMinutos > horasDisponibles &&
       !window.confirm(
@@ -619,9 +616,13 @@ export default function AlumnosPage() {
     });
 
     if (res.ok) {
-      setMsgPactar(
-        `Cronograma de ${alumnoPactar.nombre} guardado. ${formatearMinutos(excesoTotal)} quedarán a compensar en la planificación del mes siguiente.`
-      );
+      const mensajeSaldo =
+        saldoAlCierre < 0
+          ? `Quedan ${formatearMinutos(Math.abs(saldoAlCierre))} horas pendientes para la planificación del mes siguiente.`
+          : saldoAlCierre > 0
+          ? `Quedan ${formatearMinutos(saldoAlCierre)} horas excedentes para compensar en la planificación del mes siguiente.`
+          : 'No quedan horas pendientes ni excedentes para el mes siguiente.';
+      setMsgPactar(`Cronograma de ${alumnoPactar.nombre} guardado. ${mensajeSaldo}`);
       setPeriodoCargadoPactar(clavePeriodoPactar);
       await refrescarFichaSiCorresponde(alumnoPactar.id);
     } else {
@@ -928,12 +929,10 @@ export default function AlumnosPage() {
     : 0;
   const horasDisponiblesPactadas = Math.max(
     0,
-    metaMensualPactada - excesoMesAnteriorPactado
+    metaMensualPactada - saldoMesAnteriorPactado
   );
-  const excesoPactadoProximoMes = Math.max(
-    0,
-    excesoMesAnteriorPactado + totalPlanificadoMinutos - metaMensualPactada
-  );
+  const saldoPactadoProximoMes =
+    saldoMesAnteriorPactado + totalPlanificadoMinutos - metaMensualPactada;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -1766,18 +1765,22 @@ export default function AlumnosPage() {
                         <p className="text-[10px] text-slate-500">horas · solo planificación</p>
                       </div>
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                        <p className="text-[10px] font-black uppercase text-amber-700">A compensar del mes anterior</p>
+                        <p className="text-[10px] font-black uppercase text-amber-700">Saldo pactado del mes anterior</p>
                         <p className="mt-1 text-xl font-black text-amber-800">
-                          {formatearMinutos(excesoMesAnteriorPactado)}
+                          {saldoMesAnteriorPactado < 0
+                            ? `Faltan ${formatearMinutos(Math.abs(saldoMesAnteriorPactado))}`
+                            : saldoMesAnteriorPactado > 0
+                            ? `Sobran ${formatearMinutos(saldoMesAnteriorPactado)}`
+                            : 'Sin saldo'}
                         </p>
-                        <p className="text-[10px] text-amber-700">calculado desde horarios pactados</p>
+                        <p className="text-[10px] text-amber-700">según la planificación pactada</p>
                       </div>
                       <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
                         <p className="text-[10px] font-black uppercase text-indigo-700">Disponible para pactar</p>
                         <p className="mt-1 text-xl font-black text-indigo-900">
                           {formatearMinutos(horasDisponiblesPactadas)}
                         </p>
-                        <p className="text-[10px] text-indigo-700">meta menos compensación anterior</p>
+                        <p className="text-[10px] text-indigo-700">meta ajustada según el saldo anterior</p>
                       </div>
                       <div className={`rounded-2xl border p-4 ${
                         totalPlanificadoMinutos > horasDisponiblesPactadas
@@ -1804,8 +1807,10 @@ export default function AlumnosPage() {
 
                     {totalPlanificadoMinutos > horasDisponiblesPactadas && (
                       <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
-                        Atención: el plan supera las horas disponibles. Podés continuar con confirmación; el excedente de{' '}
-                        <strong>{formatearMinutos(excesoPactadoProximoMes)}</strong> quedará indicado para la planificación del mes siguiente.
+                        Atención: el plan supera las horas disponibles. Podés continuar con confirmación;{' '}
+                        {saldoPactadoProximoMes > 0
+                          ? <>el excedente de <strong>{formatearMinutos(saldoPactadoProximoMes)}</strong> quedará indicado para la planificación del mes siguiente.</>
+                          : 'la falta de horas anterior quedará compensada.'}
                       </div>
                     )}
 
