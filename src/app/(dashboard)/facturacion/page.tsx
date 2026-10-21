@@ -31,10 +31,18 @@ import {
   X,
   ArrowRight,
   MoreHorizontal,
+  QrCode,
+  RefreshCw,
 } from 'lucide-react';
 
 const formatearNumeroRecibo = (numero: string | number) =>
   String(numero).padStart(6, '0');
+
+const pagosQrDemostracion = [
+  { time: '12:16', operation: 'DEMO-185352418616', amount: 750 },
+  { time: '12:12', operation: 'DEMO-185351245796', amount: 1500 },
+  { time: '10:54', operation: 'DEMO-185336605648', amount: 1500 },
+];
 
 export default function FacturacionPage() {
   const { rol, perfil } = useAuth();
@@ -740,6 +748,102 @@ export default function FacturacionPage() {
           </div>
         </div>
       </div>
+
+      {/* Vista previa visual; no participa en el cierre ni persiste movimientos */}
+      <section className="no-print overflow-hidden rounded-3xl border border-indigo-200 bg-white shadow-uap">
+        <div className="flex flex-col gap-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+              <QrCode className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base font-black text-uap-azul">
+                  Actividad QR · Laboratorio
+                </h2>
+                <span className="rounded-full border border-amber-300 bg-amber-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-amber-800">
+                  Vista de prueba · datos ficticios
+                </span>
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                Así podría verse la actividad de Mercado Pago al conectarla. Estos ejemplos
+                no son cobros reales.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled
+            title="La conexión con Mercado Pago todavía no está configurada"
+            className="inline-flex shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-400"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Actualizar actividad
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-[minmax(0,1fr)_220px] sm:p-6">
+          <div className="space-y-2">
+            {pagosQrDemostracion.map((payment) => (
+              <div
+                key={payment.operation}
+                className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-slate-100 bg-white px-3 py-3 sm:grid-cols-[58px_minmax(0,1fr)_auto_auto] sm:px-4"
+              >
+                <span className="text-xs font-semibold tabular-nums text-slate-400">
+                  {payment.time}
+                </span>
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-indigo-100 bg-indigo-50 text-indigo-700">
+                    <QrCode className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-extrabold text-slate-800">
+                      Venta con código QR
+                    </p>
+                    <p className="truncate font-mono text-[10px] text-slate-400">
+                      Operación {payment.operation}
+                    </p>
+                  </div>
+                </div>
+                <span className="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 sm:inline-flex">
+                  Aprobado
+                </span>
+                <span className="text-right text-sm font-black tabular-nums text-emerald-700">
+                  + {payment.amount.toLocaleString('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS',
+                    maximumFractionDigits: 0,
+                  })}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <aside className="flex flex-col justify-center rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4">
+            <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500">
+              Ejemplo de resumen
+            </p>
+            <p className="mt-1 text-2xl font-black tabular-nums text-uap-azul">
+              {pagosQrDemostracion.length.toLocaleString('es-AR')} movimientos
+            </p>
+            <p className="mt-3 text-3xl font-black tabular-nums text-emerald-700">
+              {pagosQrDemostracion.reduce((total, payment) => total + payment.amount, 0).toLocaleString('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                maximumFractionDigits: 0,
+              })}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+              Total aprobado de ejemplo. La integración real podría importar estos cobros
+              al bloque de Mercado Pago para el cierre.
+            </p>
+            <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-semibold leading-relaxed text-amber-800">
+              Esta vista es solo demostrativa: no actualiza los totales ni se guarda en el
+              cierre.
+            </p>
+          </aside>
+        </div>
+      </section>
 
       {/* ========================================================
           INFORME IMPRIMIBLE A4 OFICIAL DE CIERRE DE CAJA
