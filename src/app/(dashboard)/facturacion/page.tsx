@@ -59,8 +59,10 @@ export default function FacturacionPage() {
   const [mercadoPagoList, setMercadoPagoList] = useState<MercadoPagoItem[]>([]);
   const [mpFecha, setMpFecha] = useState(fechaHoy);
   const [mpMonto, setMpMonto] = useState<number | ''>('');
-  const [qrFecha, setQrFecha] = useState(fechaHoy);
+  const [qrFechaDesde, setQrFechaDesde] = useState(fechaHoy);
+  const [qrFechaHasta, setQrFechaHasta] = useState(fechaHoy);
   const [qrPagos, setQrPagos] = useState<MercadoPagoQrPayment[]>([]);
+  const [qrPagosSeleccionados, setQrPagosSeleccionados] = useState<Set<string>>(new Set());
   const [qrConsultando, setQrConsultando] = useState(false);
   const [qrConsultado, setQrConsultado] = useState(false);
   const [qrError, setQrError] = useState('');
@@ -267,8 +269,9 @@ export default function FacturacionPage() {
     setQrError('');
     setQrConsultado(false);
     setQrPagos([]);
+    setQrPagosSeleccionados(new Set());
     try {
-      const result = await consultarPagosQrLaboratorioAction(qrFecha);
+      const result = await consultarPagosQrLaboratorioAction(qrFechaDesde, qrFechaHasta);
       if (result.ok) {
         setQrPagos(result.payments || []);
         setQrConsultado(true);
@@ -280,6 +283,35 @@ export default function FacturacionPage() {
     } finally {
       setQrConsultando(false);
     }
+  };
+
+  const handleSeleccionarPagoQr = (paymentId: string) => {
+    setQrPagosSeleccionados((selected) => {
+      const next = new Set(selected);
+      if (next.has(paymentId)) next.delete(paymentId);
+      else next.add(paymentId);
+      return next;
+    });
+  };
+
+  const pagosQrSeleccionados = qrPagos.filter((payment) =>
+    qrPagosSeleccionados.has(payment.id)
+  );
+  const totalPagosQrSeleccionados = pagosQrSeleccionados.reduce(
+    (total, payment) => total + payment.amount,
+    0
+  );
+
+  const handleImprimirPagosQr = () => {
+    if (pagosQrSeleccionados.length === 0) return;
+
+    document.body.classList.add('print-qr-only');
+    const limpiarModoImpresion = () => {
+      document.body.classList.remove('print-qr-only');
+      window.removeEventListener('afterprint', limpiarModoImpresion);
+    };
+    window.addEventListener('afterprint', limpiarModoImpresion);
+    window.print();
   };
 
   // Cargar Transferencia Galicia
@@ -791,34 +823,51 @@ export default function FacturacionPage() {
                 )}
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                Consulta cobros QR aprobados del punto de venta configurado para este sector.
-                Todavía no se agregan al cierre.
+                Consultá cobros QR aprobados del punto de venta configurado para este sector,
+                seleccioná los movimientos y imprimí la lista. Todavía no se agregan al cierre.
               </p>
             </div>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <label className="sr-only" htmlFor="qr-activity-date">
-              Fecha de actividad QR
-            </label>
-            <input
-              id="qr-activity-date"
-              type="date"
-              value={qrFecha}
-              max={fechaHoy}
-              onChange={(event) => setQrFecha(event.target.value)}
-              className="rounded-xl border border-indigo-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700"
-            />
+          <div className="flex shrink-0 flex-wrap items-end gap-2">
+            <div>
+              <label className="mb-1 block text-[10px] font-bold text-slate-500" htmlFor="qr-activity-from">
+                Desde
+              </label>
+              <input
+                id="qr-activity-from"
+                type="date"
+                value={qrFechaDesde}
+                max={fechaHoy}
+                onChange={(event) => setQrFechaDesde(event.target.value)}
+                className="rounded-xl border border-indigo-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-[10px] font-bold text-slate-500" htmlFor="qr-activity-to">
+                Hasta
+              </label>
+              <input
+                id="qr-activity-to"
+                type="date"
+                value={qrFechaHasta}
+                max={fechaHoy}
+                min={qrFechaDesde}
+                onChange={(event) => setQrFechaHasta(event.target.value)}
+                className="rounded-xl border border-indigo-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700"
+              />
+            </div>
             <button
               type="button"
               onClick={handleConsultarQr}
-              disabled={qrConsultando || !qrFecha}
+              disabled={
+                qrConsultando ||
+                !qrFechaDesde ||
+                !qrFechaHasta ||
+                qrFechaDesde > qrFechaHasta
+              }
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {qrConsultando ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
+              {qrConsultando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
               Consultar
             </button>
           </div>
@@ -826,11 +875,44 @@ export default function FacturacionPage() {
 
         <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-[minmax(0,1fr)_220px] sm:p-6">
           <div className="space-y-2">
+            {qrConsultado && qrPagos.length > 0 && (
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2">
+                <label className="flex cursor-pointer items-center gap-2 text-xs font-bold text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={qrPagos.length > 0 && qrPagos.every((payment) => qrPagosSeleccionados.has(payment.id))}
+                    onChange={(event) =>
+                      setQrPagosSeleccionados(
+                        event.target.checked ? new Set(qrPagos.map((payment) => payment.id)) : new Set()
+                      )
+                    }
+                    className="h-4 w-4 accent-indigo-600"
+                  />
+                  Seleccionar todos
+                </label>
+                <button
+                  type="button"
+                  onClick={handleImprimirPagosQr}
+                  disabled={pagosQrSeleccionados.length === 0}
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Printer className="h-4 w-4" />
+                  Imprimir seleccionados ({pagosQrSeleccionados.length})
+                </button>
+              </div>
+            )}
             {qrPagos.map((payment) => (
               <div
                 key={payment.id}
-                className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-slate-100 bg-white px-3 py-3 sm:grid-cols-[58px_minmax(0,1fr)_auto_auto] sm:px-4"
+                className="grid grid-cols-[20px_52px_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-slate-100 bg-white px-3 py-3 sm:grid-cols-[20px_58px_minmax(0,1fr)_auto_auto] sm:gap-3 sm:px-4"
               >
+                <input
+                  type="checkbox"
+                  aria-label={`Seleccionar operación ${payment.id}`}
+                  checked={qrPagosSeleccionados.has(payment.id)}
+                  onChange={() => handleSeleccionarPagoQr(payment.id)}
+                  className="h-4 w-4 cursor-pointer accent-indigo-600"
+                />
                 <span className="text-xs font-semibold tabular-nums text-slate-400">
                   {payment.date
                     ? new Intl.DateTimeFormat('es-AR', {
@@ -872,7 +954,7 @@ export default function FacturacionPage() {
             )}
             {!qrConsultado && !qrConsultando && !qrError && (
               <div className="rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/30 px-4 py-8 text-center text-xs text-slate-500">
-                Elegí una fecha y pulsa <strong>Consultar</strong> para verificar la conexión y
+                Elegí un período y pulsá <strong>Consultar</strong> para verificar la conexión y
                 encontrar los cobros del QR de Laboratorio.
               </div>
             )}
@@ -894,12 +976,10 @@ export default function FacturacionPage() {
               Resumen de la consulta
             </p>
             <p className="mt-1 text-2xl font-black tabular-nums text-uap-azul">
-              {qrConsultado ? qrPagos.length.toLocaleString('es-AR') : '—'} movimientos
+              {qrConsultado ? pagosQrSeleccionados.length.toLocaleString('es-AR') : '—'} seleccionados
             </p>
             <p className="mt-3 text-3xl font-black tabular-nums text-emerald-700">
-              {qrPagos
-                .reduce((total, payment) => total + payment.amount, 0)
-                .toLocaleString('es-AR', {
+              {totalPagosQrSeleccionados.toLocaleString('es-AR', {
                   style: 'currency',
                   currency: 'ARS',
                   maximumFractionDigits: 2,
@@ -907,8 +987,8 @@ export default function FacturacionPage() {
             </p>
             <p className="mt-1 text-xs leading-relaxed text-slate-500">
               {qrConsultado
-                ? 'Total de pagos QR aprobados para la fecha consultada.'
-                : 'Los resultados aparecerán al consultar una fecha.'}
+                ? 'Total de pagos QR seleccionados para imprimir.'
+                : 'Los resultados aparecerán al consultar un período.'}
             </p>
             <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-semibold leading-relaxed text-amber-800">
               Consulta de solo lectura: estos pagos todavía no se agregan al cierre ni se
@@ -916,6 +996,62 @@ export default function FacturacionPage() {
             </p>
           </aside>
         </div>
+      </section>
+
+      <section className="print-qr-report">
+        <header className="print-qr-header">
+          <img src="/img/logo-uap.png" alt="Logo UAP" />
+          <div>
+            <h1>Pagos QR · Laboratorio</h1>
+            <p>
+              Período: {qrFechaDesde.split('-').reverse().join('/')} al{' '}
+              {qrFechaHasta.split('-').reverse().join('/')}
+            </p>
+          </div>
+        </header>
+        <p className="print-qr-summary">
+          {pagosQrSeleccionados.length} pagos seleccionados · Total:{' '}
+          {totalPagosQrSeleccionados.toLocaleString('es-AR', {
+            style: 'currency',
+            currency: 'ARS',
+            maximumFractionDigits: 2,
+          })}
+        </p>
+        <table className="print-qr-table">
+          <thead>
+            <tr>
+              <th>Fecha y hora</th>
+              <th>Operación</th>
+              <th>Detalle</th>
+              <th>Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pagosQrSeleccionados.map((payment) => (
+              <tr key={payment.id}>
+                <td>
+                  {payment.date
+                    ? new Intl.DateTimeFormat('es-AR', {
+                        dateStyle: 'short',
+                        timeStyle: 'short',
+                        timeZone: 'America/Argentina/Buenos_Aires',
+                      }).format(new Date(payment.date))
+                    : '—'}
+                </td>
+                <td>{payment.id}</td>
+                <td>{payment.description}</td>
+                <td>
+                  {payment.amount.toLocaleString('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS',
+                    maximumFractionDigits: 2,
+                  })}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="print-qr-note">Listado de consulta. No representa pagos agregados al cierre de caja.</p>
       </section>
 
       {/* ========================================================

@@ -35,23 +35,33 @@ interface MercadoPagoSearchResponse {
 const PAGE_SIZE = 100;
 const MAX_PAYMENTS_PER_QUERY = 1000;
 
-function getArgentinaDayBounds(day: string) {
+function parseDate(day: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
-    throw new Error('Elegí una fecha válida para consultar Mercado Pago.');
+    throw new Error('Elegí fechas válidas para consultar Mercado Pago.');
   }
 
   const parsed = new Date(`${day}T12:00:00-03:00`);
   if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== day) {
-    throw new Error('La fecha seleccionada no es válida.');
+    throw new Error('Una de las fechas seleccionadas no es válida.');
+  }
+
+  return day;
+}
+
+function getArgentinaDateBounds(from: string, to: string) {
+  const startDate = parseDate(from);
+  const endDate = parseDate(to);
+  if (startDate > endDate) {
+    throw new Error('La fecha desde no puede ser posterior a la fecha hasta.');
   }
 
   return {
-    beginDate: `${day}T00:00:00.000-03:00`,
-    endDate: `${day}T23:59:59.999-03:00`,
+    beginDate: `${startDate}T00:00:00.000-03:00`,
+    endDate: `${endDate}T23:59:59.999-03:00`,
   };
 }
 
-export async function consultarPagosQrLaboratorioAction(day: string): Promise<{
+export async function consultarPagosQrLaboratorioAction(from: string, to: string): Promise<{
   ok: boolean;
   payments?: MercadoPagoQrPayment[];
   error?: string;
@@ -85,7 +95,7 @@ export async function consultarPagosQrLaboratorioAction(day: string): Promise<{
       };
     }
 
-    const { beginDate, endDate } = getArgentinaDayBounds(day);
+    const { beginDate, endDate } = getArgentinaDateBounds(from, to);
     const payments: MercadoPagoPaymentResponse[] = [];
     let total = 0;
 
@@ -131,7 +141,7 @@ export async function consultarPagosQrLaboratorioAction(day: string): Promise<{
 
     if (total > MAX_PAYMENTS_PER_QUERY) {
       throw new Error(
-        'La fecha supera 1.000 operaciones. Consulta un día con menos actividad para verificar el QR.'
+        'El rango supera 1.000 operaciones. Reducí el período y volvé a consultar.'
       );
     }
 
