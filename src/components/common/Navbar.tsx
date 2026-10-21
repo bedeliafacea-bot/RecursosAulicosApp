@@ -1,21 +1,17 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import Link from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 import {
   LogOut,
-  User as UserIcon,
   Shield,
   Clock,
   Calendar,
-  Layers,
   FileText,
   DollarSign,
   Users,
   Home,
-  Tv,
   ChevronDown,
   DatabaseBackup,
 } from 'lucide-react';
@@ -65,30 +61,28 @@ export default function Navbar() {
   return (
     <header className="bg-uap-azul text-white border-b border-white/10 sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center gap-3 h-16">
           {/* Logo & Institution Name */}
-          <div className="flex items-center gap-3">
-            <a href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 bg-white/10 rounded-xl p-1.5 flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-all">
-                <img
-                  src="/img/logo-uap.png"
-                  alt="UAP"
-                  className="w-full h-full object-contain filter drop-shadow"
-                />
+          <a href="/" className="group flex shrink-0 items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 p-1.5 transition-all group-hover:bg-white/20">
+              <img
+                src="/img/logo-uap.png"
+                alt="UAP"
+                className="h-full w-full object-contain drop-shadow"
+              />
+            </div>
+            <div className="hidden w-[188px] lg:block">
+              <div className="whitespace-nowrap text-[9px] font-black uppercase leading-4 tracking-[0.08em] text-blue-200">
+                Universidad Adventista del Plata
               </div>
-              <div className="hidden sm:block">
-                <div className="text-xs font-black tracking-widest uppercase text-blue-200 leading-tight">
-                  Universidad Adventista del Plata
-                </div>
-                <div className="text-sm font-extrabold text-white leading-tight">
-                  Recursos Áulicos | Bedelía
-                </div>
+              <div className="whitespace-nowrap text-[13px] font-extrabold leading-4 text-white">
+                Recursos Áulicos <span className="text-white/60">·</span> Bedelía
               </div>
-            </a>
-          </div>
+            </div>
+          </a>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          <nav className="flex min-w-0 flex-1 items-center justify-center gap-1">
             {visibleNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
@@ -96,34 +90,33 @@ export default function Navbar() {
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all ${
+                  title={item.label}
+                  aria-label={item.label}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-extrabold tracking-wide transition-all ${
                     isActive
                       ? 'bg-white/20 text-white shadow-inner shadow-black/10'
                       : 'text-white/80 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{item.label}</span>
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xl:inline">{item.label}</span>
                 </a>
               );
             })}
           </nav>
 
           {/* User Active Chip & Menu */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative shrink-0" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center gap-2.5 bg-white/95 text-uap-azul px-3 py-1.5 rounded-full shadow-md hover:bg-white transition-all text-xs font-bold border border-white/80"
+              className="flex items-center gap-2 rounded-full border border-white/80 bg-white/95 px-2.5 py-1.5 text-xs font-bold text-uap-azul shadow-md transition-all hover:bg-white sm:gap-2.5 sm:px-3"
             >
               <div className="w-6 h-6 rounded-full bg-uap-azul text-white flex items-center justify-center text-[10px] font-black">
                 {perfil?.nombre?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="hidden sm:flex flex-col text-left">
-                <span className="font-extrabold leading-tight truncate max-w-[120px]">
+                <span className="max-w-[120px] truncate font-extrabold leading-tight">
                   {perfil?.nombre || perfil?.usuario || 'Cargando...'}
-                </span>
-                <span className="text-[10px] uppercase font-bold text-uap-gris leading-none">
-                  {rol || 'Rol'}
                 </span>
               </div>
               <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded border ${getRolBadgeColor()}`}>
