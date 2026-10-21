@@ -2405,11 +2405,13 @@ function CalendarioPactado({
       <header className="calendario-pactado-titulo">
         <h1>Almanaque de horarios pactados</h1>
         {alumno && (
-          <p>
-            {alumno.nombre} · Legajo {alumno.id} · Plan {alumno.plan}
-          </p>
+          <div className="calendario-pactado-datos">
+            <p>Nombre y apellido: <strong>{alumno.nombre}</strong></p>
+            <p>Número de alumno: <strong>{alumno.id}</strong></p>
+            <p>Plan: <strong>{alumno.plan}</strong></p>
+          </div>
         )}
-        <p>{MESES_MAYUSCULA[mes - 1]} {anio}</p>
+        <p>Mes y año: <strong>{MESES_MAYUSCULA[mes - 1]} {anio}</strong></p>
       </header>
       <div className="calendario-pactado-grilla">
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia) => (
@@ -2491,13 +2493,13 @@ function PlanillaHorasMensual({
 
       <div className="info-line">
         <span>
-          Alumno: <b>{alumno.nombre}</b>
+          Nombre y apellido: <b>{alumno.nombre}</b>
         </span>
         <span>
-          Mes: <b>{MESES_MAYUSCULA[mes - 1]}</b> / {anio}
+          Mes y año: <b>{MESES_MAYUSCULA[mes - 1]} {anio}</b>
         </span>
         <span>
-          Legajo: <b>{alumno.id}</b>
+          Número de alumno: <b>{alumno.id}</b>
         </span>
         <span>
           Departamento: <b>Recursos Áulicos</b>
