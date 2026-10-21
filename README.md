@@ -59,41 +59,27 @@ Migrado desde Google Apps Script a **Next.js 15 (App Router)**, **TypeScript**, 
    SUPABASE_SERVICE_ROLE_KEY=tu-clave-service-role
    ```
 
-### Respaldo mensual en Google Drive
+### Respaldo mensual en ZIP
 
-El módulo **Respaldo mensual** está disponible solo para administradores. Selecciona un
-mes, confirma la operación y la aplicación subirá primero un JSON a Drive. Solo cuando
-Google confirme la subida se eliminarán de Supabase los registros del mes en
-`jornadas_becuap`, `horarios_pactados`, `fotocopias`, `pagos_efectivo`,
-`reservas_especiales` y `cierres_caja`. Se conservan los alumnos, las evaluaciones, los
-catálogos y las reservas semanales (`reservas_matriz`, que no tiene fecha mensual).
+El módulo **Respaldo mensual** está disponible solo para administradores y no requiere
+integrar Google Drive. Permite elegir un mes y las tablas operativas que se incluirán.
+Genera un ZIP local con `manifest.json` y un archivo JSON por tabla; puedes guardarlo en
+tu equipo y subirlo manualmente a Drive.
 
-Antes de usarlo:
+Las tablas mensuales disponibles son `jornadas_becuap`, `horarios_pactados`, `fotocopias`,
+`pagos_efectivo`, `reservas_especiales` y `cierres_caja`. Los alumnos, evaluaciones,
+catálogos y reservas semanales (`reservas_matriz`, que no tiene fecha mensual) no se
+incluyen.
 
-1. En Google Cloud Console, habilitar Google Drive API y crear credenciales OAuth de tipo
-   aplicación web. Añadir como URI de redirección autorizado:
-   `http://localhost:3000/api/google/drive/callback` (y el equivalente HTTPS del dominio
-   publicado).
-2. Configurar en el entorno del servidor `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` y
-   `GOOGLE_REDIRECT_URI` con los valores de esas credenciales. La URI debe coincidir
-   exactamente con la registrada en Google Cloud.
-3. Crear una clave de cifrado de 32 bytes codificada en Base64 para
-   `GOOGLE_TOKEN_ENCRYPTION_KEY`; por ejemplo, ejecutar `openssl rand -base64 32`.
-   Mantenerla estable y guardarla como secreto del servidor, nunca en el navegador o el
-   repositorio. Si se pierde, habrá que volver a conectar la cuenta de Drive.
-4. Aplicar `supabase/migrations/20261021_google_drive_backup_tokens.sql` en Supabase.
-5. Abrir `/respaldo` con un usuario administrador y pulsar **Conectar Google Drive** una
-   vez. El token de renovación se guarda cifrado y solo lo usa el servidor.
+La pantalla permite cargar un ZIP anterior para consultar sus datos sin modificarlos. Si
+quieres limpiar Supabase después de haber guardado el ZIP en Drive, cárgalo en la aplicación,
+marca la confirmación y usa el botón de limpieza separado. El servidor solo borra filas
+incluidas en el ZIP que coincidan exactamente con los registros actuales; si fueron
+modificadas o ya no existen, detiene la limpieza.
 
-El botón trabaja sobre el mes elegido (por defecto, el mes anterior). La cuenta OAuth usa
-el permiso `drive.file`, limitado a archivos que crea la aplicación. Los archivos quedan
-en la raíz del Drive autorizado, que será el destino compartido para los administradores.
-Una falla al subir no borra datos; si una falla ocurre durante el borrado, el enlace al
-archivo ya subido se muestra para conservar el respaldo.
-
-En la pantalla de respaldo se pueden seleccionar individualmente las tablas a incluir y
-limpiar; las no seleccionadas quedan intactas en Supabase. La página también muestra si
-faltan variables de entorno o aplicar la migración de tokens de Google.
+Para habilitar la limpieza, aplicar una sola vez
+`supabase/migrations/20261021_monthly_backup_cleanup.sql` en Supabase. Generar y consultar
+ZIPs no requieren esa migración.
 
 3. Levantar el servidor de desarrollo:
    ```bash
