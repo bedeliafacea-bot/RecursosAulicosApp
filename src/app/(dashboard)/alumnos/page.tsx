@@ -44,6 +44,7 @@ import {
   Award,
 } from 'lucide-react';
 import {
+  aMinutos,
   diasDelMes,
   fechaHoyAR,
   parsearRangoPactado,
@@ -58,43 +59,17 @@ import {
 } from '@/lib/horas';
 import './planillas.css';
 
-type BloqueHorarioPactado = { rango: string; diasTexto: string };
+type HorarioDiaPactado = { entrada1: string; salida1: string; entrada2: string; salida2: string };
 
-function expandirBloquesPactados(
-  bloques: BloqueHorarioPactado[],
-  anio: number,
-  mes: number
-): { horariosPorDia: Map<number, string[]>; minutos: number } {
-  const horariosPorDia = new Map<number, string[]>();
-  const registrosUnicos = new Set<string>();
-  let minutos = 0;
+function crearPlanillaPactadaVacia(): Record<number, HorarioDiaPactado> {
+  return {};
+}
 
-  for (const bloque of bloques) {
-    const rango = bloque.rango.trim();
-    const tokensDias = bloque.diasTexto.split(',').map((dia) => dia.trim());
-    if (
-      !rango ||
-      !bloque.diasTexto.trim() ||
-      tokensDias.some((dia) => !/^\d+$/.test(dia))
-    ) {
-      continue;
-    }
-
-    const minutosRango = minutosRangosPactados(rango);
-    const dias = [...new Set(tokensDias.map(Number))].filter(
-      (dia) => dia >= 1 && dia <= diasDelMes(anio, mes)
-    );
-
-    for (const dia of dias) {
-      const clave = `${dia}|${rango}`;
-      if (registrosUnicos.has(clave)) continue;
-      registrosUnicos.add(clave);
-      horariosPorDia.set(dia, [...(horariosPorDia.get(dia) || []), rango]);
-      if (minutosRango !== null) minutos += minutosRango;
-    }
-  }
-
-  return { horariosPorDia, minutos };
+function rangoDiaPactado(horario: HorarioDiaPactado): string {
+  if (!horario.entrada1 || !horario.salida1) return '';
+  const primerTurno = `${horario.entrada1} - ${horario.salida1}`;
+  if (!horario.entrada2 || !horario.salida2) return primerTurno;
+  return `${primerTurno} / ${horario.entrada2} - ${horario.salida2}`;
 }
 
 export default function AlumnosPage() {
@@ -165,9 +140,8 @@ export default function AlumnosPage() {
   // 4. ESTADO: PACTAR HORARIOS
   // ============================================================================
   const [legajoPactar, setLegajoPactar] = useState('');
-  const [bloquesPactar, setBloquesPactar] = useState<BloqueHorarioPactado[]>([
-    { rango: '07:30 - 11:30', diasTexto: '' },
-  ]);
+  const [horariosDiasPactar, setHorariosDiasPactar] =
+    useState<Record<number, HorarioDiaPactado>>(crearPlanillaPactadaVacia);
   const [alumnoPactar, setAlumnoPactar] = useState<Alumno | null>(null);
   const [cargandoPactar, setCargandoPactar] = useState(false);
   const [guardandoPactar, setGuardandoPactar] = useState(false);
@@ -471,6 +445,25 @@ export default function AlumnosPage() {
   // ============================================================================
   const clavePeriodoPactar = `${anioActual}-${String(mesActual).padStart(2, '0')}`;
 
+  const actualizarHorarioDiaPactado = (
+    dia: number,
+    campo: keyof HorarioDiaPactado,
+    valor: string
+  ) => {
+    setHorariosDiasPactar((actuales) => ({
+      ...actuales,
+      [dia]: {
+        ...(actuales[dia] || {
+          entrada1: '',
+          salida1: '',
+          entrada2: '',
+          salida2: '',
+        }),
+        [campo]: valor,
+      },
+    }));
+  };
+
   const handleCargarCronogramaPactado = async () => {
     if (!legajoPactar.trim()) {
       setErrorPactar('Ingresá el legajo del alumno.');
@@ -507,25 +500,44 @@ export default function AlumnosPage() {
       return;
     }
 
-    const bloquesPorRango = new Map<string, Set<number>>();
+    const planilla: Record<number, HorarioDiaPactado> = {};
+    let horarioNoReconocido = false;
     for (const horario of resMes.data) {
       const dia = Number(horario.fecha.split('-')[2]);
-      const dias = bloquesPorRango.get(horario.rango_horario) || new Set<number>();
-      dias.add(dia);
-      bloquesPorRango.set(horario.rango_horario, dias);
+      const turnos = parsearRangoPactado(horario.rango_horario);
+      if (!turnos || dia < 1 || dia > diasDelMes(anioActual, mesActual)) {
+        horarioNoReconocido = true;
+        continue;
+      }
+      const actual = planilla[dia] || {
+        entrada1: '',
+        salida1: '',
+        entrada2: '',
+        salida2: '',
+      };
+      if (!actual.entrada1 && turnos.e1 && turnos.s1) {
+        actual.entrada1 = turnos.e1;
+        actual.salida1 = turnos.s1;
+      }
+      if (!actual.entrada2 && turnos.e2 && turnos.s2) {
+        actual.entrada2 = turnos.e2;
+        actual.salida2 = turnos.s2;
+      }
+      planilla[dia] = actual;
     }
 
-    const bloques = [...bloquesPorRango.entries()].map(([rango, dias]) => ({
-      rango,
-      diasTexto: [...dias].sort((a, b) => a - b).join(', '),
-    }));
-    setBloquesPactar(bloques.length ? bloques : [{ rango: '07:30 - 11:30', diasTexto: '' }]);
+    setHorariosDiasPactar(planilla);
     setAlumnoPactar(resAlumno.data);
 
     setExcesoMesAnteriorPactado(
       saldoPactadoArrastrado(resHistorial.data, resAlumno.data.plan, anioActual, mesActual)
     );
     setPeriodoCargadoPactar(clavePeriodoPactar);
+    if (horarioNoReconocido) {
+      setErrorPactar(
+        'Algunos horarios guardados tienen un formato que no se pudo mostrar en la planilla. Revisalos antes de reemplazar el mes.'
+      );
+    }
     setCargandoPactar(false);
   };
 
@@ -546,19 +558,52 @@ export default function AlumnosPage() {
       return;
     }
 
-    const planificacion = expandirBloquesPactados(bloquesPactar, anioActual, mesActual);
+    const bloques: Array<{ rango: string; diasTexto: string }> = [];
+    for (const [diaTexto, horario] of Object.entries(horariosDiasPactar)) {
+      const dia = Number(diaTexto);
+      const turno2Incompleto = Boolean(horario.entrada2) !== Boolean(horario.salida2);
+      const turno1Incompleto = Boolean(horario.entrada1) !== Boolean(horario.salida1);
+      if (turno1Incompleto || turno2Incompleto || (horario.entrada2 && !horario.entrada1)) {
+        setErrorPactar(`Completá entrada y salida de los turnos del día ${dia}, o dejalos vacíos.`);
+        return;
+      }
+      if (
+        horario.entrada2 &&
+        (aMinutos(horario.entrada2) ?? 0) < (aMinutos(horario.salida1) ?? 0)
+      ) {
+        setErrorPactar(`El segundo turno del día ${dia} debe comenzar al finalizar el primer turno.`);
+        return;
+      }
+      const rango = rangoDiaPactado(horario);
+      if (rango && minutosRangosPactados(rango) === null) {
+        setErrorPactar(`Revisá los horarios cargados para el día ${dia}.`);
+        return;
+      }
+      if (rango) bloques.push({ rango, diasTexto: String(dia) });
+    }
+
+    const totalPlanificadoMinutos = Object.values(horariosDiasPactar).reduce((total, horario) => {
+      const turno2Incompleto = Boolean(horario.entrada2) !== Boolean(horario.salida2);
+      const turno1Incompleto = Boolean(horario.entrada1) !== Boolean(horario.salida1);
+      if (turno1Incompleto || turno2Incompleto) return total;
+      return total + (minutosRangosPactados(rangoDiaPactado(horario)) || 0);
+    }, 0);
     const metaMes = metaHorasMensual(alumnoPactar.plan, anioActual, mesActual) * 60;
     const excesoTotal = Math.max(
       0,
-      excesoMesAnteriorPactado + planificacion.minutos - metaMes
+      excesoMesAnteriorPactado + totalPlanificadoMinutos - metaMes
     );
     const horasDisponibles = Math.max(0, metaMes - excesoMesAnteriorPactado);
     if (
-      planificacion.minutos > horasDisponibles &&
+      totalPlanificadoMinutos > horasDisponibles &&
       !window.confirm(
-        `El plan suma ${formatearMinutos(planificacion.minutos)} y el máximo disponible para este mes es ${formatearMinutos(horasDisponibles)}. ¿Querés guardar igual y dejar el excedente visible para el mes siguiente?`
+        `El plan suma ${formatearMinutos(totalPlanificadoMinutos)} y el máximo disponible para este mes es ${formatearMinutos(horasDisponibles)}. ¿Querés guardar igual y dejar el excedente visible para el mes siguiente?`
       )
     ) {
+      return;
+    }
+    if (bloques.length === 0) {
+      setErrorPactar('No hay horarios cargados. Usá “Limpiar mes” para eliminar la planificación existente.');
       return;
     }
 
@@ -570,7 +615,7 @@ export default function AlumnosPage() {
       alumnoId: alumnoPactar.id,
       mes: mesActual,
       anio: anioActual,
-      bloques: bloquesPactar,
+      bloques,
     });
 
     if (res.ok) {
@@ -608,7 +653,7 @@ export default function AlumnosPage() {
       limpiar: true,
     });
     if (res.ok) {
-      setBloquesPactar([{ rango: '07:30 - 11:30', diasTexto: '' }]);
+      setHorariosDiasPactar(crearPlanillaPactadaVacia());
       setMsgPactar('Se limpiaron los horarios pactados de este mes. Las horas trabajadas no fueron modificadas.');
       await refrescarFichaSiCorresponde(alumnoPactar.id);
     } else {
@@ -854,11 +899,28 @@ export default function AlumnosPage() {
     horariosDelDia.push(horario);
     horariosPorDia.set(dia, horariosDelDia);
   }
-  const planificacionPactada = expandirBloquesPactados(
-    bloquesPactar,
-    anioActual,
-    mesActual
-  );
+  const horariosPorDiaPlanificado = new Map<number, string[]>();
+  const diasPactadosIncompletos: number[] = [];
+  const diasPactadosInvalidos: number[] = [];
+  let totalPlanificadoMinutos = 0;
+  for (const [diaTexto, horario] of Object.entries(horariosDiasPactar)) {
+    const dia = Number(diaTexto);
+    const turno1Incompleto = Boolean(horario.entrada1) !== Boolean(horario.salida1);
+    const turno2Incompleto = Boolean(horario.entrada2) !== Boolean(horario.salida2);
+    if (turno1Incompleto || turno2Incompleto || (horario.entrada2 && !horario.entrada1)) {
+      diasPactadosIncompletos.push(dia);
+      continue;
+    }
+    const rango = rangoDiaPactado(horario);
+    if (!rango) continue;
+    horariosPorDiaPlanificado.set(dia, [rango]);
+    const minutos = minutosRangosPactados(rango);
+    if (minutos === null) {
+      diasPactadosInvalidos.push(dia);
+      continue;
+    }
+    totalPlanificadoMinutos += minutos;
+  }
   const metaMensualPactada = alumnoPactar
     ? metaHorasMensual(alumnoPactar.plan, anioActual, mesActual) * 60
     : 0;
@@ -868,7 +930,7 @@ export default function AlumnosPage() {
   );
   const excesoPactadoProximoMes = Math.max(
     0,
-    excesoMesAnteriorPactado + planificacionPactada.minutos - metaMensualPactada
+    excesoMesAnteriorPactado + totalPlanificadoMinutos - metaMensualPactada
   );
 
   return (
@@ -1670,7 +1732,7 @@ export default function AlumnosPage() {
                         <div key={`pactado-vacio-${index}`} aria-hidden="true" />
                       ))}
                       {diasCalendario.map((dia) => {
-                        const horarios = planificacionPactada.horariosPorDia.get(dia) || [];
+                        const horarios = horariosPorDiaPlanificado.get(dia) || [];
                         const fecha = `${anioActual}-${String(mesActual).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
                         return (
                           <div
@@ -1700,9 +1762,9 @@ export default function AlumnosPage() {
 
                   <section className="rounded-3xl border border-uap-borde bg-white p-5 shadow-uap md:p-7">
                     <div className="mb-4">
-                      <h3 className="font-black text-uap-azul">Bloques de horarios pactados</h3>
+                      <h3 className="font-black text-uap-azul">Planilla mensual · detalle de horarios</h3>
                       <p className="mt-1 text-xs text-slate-500">
-                        Escribí los turnos y los días del mes. El almanaque y la suma se actualizan al editar.
+                        Cargá cada día como en una planilla: los espacios vacíos quedan visibles y las horas se suman automáticamente.
                       </p>
                     </div>
                     <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -1728,29 +1790,29 @@ export default function AlumnosPage() {
                         <p className="text-[10px] text-indigo-700">meta menos compensación anterior</p>
                       </div>
                       <div className={`rounded-2xl border p-4 ${
-                        planificacionPactada.minutos > horasDisponiblesPactadas
+                        totalPlanificadoMinutos > horasDisponiblesPactadas
                           ? 'border-red-200 bg-red-50'
                           : 'border-emerald-200 bg-emerald-50'
                       }`}>
                         <p className={`text-[10px] font-black uppercase ${
-                          planificacionPactada.minutos > horasDisponiblesPactadas
+                          totalPlanificadoMinutos > horasDisponiblesPactadas
                             ? 'text-red-700'
                             : 'text-emerald-700'
                         }`}>Total pactado del mes</p>
                         <p className={`mt-1 text-xl font-black ${
-                          planificacionPactada.minutos > horasDisponiblesPactadas
+                          totalPlanificadoMinutos > horasDisponiblesPactadas
                             ? 'text-red-800'
                             : 'text-emerald-800'
-                        }`}>{formatearMinutos(planificacionPactada.minutos)}</p>
+                        }`}>{formatearMinutos(totalPlanificadoMinutos)}</p>
                         <p className="text-[10px] text-slate-500">
-                          {planificacionPactada.minutos > horasDisponiblesPactadas
-                            ? `Excedente: ${formatearMinutos(planificacionPactada.minutos - horasDisponiblesPactadas)}`
-                            : `Restan: ${formatearMinutos(horasDisponiblesPactadas - planificacionPactada.minutos)}`}
+                          {totalPlanificadoMinutos > horasDisponiblesPactadas
+                            ? `Excedente: ${formatearMinutos(totalPlanificadoMinutos - horasDisponiblesPactadas)}`
+                            : `Restan: ${formatearMinutos(horasDisponiblesPactadas - totalPlanificadoMinutos)}`}
                         </p>
                       </div>
                     </div>
 
-                    {planificacionPactada.minutos > horasDisponiblesPactadas && (
+                    {totalPlanificadoMinutos > horasDisponiblesPactadas && (
                       <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
                         Atención: el plan supera las horas disponibles. Podés continuar con confirmación; el excedente de{' '}
                         <strong>{formatearMinutos(excesoPactadoProximoMes)}</strong> quedará indicado para la planificación del mes siguiente.
@@ -1758,79 +1820,124 @@ export default function AlumnosPage() {
                     )}
 
                     <form onSubmit={handleGuardarPactar} className="space-y-4">
-                      {bloquesPactar.map((bloque, index) => (
-                        <div
-                          key={index}
-                          className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                        >
-                          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
-                            <div>
-                              <label className="mb-1 block text-[11px] font-bold text-slate-600">
-                                Turno u horario
-                              </label>
-                              <input
-                                type="text"
-                                value={bloque.rango}
-                                onChange={(event) =>
-                                  setBloquesPactar((actuales) =>
-                                    actuales.map((item, itemIndex) =>
-                                      itemIndex === index ? { ...item, rango: event.target.value } : item
-                                    )
-                                  )
-                                }
-                                placeholder="07:30 - 11:30"
-                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold"
-                              />
-                            </div>
-                            <div>
-                              <label className="mb-1 block text-[11px] font-bold text-slate-600">
-                                Días del mes
-                              </label>
-                              <input
-                                type="text"
-                                value={bloque.diasTexto}
-                                onChange={(event) =>
-                                  setBloquesPactar((actuales) =>
-                                    actuales.map((item, itemIndex) =>
-                                      itemIndex === index ? { ...item, diasTexto: event.target.value } : item
-                                    )
-                                  )
-                                }
-                                placeholder="1, 2, 3, 6"
-                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              aria-label={`Quitar bloque ${index + 1}`}
-                              onClick={() =>
-                                setBloquesPactar((actuales) =>
-                                  actuales.filter((_, itemIndex) => itemIndex !== index)
-                                )
-                              }
-                              className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 hover:border-red-200 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Quitar
-                            </button>
-                          </div>
+                      {(diasPactadosIncompletos.length > 0 || diasPactadosInvalidos.length > 0) && (
+                        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-800">
+                          {diasPactadosIncompletos.length > 0 &&
+                            `Completá entrada y salida de cada turno para los días ${diasPactadosIncompletos.join(', ')}. `}
+                          {diasPactadosInvalidos.length > 0 &&
+                            `Revisá que los rangos tengan sentido para los días ${diasPactadosInvalidos.join(', ')}.`}
                         </div>
-                      ))}
+                      )}
+                      <div className="overflow-x-auto rounded-xl border border-slate-200">
+                        <table className="min-w-[900px] w-full border-collapse text-left text-xs">
+                          <thead className="bg-slate-100 text-[10px] font-black uppercase tracking-wide text-slate-600">
+                            <tr>
+                              <th rowSpan={2} className="border-b border-r border-slate-200 px-3 py-3">Fecha</th>
+                              <th rowSpan={2} className="border-b border-r border-slate-200 px-3 py-3">Día</th>
+                              <th colSpan={2} className="border-b border-r border-slate-200 px-3 py-2 text-center">Turno 1</th>
+                              <th colSpan={2} className="border-b border-r border-slate-200 px-3 py-2 text-center">Turno 2 · opcional</th>
+                              <th rowSpan={2} className="border-b border-slate-200 px-3 py-3 text-right">Total del día</th>
+                            </tr>
+                            <tr>
+                              <th className="border-r border-slate-200 px-3 py-2">Entrada</th>
+                              <th className="border-r border-slate-200 px-3 py-2">Salida</th>
+                              <th className="border-r border-slate-200 px-3 py-2">Entrada</th>
+                              <th className="border-r border-slate-200 px-3 py-2">Salida</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {diasCalendario.map((dia) => {
+                              const horario = horariosDiasPactar[dia] || {
+                                entrada1: '',
+                                salida1: '',
+                                entrada2: '',
+                                salida2: '',
+                              };
+                              const parcial =
+                                Boolean(horario.entrada1) !== Boolean(horario.salida1) ||
+                                Boolean(horario.entrada2) !== Boolean(horario.salida2) ||
+                                Boolean(horario.entrada2 && !horario.entrada1);
+                              const rango = rangoDiaPactado(horario);
+                              const minutos = rango ? minutosRangosPactados(rango) : 0;
+                              const rangoInvalido = Boolean(rango) && minutos === null;
+                              const diaSemana = new Intl.DateTimeFormat('es-AR', {
+                                weekday: 'long',
+                                timeZone: 'UTC',
+                              }).format(new Date(Date.UTC(anioActual, mesActual - 1, dia, 12)));
+                              const esFinDeSemana = [0, 6].includes(
+                                new Date(Date.UTC(anioActual, mesActual - 1, dia)).getUTCDay()
+                              );
+                              return (
+                                <tr
+                                  key={dia}
+                                  className={`border-t border-slate-100 ${
+                                    parcial
+                                      ? 'bg-red-50'
+                                        : rangoInvalido
+                                          ? 'bg-red-50'
+                                          : rango
+                                          ? 'bg-white'
+                                          : 'bg-slate-50/70'
+                                  }`}
+                                >
+                                  <td className="border-r border-slate-100 px-3 py-2 font-bold text-slate-700">
+                                    {String(dia).padStart(2, '0')}/{String(mesActual).padStart(2, '0')}
+                                  </td>
+                                  <td className={`border-r border-slate-100 px-3 py-2 capitalize ${esFinDeSemana ? 'text-amber-700' : 'text-slate-500'}`}>
+                                    {diaSemana}
+                                  </td>
+                                  {([
+                                    ['entrada1', horario.entrada1],
+                                    ['salida1', horario.salida1],
+                                    ['entrada2', horario.entrada2],
+                                    ['salida2', horario.salida2],
+                                  ] as const).map(([campo, valor], index) => (
+                                    <td
+                                      key={campo}
+                                      className={`px-2 py-1.5 ${
+                                        index === 0 || index === 2 ? 'border-r border-slate-100' : ''
+                                      }`}
+                                    >
+                                      <input
+                                        type="time"
+                                        aria-label={`${diaSemana} ${dia} ${campo}`}
+                                        value={valor}
+                                        onChange={(event) =>
+                                          actualizarHorarioDiaPactado(dia, campo, event.target.value)
+                                        }
+                                        className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-semibold text-slate-700 focus:border-uap-azul focus:outline-none focus:ring-1 focus:ring-uap-azul"
+                                      />
+                                    </td>
+                                  ))}
+                                  <td className="px-3 py-2 text-right font-black tabular-nums">
+                                    {parcial ? (
+                                      <span className="text-red-700">Incompleto</span>
+                                    ) : rangoInvalido ? (
+                                      <span className="text-red-700">Revisar turno</span>
+                                    ) : rango ? (
+                                      <span className="text-uap-azul">{formatearMinutos(minutos || 0)}</span>
+                                    ) : (
+                                      <span className="font-medium text-slate-300">Hueco</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                          <tfoot className="border-t-2 border-slate-300 bg-blue-50">
+                            <tr>
+                              <td colSpan={6} className="px-3 py-3 font-black uppercase text-uap-azul">
+                                Total planificado del mes · {diasPactadosIncompletos.length} día(s) incompleto(s)
+                              </td>
+                              <td className="px-3 py-3 text-right text-sm font-black tabular-nums text-uap-azul">
+                                {formatearMinutos(totalPlanificadoMinutos)}
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
 
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setBloquesPactar((actuales) => [
-                              ...actuales,
-                              { rango: '', diasTexto: '' },
-                            ])
-                          }
-                          className="inline-flex items-center gap-1 rounded-xl border border-uap-azul/20 bg-blue-50 px-4 py-2.5 text-xs font-black text-uap-azul hover:bg-blue-100"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Agregar otro horario
-                        </button>
                         <button
                           type="submit"
                           disabled={guardandoPactar || periodoCargadoPactar !== clavePeriodoPactar}
