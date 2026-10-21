@@ -17,6 +17,7 @@ import {
   Home,
   Tv,
   ChevronDown,
+  DatabaseBackup,
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -56,6 +57,7 @@ export default function Navbar() {
     { label: 'Caja', href: '/facturacion', icon: DollarSign, allowedRoles: ['admin', 'secretario'] },
     { label: 'Cumpleaños', href: '/cumpleanos', icon: Calendar, allowedRoles: ['admin', 'secretario', 'alumno'] },
     { label: 'Usuarios', href: '/usuarios', icon: Users, allowedRoles: ['admin'] },
+    { label: 'Respaldo', href: '/respaldo', icon: DatabaseBackup, allowedRoles: ['admin'] },
   ];
 
   const visibleNavItems = navItems.filter(item => !rol || item.allowedRoles.includes(rol));
