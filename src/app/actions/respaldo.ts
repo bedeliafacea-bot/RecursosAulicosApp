@@ -8,12 +8,12 @@ const PAGE_SIZE = 1000;
 const DELETE_BATCH_SIZE = 100;
 
 const MONTHLY_TABLES = [
-  { name: 'jornadas_becuap', dateColumn: 'fecha', timestamp: false },
-  { name: 'horarios_pactados', dateColumn: 'fecha', timestamp: false },
-  { name: 'fotocopias', dateColumn: 'fecha', timestamp: false },
-  { name: 'pagos_efectivo', dateColumn: 'fecha', timestamp: false },
-  { name: 'reservas_especiales', dateColumn: 'fecha', timestamp: false },
-  { name: 'cierres_caja', dateColumn: 'fecha', timestamp: true },
+  { name: 'jornadas_becuap', label: 'Jornadas de becarios', dateColumn: 'fecha', timestamp: false },
+  { name: 'horarios_pactados', label: 'Horarios pactados', dateColumn: 'fecha', timestamp: false },
+  { name: 'fotocopias', label: 'Fotocopias', dateColumn: 'fecha', timestamp: false },
+  { name: 'pagos_efectivo', label: 'Pagos en efectivo', dateColumn: 'fecha', timestamp: false },
+  { name: 'reservas_especiales', label: 'Reservas especiales', dateColumn: 'fecha', timestamp: false },
+  { name: 'cierres_caja', label: 'Cierres de caja', dateColumn: 'fecha', timestamp: true },
 ] as const;
 
 type MonthlyTable = (typeof MONTHLY_TABLES)[number];
@@ -117,20 +117,65 @@ async function deleteBackedUpRows(
 export async function obtenerEstadoRespaldoAction(): Promise<{
   ok: boolean;
   connected?: boolean;
+  readyToConnect?: boolean;
+  missingSettings?: string[];
+  migrationApplied?: boolean | null;
   error?: string;
 }> {
   try {
     await requireAdminUser();
-    const { data, error } = await getAdminClient()
+    const requiredSettings = [
+      'GOOGLE_CLIENT_ID',
+      'GOOGLE_CLIENT_SECRET',
+      'GOOGLE_REDIRECT_URI',
+      'GOOGLE_TOKEN_ENCRYPTION_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
+    ];
+    const missingSettings = requiredSettings.filter((setting) => !process.env[setting]);
+    const encodedKey = process.env.GOOGLE_TOKEN_ENCRYPTION_KEY;
+    const keyIsValid = Boolean(encodedKey && Buffer.from(encodedKey, 'base64').length === 32);
+    if (encodedKey && !keyIsValid) {
+      missingSettings.push('GOOGLE_TOKEN_ENCRYPTION_KEY (debe ser Base64 de 32 bytes)');
+    }
+
+    if (missingSettings.some((setting) => setting === 'SUPABASE_SERVICE_ROLE_KEY')) {
+      return {
+        ok: true,
+        connected: false,
+        readyToConnect: false,
+        missingSettings,
+        migrationApplied: null,
+      };
+    }
+
+    const adminClient = getAdminClient();
+    const { data, error } = await adminClient
       .from('google_drive_tokens')
       .select('id')
       .eq('id', 'primary')
       .maybeSingle();
 
     if (error) {
+      const migrationApplied = error.code !== '42P01' && error.code !== 'PGRST205';
+      if (!migrationApplied) {
+        return {
+          ok: true,
+          connected: false,
+          readyToConnect: false,
+          missingSettings,
+          migrationApplied: false,
+        };
+      }
       throw new Error(`No se pudo consultar la conexión de Drive: ${error.message}`);
     }
-    return { ok: true, connected: Boolean(data) };
+
+    return {
+      ok: true,
+      connected: Boolean(data),
+      readyToConnect: missingSettings.length === 0,
+      missingSettings,
+      migrationApplied: true,
+    };
   } catch (error) {
     return {
       ok: false,
@@ -139,7 +184,10 @@ export async function obtenerEstadoRespaldoAction(): Promise<{
   }
 }
 
-export async function respaldarYLimpiarMesAction(month: string): Promise<{
+export async function respaldarYLimpiarMesAction(
+  month: string,
+  selectedTableNames: string[]
+): Promise<{
   ok: boolean;
   fileUrl?: string;
   fileName?: string;
@@ -154,9 +202,22 @@ export async function respaldarYLimpiarMesAction(month: string): Promise<{
   try {
     await requireAdminUser();
     getMonthBounds(month);
+    if (
+      !Array.isArray(selectedTableNames) ||
+      !selectedTableNames.every(
+        (name) => typeof name === 'string' && MONTHLY_TABLES.some((table) => table.name === name)
+      )
+    ) {
+      throw new Error('Seleccioná al menos una tabla para el respaldo.');
+    }
+    const uniqueNames = [...new Set(selectedTableNames)];
+    if (uniqueNames.length === 0) {
+      throw new Error('Seleccioná al menos una tabla para el respaldo.');
+    }
+    const selectedTables = MONTHLY_TABLES.filter((table) => uniqueNames.includes(table.name));
 
     const rowsByTable = new Map<string, BackupRow[]>();
-    for (const table of MONTHLY_TABLES) {
+    for (const table of selectedTables) {
       const rows = await readMonthlyRows(table, month);
       rowsByTable.set(table.name, rows);
       counts[table.name] = rows.length;
@@ -173,6 +234,7 @@ export async function respaldarYLimpiarMesAction(month: string): Promise<{
         month,
         timeZone: 'America/Argentina/Buenos_Aires',
       },
+      selectedTables: selectedTables.map((table) => table.name),
       createdAt: now.toISOString(),
       counts,
       tables: Object.fromEntries(rowsByTable),
@@ -180,7 +242,7 @@ export async function respaldarYLimpiarMesAction(month: string): Promise<{
 
     uploadedFile = await uploadJsonToGoogleDrive(fileName, JSON.stringify(backup, null, 2));
 
-    for (const table of MONTHLY_TABLES) {
+    for (const table of selectedTables) {
       deleted[table.name] = await deleteBackedUpRows(
         table,
         rowsByTable.get(table.name) || []
