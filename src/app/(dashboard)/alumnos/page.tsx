@@ -65,6 +65,19 @@ function crearPlanillaPactadaVacia(): Record<number, HorarioDiaPactado> {
   return {};
 }
 
+function normalizarPlanillaPactada(
+  planilla: Record<number, HorarioDiaPactado>
+): Record<number, HorarioDiaPactado> {
+  return Object.fromEntries(
+    Object.entries(planilla)
+      .filter(([, horario]) =>
+        Boolean(horario.entrada1 || horario.salida1 || horario.entrada2 || horario.salida2)
+      )
+      .sort(([diaA], [diaB]) => Number(diaA) - Number(diaB))
+      .map(([dia, horario]) => [dia, { ...horario }])
+  );
+}
+
 function rangoDiaPactado(horario: HorarioDiaPactado): string {
   if (!horario.entrada1 || !horario.salida1) return '';
   const primerTurno = `${horario.entrada1} - ${horario.salida1}`;
@@ -141,6 +154,8 @@ export default function AlumnosPage() {
   // ============================================================================
   const [legajoPactar, setLegajoPactar] = useState('');
   const [horariosDiasPactar, setHorariosDiasPactar] =
+    useState<Record<number, HorarioDiaPactado>>(crearPlanillaPactadaVacia);
+  const [horariosGuardadosPactar, setHorariosGuardadosPactar] =
     useState<Record<number, HorarioDiaPactado>>(crearPlanillaPactadaVacia);
   const [alumnoPactar, setAlumnoPactar] = useState<Alumno | null>(null);
   const [cargandoPactar, setCargandoPactar] = useState(false);
@@ -527,6 +542,7 @@ export default function AlumnosPage() {
     }
 
     setHorariosDiasPactar(planilla);
+    setHorariosGuardadosPactar(normalizarPlanillaPactada(planilla));
     setAlumnoPactar(resAlumno.data);
 
     setSaldoMesAnteriorPactado(
@@ -547,15 +563,14 @@ export default function AlumnosPage() {
     if (alumnoFicha?.id === alumnoId) await handleBuscarFicha(alumnoId);
   };
 
-  const handleGuardarPactar = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const guardarCronogramaPactado = async (): Promise<boolean> => {
     if (!alumnoPactar) {
       setErrorPactar('Primero buscá el alumno y cargá el cronograma del mes.');
-      return;
+      return false;
     }
     if (periodoCargadoPactar !== clavePeriodoPactar) {
       setErrorPactar('Cambió el mes seleccionado. Volvé a cargar el cronograma antes de guardarlo.');
-      return;
+      return false;
     }
 
     const bloques: Array<{ rango: string; diasTexto: string }> = [];
@@ -565,19 +580,19 @@ export default function AlumnosPage() {
       const turno1Incompleto = Boolean(horario.entrada1) !== Boolean(horario.salida1);
       if (turno1Incompleto || turno2Incompleto || (horario.entrada2 && !horario.entrada1)) {
         setErrorPactar(`Completá entrada y salida de los turnos del día ${dia}, o dejalos vacíos.`);
-        return;
+        return false;
       }
       if (
         horario.entrada2 &&
         (aMinutos(horario.entrada2) ?? 0) < (aMinutos(horario.salida1) ?? 0)
       ) {
         setErrorPactar(`El segundo turno del día ${dia} debe comenzar al finalizar el primer turno.`);
-        return;
+        return false;
       }
       const rango = rangoDiaPactado(horario);
       if (rango && minutosRangosPactados(rango) === null) {
         setErrorPactar(`Revisá los horarios cargados para el día ${dia}.`);
-        return;
+        return false;
       }
       if (rango) bloques.push({ rango, diasTexto: String(dia) });
     }
@@ -597,11 +612,16 @@ export default function AlumnosPage() {
         `El plan suma ${formatearMinutos(totalPlanificadoMinutos)} y el máximo disponible para este mes es ${formatearMinutos(horasDisponibles)}. ¿Querés guardar igual y dejar el excedente visible para el mes siguiente?`
       )
     ) {
-      return;
+      return false;
     }
     if (bloques.length === 0) {
-      setErrorPactar('No hay horarios cargados. Usá “Limpiar mes” para eliminar la planificación existente.');
-      return;
+      if (
+        !window.confirm(
+          `La planilla está vacía. ¿Querés eliminar todos los horarios pactados de ${nombresMeses[mesActual - 1]} ${anioActual}? Las horas trabajadas no se modifican.`
+        )
+      ) {
+        return false;
+      }
     }
 
     setGuardandoPactar(true);
@@ -613,6 +633,7 @@ export default function AlumnosPage() {
       mes: mesActual,
       anio: anioActual,
       bloques,
+      limpiar: bloques.length === 0,
     });
 
     if (res.ok) {
@@ -624,11 +645,39 @@ export default function AlumnosPage() {
           : 'No quedan horas pendientes ni excedentes para el mes siguiente.';
       setMsgPactar(`Cronograma de ${alumnoPactar.nombre} guardado. ${mensajeSaldo}`);
       setPeriodoCargadoPactar(clavePeriodoPactar);
+      setHorariosGuardadosPactar(normalizarPlanillaPactada(horariosDiasPactar));
       await refrescarFichaSiCorresponde(alumnoPactar.id);
     } else {
       setErrorPactar(res.error || 'No se pudo guardar el cronograma.');
     }
     setGuardandoPactar(false);
+    return res.ok;
+  };
+
+  const handleGuardarPactar = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await guardarCronogramaPactado();
+  };
+
+  const handleCambioPeriodoPactado = async (nuevoMes: number, nuevoAnio: number) => {
+    if (nuevoMes === mesActual && nuevoAnio === anioActual) return;
+    const hayCambiosSinGuardar =
+      JSON.stringify(normalizarPlanillaPactada(horariosDiasPactar)) !==
+      JSON.stringify(horariosGuardadosPactar);
+
+    if (
+      alumnoPactar &&
+      periodoCargadoPactar === clavePeriodoPactar &&
+      hayCambiosSinGuardar
+    ) {
+      const guardarAntesDeCambiar = window.confirm(
+        `Hay cambios sin guardar en ${nombresMeses[mesActual - 1]} ${anioActual}. ¿Querés guardarlos antes de cambiar de mes? Si cancelás, permanecés en este mes.`
+      );
+      if (!guardarAntesDeCambiar || !(await guardarCronogramaPactado())) return;
+    }
+
+    setMesActual(nuevoMes);
+    setAnioActual(nuevoAnio);
   };
 
   const handleLimpiarCronogramaPactado = async () => {
@@ -655,6 +704,7 @@ export default function AlumnosPage() {
     });
     if (res.ok) {
       setHorariosDiasPactar(crearPlanillaPactadaVacia());
+      setHorariosGuardadosPactar(crearPlanillaPactadaVacia());
       setMsgPactar('Se limpiaron los horarios pactados de este mes. Las horas trabajadas no fueron modificadas.');
       await refrescarFichaSiCorresponde(alumnoPactar.id);
     } else {
@@ -958,7 +1008,10 @@ export default function AlumnosPage() {
         <div className="flex items-center gap-2 self-start md:self-auto bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
           <select
             value={mesActual}
-            onChange={(e) => setMesActual(Number(e.target.value))}
+            disabled={guardandoPactar}
+            onChange={(e) =>
+              void handleCambioPeriodoPactado(Number(e.target.value), anioActual)
+            }
             className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-black text-uap-texto focus:ring-2 focus:ring-uap-azul"
           >
             {nombresMeses.map((m, idx) => (
@@ -970,7 +1023,10 @@ export default function AlumnosPage() {
 
           <select
             value={anioActual}
-            onChange={(e) => setAnioActual(Number(e.target.value))}
+            disabled={guardandoPactar}
+            onChange={(e) =>
+              void handleCambioPeriodoPactado(mesActual, Number(e.target.value))
+            }
             className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-black text-uap-texto focus:ring-2 focus:ring-uap-azul"
           >
             {[2024, 2025, 2026, 2027, 2028].map((y) => (
