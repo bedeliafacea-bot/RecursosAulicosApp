@@ -3,6 +3,7 @@ export const MONTHLY_BACKUP_TABLES = [
   { name: 'horarios_pactados', label: 'Horarios pactados', dateColumn: 'fecha', timestamp: false },
   { name: 'fotocopias', label: 'Fotocopias', dateColumn: 'fecha', timestamp: false },
   { name: 'pagos_efectivo', label: 'Pagos en efectivo', dateColumn: 'fecha', timestamp: false },
+  { name: 'retiros_efectivo', label: 'Retiros de efectivo', dateColumn: 'fecha', timestamp: false },
   { name: 'reservas_especiales', label: 'Reservas especiales', dateColumn: 'fecha', timestamp: false },
   { name: 'cierres_caja', label: 'Cierres de caja', dateColumn: 'fecha', timestamp: true },
 ] as const;

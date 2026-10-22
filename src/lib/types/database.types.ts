@@ -98,6 +98,14 @@ export interface PagoEfectivo {
   creado_en: string;
 }
 
+export interface RetiroEfectivo {
+  id: string;
+  fecha: string;
+  descripcion: string;
+  monto: number;
+  creado_en: string;
+}
+
 export interface Profesor {
   id: string;
   nombre: string;

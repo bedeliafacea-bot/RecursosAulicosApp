@@ -147,6 +147,19 @@ CREATE TABLE IF NOT EXISTS public.pagos_efectivo (
 CREATE INDEX IF NOT EXISTS idx_pagos_efectivo_fecha ON public.pagos_efectivo(fecha);
 
 -- ==============================================================================
+-- 9.1 RETIROS DE DINERO EN EFECTIVO DE CAJA
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.retiros_efectivo (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    fecha DATE NOT NULL,
+    descripcion TEXT NOT NULL CHECK (char_length(btrim(descripcion)) BETWEEN 1 AND 160),
+    monto NUMERIC(12,2) NOT NULL CHECK (monto > 0),
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_retiros_efectivo_fecha ON public.retiros_efectivo(fecha);
+
+-- ==============================================================================
 -- 10. TABLA DE PROFESORES
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.profesores (
@@ -437,6 +450,7 @@ ALTER TABLE public.evaluaciones_becuap ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.departamentos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.fotocopias ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pagos_efectivo ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.retiros_efectivo ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profesores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.recursos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservas_matriz ENABLE ROW LEVEL SECURITY;
@@ -529,6 +543,17 @@ CREATE POLICY "Lectura de pagos efectivo para autenticados"
 
 CREATE POLICY "Admin y Secretario gestionan pagos en efectivo"
     ON public.pagos_efectivo FOR ALL
+    TO authenticated
+    USING (public.current_user_role() IN ('admin', 'secretario'))
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
+
+CREATE POLICY "Lectura de retiros de efectivo para autenticados"
+    ON public.retiros_efectivo FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "Admin y Secretario gestionan retiros de efectivo"
+    ON public.retiros_efectivo FOR ALL
     TO authenticated
     USING (public.current_user_role() IN ('admin', 'secretario'))
     WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));

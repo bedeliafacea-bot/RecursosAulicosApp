@@ -94,6 +94,14 @@ Para habilitar el guardado atómico, aplicar una sola vez
 `supabase/migrations/20261021_replace_monthly_pact_schedule.sql` en Supabase. La pantalla
 de lectura de los horarios existentes no requiere esta migración.
 
+### Retiros de efectivo de Oficina
+
+En **Gestión de Oficina → Pago Efectivo**, los administradores y secretarios pueden
+registrar retiros de caja indicando fecha, motivo e importe. El resumen separa los
+ingresos por cobros, los retiros y el neto del mes. Para habilitarlo, aplicar una vez
+`supabase/migrations/20261022_cash_withdrawals.sql` en Supabase. Los retiros también
+se pueden seleccionar en los respaldos mensuales.
+
 3. Levantar el servidor de desarrollo:
    ```bash
    npm run dev
