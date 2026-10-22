@@ -5,11 +5,12 @@ import {
   obtenerDepartamentosAction,
   registrarGastoFotocopiaAction,
   registrarPagoEfectivoAction,
+  registrarRetiroEfectivoAction,
   obtenerResumenOficinaAction,
   ResumenDepartamento,
   UltimoMovimiento,
 } from '@/app/actions/oficina';
-import { Departamento } from '@/lib/types/database.types';
+import { Departamento, RetiroEfectivo } from '@/lib/types/database.types';
 import { useAuth } from '@/context/AuthContext';
 import { fechaHoyAR, mesAnioActualAR } from '@/lib/horas';
 import {
@@ -27,6 +28,7 @@ import {
   RefreshCw,
   Building2,
   FileCheck2,
+  MinusCircle,
 } from 'lucide-react';
 
 export default function OficinaPage() {
@@ -42,11 +44,14 @@ export default function OficinaPage() {
   const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
   const [resumenDeptos, setResumenDeptos] = useState<ResumenDepartamento[]>([]);
   const [totalEfectivoMes, setTotalEfectivoMes] = useState(0);
+  const [totalRetirosEfectivoMes, setTotalRetirosEfectivoMes] = useState(0);
+  const [retirosEfectivoMes, setRetirosEfectivoMes] = useState<RetiroEfectivo[]>([]);
   const [copiasDeptosMes, setCopiasDeptosMes] = useState(0);
   const [copiasEfectivoMes, setCopiasEfectivoMes] = useState(0);
   const [gastosDeptosTotal, setGastosDeptosTotal] = useState(0);
   const [ultimoMovimiento, setUltimoMovimiento] = useState<UltimoMovimiento | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorCarga, setErrorCarga] = useState('');
 
   // Formulario Consumo Depto
   const [fecDepto, setFecDepto] = useState(fechaHoy);
@@ -63,6 +68,13 @@ export default function OficinaPage() {
   const [guardandoEf, setGuardandoEf] = useState(false);
   const [msgEf, setMsgEf] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
 
+  // Formulario de retiros de efectivo
+  const [fecRetiro, setFecRetiro] = useState(fechaHoy);
+  const [descripcionRetiro, setDescripcionRetiro] = useState('');
+  const [montoRetiro, setMontoRetiro] = useState<number | ''>('');
+  const [guardandoRetiro, setGuardandoRetiro] = useState(false);
+  const [msgRetiro, setMsgRetiro] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
+
   // Calculadora Rápida Lateral
   const [calcCant, setCalcCant] = useState<number | ''>(10);
   const [calcPrecio, setCalcPrecio] = useState<number>(150);
@@ -76,12 +88,17 @@ export default function OficinaPage() {
 
     if (resDeptos.ok && resDeptos.data) setDepartamentos(resDeptos.data);
     if (resResumen.ok) {
+      setErrorCarga('');
       setResumenDeptos(resResumen.resumenDeptos || []);
       setTotalEfectivoMes(resResumen.totalEfectivoMes || 0);
+      setTotalRetirosEfectivoMes(resResumen.totalRetirosEfectivoMes || 0);
+      setRetirosEfectivoMes(resResumen.retirosEfectivoMes || []);
       setCopiasDeptosMes(resResumen.copiasDeptosMes || 0);
       setCopiasEfectivoMes(resResumen.copiasEfectivoMes || 0);
       setGastosDeptosTotal(resResumen.gastosDeptosTotal || 0);
       setUltimoMovimiento(resResumen.ultimoMovimiento || null);
+    } else {
+      setErrorCarga(resResumen.error || 'No se pudieron cargar los movimientos de Oficina.');
     }
     setLoading(false);
   };
@@ -144,6 +161,35 @@ export default function OficinaPage() {
       setMsgEf({ tipo: 'error', texto: res.error || 'Error al registrar cobro.' });
     }
     setGuardandoEf(false);
+  };
+
+  const handleGuardarRetiro = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fecRetiro || !descripcionRetiro.trim() || !montoRetiro || Number(montoRetiro) <= 0) {
+      setMsgRetiro({
+        tipo: 'error',
+        texto: 'Completá la fecha, el motivo y un importe mayor a cero.',
+      });
+      return;
+    }
+
+    setGuardandoRetiro(true);
+    setMsgRetiro(null);
+    const res = await registrarRetiroEfectivoAction({
+      fecha: fecRetiro,
+      descripcion: descripcionRetiro,
+      monto: Number(montoRetiro),
+    });
+
+    if (res.ok) {
+      setMsgRetiro({ tipo: 'ok', texto: 'Retiro de efectivo registrado correctamente.' });
+      setDescripcionRetiro('');
+      setMontoRetiro('');
+      await cargarDatos();
+    } else {
+      setMsgRetiro({ tipo: 'error', texto: res.error || 'No se pudo registrar el retiro.' });
+    }
+    setGuardandoRetiro(false);
   };
 
   const nombresMeses = [
@@ -212,6 +258,21 @@ export default function OficinaPage() {
             Informe Mensual A4
           </button>
         </div>
+
+        {errorCarga && (
+          <div
+            role="alert"
+            className="no-print rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800"
+          >
+            {errorCarga}
+            {errorCarga.includes('retiros_efectivo') && (
+              <span className="mt-1 block text-xs">
+                Para activar los retiros, aplicá la migración
+                {' '}<code>20261022_cash_withdrawals.sql</code> en Supabase.
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Selector de Mes y Año Dinámico */}
         <div className="flex items-center gap-2">
@@ -439,6 +500,128 @@ export default function OficinaPage() {
                   <span>Ingresar Dinero a Caja</span>
                 </button>
               </form>
+
+              <section className="mt-8 border-t border-slate-100 pt-6">
+                <div className="mb-4 flex items-center gap-3">
+                  <MinusCircle className="h-5 w-5 text-rose-600" />
+                  <div>
+                    <h3 className="text-base font-black text-uap-azul">
+                      Retiro de dinero en efectivo
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Registrá pagos o compras realizados con dinero de la caja.
+                    </p>
+                  </div>
+                </div>
+
+                {msgRetiro && (
+                  <div
+                    role="status"
+                    className={`mb-4 rounded-xl border p-3 text-xs font-bold ${
+                      msgRetiro.tipo === 'ok'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                        : 'border-red-200 bg-red-50 text-red-700'
+                    }`}
+                  >
+                    {msgRetiro.texto}
+                  </div>
+                )}
+
+                <form onSubmit={handleGuardarRetiro} className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="fecha-retiro-efectivo"
+                      className="mb-1.5 block text-xs font-black uppercase tracking-wider text-uap-texto"
+                    >
+                      Fecha del retiro
+                    </label>
+                    <input
+                      id="fecha-retiro-efectivo"
+                      type="date"
+                      value={fecRetiro}
+                      onChange={(event) => setFecRetiro(event.target.value)}
+                      required
+                      className="w-full rounded-xl border border-uap-borde bg-slate-50 px-3.5 py-2.5 text-sm font-semibold"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="monto-retiro-efectivo"
+                      className="mb-1.5 block text-xs font-black uppercase tracking-wider text-uap-texto"
+                    >
+                      Importe retirado ($)
+                    </label>
+                    <input
+                      id="monto-retiro-efectivo"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={montoRetiro}
+                      onChange={(event) =>
+                        setMontoRetiro(event.target.value ? Number(event.target.value) : '')
+                      }
+                      placeholder="ej: 2500"
+                      required
+                      className="w-full rounded-xl border border-uap-borde bg-slate-50 px-3.5 py-2.5 text-sm font-semibold"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="descripcion-retiro-efectivo"
+                      className="mb-1.5 block text-xs font-black uppercase tracking-wider text-uap-texto"
+                    >
+                      Motivo o detalle
+                    </label>
+                    <input
+                      id="descripcion-retiro-efectivo"
+                      type="text"
+                      maxLength={160}
+                      value={descripcionRetiro}
+                      onChange={(event) => setDescripcionRetiro(event.target.value)}
+                      placeholder="Ej.: compra de materiales"
+                      required
+                      className="w-full rounded-xl border border-uap-borde bg-slate-50 px-3.5 py-2.5 text-sm font-semibold"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={guardandoRetiro}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-700 px-5 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-rose-800 disabled:opacity-60 sm:col-span-2"
+                  >
+                    {guardandoRetiro && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Registrar retiro
+                  </button>
+                </form>
+
+                <div className="mt-6 rounded-2xl border border-rose-100 bg-rose-50 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-bold text-rose-900">
+                      Retiros de {nombresMeses[mesSeleccionado - 1]}
+                    </span>
+                    <strong className="text-sm text-rose-800">
+                      ${totalRetirosEfectivoMes.toFixed(2)}
+                    </strong>
+                  </div>
+                  {retirosEfectivoMes.length === 0 ? (
+                    <p className="mt-3 text-xs text-slate-500">No hay retiros registrados en este mes.</p>
+                  ) : (
+                    <ul className="mt-3 divide-y divide-rose-100">
+                      {retirosEfectivoMes.map((retiro) => (
+                        <li
+                          key={retiro.id}
+                          className="flex flex-wrap items-center justify-between gap-2 py-2 text-xs"
+                        >
+                          <span className="min-w-0">
+                            <strong className="text-slate-700">{retiro.descripcion}</strong>
+                            <span className="ml-2 text-slate-500">{retiro.fecha}</span>
+                          </span>
+                          <strong className="text-rose-800">${Number(retiro.monto).toFixed(2)}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </section>
             </div>
           )}
 
@@ -615,8 +798,22 @@ export default function OficinaPage() {
               </div>
 
               <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
-                <span className="font-bold text-emerald-900">Total Efectivo Caja</span>
+                <span className="font-bold text-emerald-900">Ingresos en efectivo</span>
                 <span className="font-black text-emerald-700 text-sm">${totalEfectivoMes.toFixed(2)}</span>
+              </div>
+
+              <div className="p-3 bg-rose-50 rounded-2xl border border-rose-100 flex items-center justify-between">
+                <span className="font-bold text-rose-900">Retiros en efectivo</span>
+                <span className="font-black text-rose-700 text-sm">
+                  ${totalRetirosEfectivoMes.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="p-3 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
+                <span className="font-bold text-indigo-900">Ingresos menos retiros del mes</span>
+                <span className="font-black text-indigo-700 text-sm">
+                  ${(totalEfectivoMes - totalRetirosEfectivoMes).toFixed(2)}
+                </span>
               </div>
 
               <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
@@ -641,9 +838,13 @@ export default function OficinaPage() {
                   {ultimoMovimiento.detalle}
                 </div>
                 <div className="text-[11px] text-slate-400">
-                  Fecha: {ultimoMovimiento.fecha} • {ultimoMovimiento.cantidad} copias
+                  Fecha: {ultimoMovimiento.fecha}
+                  {ultimoMovimiento.cantidad !== undefined && ` • ${ultimoMovimiento.cantidad} copias`}
                 </div>
-                <div className="text-lg font-black text-uap-azul pt-1">
+                <div className={`pt-1 text-lg font-black ${
+                  ultimoMovimiento.tipo === 'retiro' ? 'text-rose-700' : 'text-uap-azul'
+                }`}>
+                  {ultimoMovimiento.tipo === 'retiro' ? 'Retiro: −' : ''}
                   ${ultimoMovimiento.total.toFixed(2)}
                 </div>
               </div>
