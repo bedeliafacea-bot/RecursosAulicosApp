@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   obtenerDepartamentosAction,
   registrarGastoFotocopiaAction,
@@ -29,6 +29,8 @@ import {
   Building2,
   FileCheck2,
   MinusCircle,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 export default function OficinaPage() {
@@ -67,6 +69,13 @@ export default function OficinaPage() {
   const [valEf, setValEf] = useState<number>(150);
   const [guardandoEf, setGuardandoEf] = useState(false);
   const [msgEf, setMsgEf] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
+  const [archivosCalculados, setArchivosCalculados] = useState<
+    Array<{ nombre: string; paginas: number }>
+  >([]);
+  const [copiasArchivo, setCopiasArchivo] = useState(1);
+  const [calculandoArchivos, setCalculandoArchivos] = useState(false);
+  const [errorArchivos, setErrorArchivos] = useState('');
+  const entradaArchivosRef = useRef<HTMLInputElement>(null);
 
   // Formulario de retiros de efectivo
   const [fecRetiro, setFecRetiro] = useState(fechaHoy);
@@ -156,12 +165,94 @@ export default function OficinaPage() {
     if (res.ok) {
       setMsgEf({ tipo: 'ok', texto: '✅ Cobro en efectivo registrado correctamente.' });
       setCantEf('');
+      setArchivosCalculados([]);
+      setCopiasArchivo(1);
+      if (entradaArchivosRef.current) entradaArchivosRef.current.value = '';
       cargarDatos();
     } else {
       setMsgEf({ tipo: 'error', texto: res.error || 'Error al registrar cobro.' });
     }
     setGuardandoEf(false);
   };
+
+  const handleSeleccionarArchivos = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const entrada = event.currentTarget;
+    const archivos = Array.from(entrada.files || []);
+    setErrorArchivos('');
+    setArchivosCalculados([]);
+    if (!archivos.length) return;
+    if (archivos.length > 20) {
+      setErrorArchivos('Podés seleccionar hasta 20 archivos por cálculo.');
+      entrada.value = '';
+      return;
+    }
+    const totalBytes = archivos.reduce((total, archivo) => total + archivo.size, 0);
+    if (totalBytes > 50 * 1024 * 1024) {
+      setErrorArchivos('El tamaño total de los archivos no puede superar 50 MB.');
+      entrada.value = '';
+      return;
+    }
+
+    const archivosNoAdmitidos = archivos.filter((archivo) => {
+      const esPdf = archivo.type === 'application/pdf' || archivo.name.toLowerCase().endsWith('.pdf');
+      return !esPdf && !archivo.type.startsWith('image/');
+    });
+    if (archivosNoAdmitidos.length) {
+      setErrorArchivos('Por ahora seleccioná únicamente archivos PDF o imágenes.');
+      entrada.value = '';
+      return;
+    }
+    setCalculandoArchivos(true);
+    try {
+      const hayPdf = archivos.some(
+        (archivo) =>
+          archivo.type === 'application/pdf' || archivo.name.toLowerCase().endsWith('.pdf')
+      );
+      const pdfjs = hayPdf ? await import('pdfjs-dist/legacy/build/pdf.mjs') : null;
+      if (pdfjs) {
+        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+          'pdfjs-dist/legacy/build/pdf.worker.min.mjs',
+          import.meta.url
+        ).toString();
+      }
+
+      const calculados: Array<{ nombre: string; paginas: number }> = [];
+      for (const archivo of archivos) {
+        const esPdf = archivo.type === 'application/pdf' || archivo.name.toLowerCase().endsWith('.pdf');
+        if (!esPdf) {
+          calculados.push({ nombre: archivo.name, paginas: 1 });
+          continue;
+        }
+
+        if (!pdfjs) throw new Error('No se pudo iniciar el lector de PDF.');
+        const documento = await pdfjs.getDocument({
+          data: new Uint8Array(await archivo.arrayBuffer()),
+        }).promise;
+        calculados.push({ nombre: archivo.name, paginas: documento.numPages });
+        await documento.destroy();
+      }
+      setArchivosCalculados(calculados);
+      setCopiasArchivo(1);
+    } catch (error) {
+      setArchivosCalculados([]);
+      setErrorArchivos(
+        error instanceof Error
+          ? `No se pudo leer el archivo. Verificá que el PDF no tenga contraseña y que no esté dañado. (${error.message})`
+          : 'No se pudo leer uno de los archivos seleccionados.'
+      );
+      entrada.value = '';
+    } finally {
+      setCalculandoArchivos(false);
+    }
+  };
+
+  const paginasPorArchivo = archivosCalculados.reduce(
+    (total, archivo) => total + archivo.paginas,
+    0
+  );
+  const cantidadCopiasCalculada = paginasPorArchivo * copiasArchivo;
 
   const handleGuardarRetiro = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -438,6 +529,118 @@ export default function OficinaPage() {
                   {msgEf.texto}
                 </div>
               )}
+
+              <section className="mb-6 rounded-2xl border border-blue-200 bg-blue-50/60 p-4">
+                <div className="mb-3 flex items-start gap-3">
+                  <Upload className="mt-0.5 h-5 w-5 shrink-0 text-uap-azul" />
+                  <div>
+                    <h3 className="text-sm font-black text-uap-azul">
+                      Calcular copias desde PDF o imágenes
+                    </h3>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                      El archivo se procesa en este navegador para contar páginas. No se sube ni se guarda.
+                      Cada imagen cuenta como una página.
+                    </p>
+                  </div>
+                </div>
+                <label
+                  htmlFor="archivos-para-calcular-copias"
+                  className="mb-1.5 block text-xs font-bold text-slate-700"
+                >
+                  Seleccioná hasta 20 archivos (máximo 50 MB en total)
+                </label>
+                <input
+                  ref={entradaArchivosRef}
+                  id="archivos-para-calcular-copias"
+                  type="file"
+                  accept="application/pdf,image/*,.pdf"
+                  multiple
+                  onChange={handleSeleccionarArchivos}
+                  disabled={calculandoArchivos || guardandoEf}
+                  className="block w-full cursor-pointer rounded-xl border border-blue-200 bg-white text-sm text-slate-600 file:mr-3 file:border-0 file:bg-uap-azul file:px-4 file:py-2.5 file:text-xs file:font-black file:text-white hover:file:bg-uap-azul-oscuro disabled:opacity-60"
+                />
+                {calculandoArchivos && (
+                  <p className="mt-3 flex items-center gap-2 text-xs font-bold text-uap-azul">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Contando páginas...
+                  </p>
+                )}
+                {errorArchivos && (
+                  <p role="alert" className="mt-3 text-xs font-bold text-red-700">
+                    {errorArchivos}
+                  </p>
+                )}
+                {archivosCalculados.length > 0 && !calculandoArchivos && (
+                  <div className="mt-4 space-y-3">
+                    <ul className="max-h-36 space-y-1 overflow-y-auto rounded-xl bg-white p-3">
+                      {archivosCalculados.map((archivo, indice) => (
+                        <li
+                          key={`${archivo.nombre}-${indice}`}
+                          className="flex items-center justify-between gap-3 text-xs"
+                        >
+                          <span className="flex min-w-0 items-center gap-2 text-slate-700">
+                            {archivo.nombre.toLowerCase().endsWith('.pdf') ? (
+                              <FileText className="h-4 w-4 shrink-0 text-red-600" />
+                            ) : (
+                              <ImageIcon className="h-4 w-4 shrink-0 text-indigo-600" />
+                            )}
+                            <span className="truncate">{archivo.nombre}</span>
+                          </span>
+                          <strong className="shrink-0 text-slate-600">
+                            {archivo.paginas} {archivo.paginas === 1 ? 'página' : 'páginas'}
+                          </strong>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
+                      <div>
+                        <label
+                          htmlFor="copias-archivo-efectivo"
+                          className="mb-1 block text-xs font-black uppercase text-uap-texto"
+                        >
+                          Cantidad de copias
+                        </label>
+                        <input
+                          id="copias-archivo-efectivo"
+                          type="number"
+                          min="1"
+                          max="1000"
+                          value={copiasArchivo}
+                          onChange={(event) =>
+                            setCopiasArchivo(
+                              Math.max(1, Math.min(1000, Number(event.target.value) || 1))
+                            )
+                          }
+                          className="w-full rounded-xl border border-uap-borde bg-white px-3.5 py-2.5 text-sm font-semibold"
+                        />
+                      </div>
+                      <div className="rounded-xl border border-blue-100 bg-white p-3">
+                        <p className="text-[11px] font-bold text-slate-600">
+                          {paginasPorArchivo} páginas × {copiasArchivo} copias × $
+                          {Number(valEf || 0).toFixed(2)} por página
+                        </p>
+                        <p className="mt-1 text-lg font-black text-uap-azul">
+                          Total estimado: ${(
+                            cantidadCopiasCalculada * Number(valEf || 0)
+                          ).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Estimación simple: cada página cuenta como una copia y se usa el valor unitario indicado abajo.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setCantEf(cantidadCopiasCalculada)}
+                      disabled={cantidadCopiasCalculada < 1 || guardandoEf}
+                      className="w-full rounded-xl border border-uap-azul bg-white px-4 py-2.5 text-xs font-black text-uap-azul transition hover:bg-blue-100 disabled:opacity-50"
+                    >
+                      Usar {cantidadCopiasCalculada} copias en el cobro
+                    </button>
+                  </div>
+                )}
+              </section>
 
               <form onSubmit={handleGuardarEfectivo} className="space-y-4">
                 <div>
