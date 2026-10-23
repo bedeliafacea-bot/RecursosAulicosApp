@@ -58,8 +58,7 @@ import {
   totalMinutosJornadas,
 } from '@/lib/horas';
 import './planillas.css';
-
-type HorarioDiaPactado = { entrada1: string; salida1: string; entrada2: string; salida2: string };
+import PactarSemanaTipo, { type HorarioDiaPactado } from './PactarSemanaTipo';
 
 function crearPlanillaPactadaVacia(): Record<number, HorarioDiaPactado> {
   return {};
@@ -163,6 +162,20 @@ export default function AlumnosPage() {
   const [msgPactar, setMsgPactar] = useState('');
   const [errorPactar, setErrorPactar] = useState('');
   const [periodoCargadoPactar, setPeriodoCargadoPactar] = useState('');
+  // Vista para cargar lo pactado: "semana" (semana tipo + calendario) o "planilla" (tabla día por día)
+  const [vistaPactar, setVistaPactar] = useState<'semana' | 'planilla'>('semana');
+  useEffect(() => {
+    try {
+      const guardada = localStorage.getItem('uap_vista_pactar');
+      if (guardada === 'semana' || guardada === 'planilla') setVistaPactar(guardada);
+    } catch {}
+  }, []);
+  const cambiarVistaPactar = (vista: 'semana' | 'planilla') => {
+    setVistaPactar(vista);
+    try {
+      localStorage.setItem('uap_vista_pactar', vista);
+    } catch {}
+  };
   const [saldoMesAnteriorPactado, setSaldoMesAnteriorPactado] = useState(0);
 
   // ============================================================================
@@ -1806,11 +1819,43 @@ export default function AlumnosPage() {
                   </section>
 
                   <section className="rounded-3xl border border-uap-borde bg-white p-5 shadow-uap md:p-7">
-                    <div className="mb-4">
-                      <h3 className="font-black text-uap-azul">Planilla mensual · detalle de horarios</h3>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Cargá cada día como en una planilla: los espacios vacíos quedan visibles y las horas se suman automáticamente.
-                      </p>
+                    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-black text-uap-azul">
+                          {vistaPactar === 'semana'
+                            ? 'Semana tipo · carga rápida del mes'
+                            : 'Planilla mensual · detalle de horarios'}
+                        </h3>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {vistaPactar === 'semana'
+                            ? 'Definí el horario habitual de cada día de la semana, aplicalo al mes y ajustá días sueltos en el calendario.'
+                            : 'Cargá cada día como en una planilla: los espacios vacíos quedan visibles y las horas se suman automáticamente.'}
+                        </p>
+                      </div>
+                      <div
+                        role="group"
+                        aria-label="Forma de cargar los horarios"
+                        className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1"
+                      >
+                        {([
+                          ['semana', 'Semana tipo'],
+                          ['planilla', 'Planilla'],
+                        ] as const).map(([vista, etiqueta]) => (
+                          <button
+                            key={vista}
+                            type="button"
+                            aria-pressed={vistaPactar === vista}
+                            onClick={() => cambiarVistaPactar(vista)}
+                            className={`min-h-[36px] rounded-lg px-3 text-xs font-black transition ${
+                              vistaPactar === vista
+                                ? 'bg-uap-azul text-white shadow-sm'
+                                : 'text-slate-600 hover:text-uap-azul'
+                            }`}
+                          >
+                            {etiqueta}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -1879,6 +1924,16 @@ export default function AlumnosPage() {
                             `Revisá que los rangos tengan sentido para los días ${diasPactadosInvalidos.join(', ')}.`}
                         </div>
                       )}
+                      {vistaPactar === 'semana' ? (
+                        <PactarSemanaTipo
+                          key={`${alumnoPactar.id}-${clavePeriodoPactar}`}
+                          anio={anioActual}
+                          mes={mesActual}
+                          nombreMes={nombresMeses[mesActual - 1]}
+                          horarios={horariosDiasPactar}
+                          onCambiar={setHorariosDiasPactar}
+                        />
+                      ) : (
                       <div className="overflow-x-auto rounded-xl border border-slate-200">
                         <table className="min-w-[900px] w-full border-collapse text-left text-xs">
                           <thead className="bg-slate-100 text-[10px] font-black uppercase tracking-wide text-slate-600">
@@ -1987,6 +2042,7 @@ export default function AlumnosPage() {
                           </tfoot>
                         </table>
                       </div>
+                      )}
 
                       <div className="flex flex-wrap gap-2">
                         <button

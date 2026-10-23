@@ -227,3 +227,46 @@ export function saldoPactadoArrastrado(
   if (mesAnteriorIndice !== mesActualIndice - 1) return 0;
   return saldo;
 }
+
+function horaRapida(token: string): string | null {
+  const t = token.trim().replace('.', ':').replace(/[hH]s?$/, '');
+  let h: number;
+  let m: number;
+  if (t.includes(':')) {
+    const [hh, mm] = t.split(':');
+    h = Number(hh);
+    m = Number(mm || '0');
+  } else if (/^\d{1,2}$/.test(t)) {
+    h = Number(t);
+    m = 0;
+  } else if (/^\d{3,4}$/.test(t)) {
+    h = Number(t.slice(0, -2));
+    m = Number(t.slice(-2));
+  } else {
+    return null;
+  }
+  if (!Number.isInteger(h) || !Number.isInteger(m) || h < 0 || h > 23 || m < 0 || m > 59) return null;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/**
+ * Horario escrito rápido, siempre en 24 hs: "8-12", "730-1130", "7:30 a 11:30",
+ * "8-12 / 14-16" (segundo turno con "/" o "+"). Devuelve null si no se entiende.
+ */
+export function parsearHorarioRapido(
+  texto: string
+): { entrada1: string; salida1: string; entrada2: string; salida2: string } | null {
+  const turnos = texto.split(/[\/+]/).map((s) => s.trim()).filter(Boolean);
+  if (turnos.length < 1 || turnos.length > 2) return null;
+  const horas: string[] = [];
+  for (const turno of turnos) {
+    const partes = turno.split(/\s*(?:-|–|—|\ba\b)\s*/i).filter(Boolean);
+    if (partes.length !== 2) return null;
+    const entrada = horaRapida(partes[0]);
+    const salida = horaRapida(partes[1]);
+    if (!entrada || !salida || aMinutos(salida)! <= aMinutos(entrada)!) return null;
+    horas.push(entrada, salida);
+  }
+  if (horas.length === 4 && aMinutos(horas[2])! < aMinutos(horas[1])!) return null;
+  return { entrada1: horas[0], salida1: horas[1], entrada2: horas[2] || '', salida2: horas[3] || '' };
+}
