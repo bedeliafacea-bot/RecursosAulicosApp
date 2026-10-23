@@ -29,7 +29,11 @@ import {
   Building2,
   FileCheck2,
   MinusCircle,
+  Banknote,
+  X,
 } from 'lucide-react';
+
+const DENOMINACIONES_BILLETES = [10, 20, 50, 100, 200, 500, 1000, 2000, 10000, 20000];
 
 export default function OficinaPage() {
   const { rol } = useAuth();
@@ -67,6 +71,8 @@ export default function OficinaPage() {
   const [valEf, setValEf] = useState<number>(150);
   const [guardandoEf, setGuardandoEf] = useState(false);
   const [msgEf, setMsgEf] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
+  const [contadorBilletesAbierto, setContadorBilletesAbierto] = useState(false);
+  const [cantidadesBilletes, setCantidadesBilletes] = useState<Record<number, number>>({});
 
   // Formulario de retiros de efectivo
   const [fecRetiro, setFecRetiro] = useState(fechaHoy);
@@ -78,6 +84,11 @@ export default function OficinaPage() {
   // Calculadora Rápida Lateral
   const [calcCant, setCalcCant] = useState<number | ''>(10);
   const [calcPrecio, setCalcPrecio] = useState<number>(150);
+
+  const totalBilletes = DENOMINACIONES_BILLETES.reduce(
+    (total, denominacion) => total + denominacion * (cantidadesBilletes[denominacion] || 0),
+    0
+  );
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -106,6 +117,17 @@ export default function OficinaPage() {
   useEffect(() => {
     cargarDatos();
   }, [mesSeleccionado, anioSeleccionado]);
+
+  useEffect(() => {
+    if (!contadorBilletesAbierto) return;
+
+    const cerrarConEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setContadorBilletesAbierto(false);
+    };
+
+    window.addEventListener('keydown', cerrarConEscape);
+    return () => window.removeEventListener('keydown', cerrarConEscape);
+  }, [contadorBilletesAbierto]);
 
   const handleGuardarDepto = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -420,11 +442,21 @@ export default function OficinaPage() {
           {/* TAB 2: PAGO EFECTIVO (MOSTRADOR) */}
           {tabActiva === 'efectivo' && (
             <div className="no-print bg-white rounded-3xl p-6 md:p-8 shadow-uap border border-uap-borde">
-              <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-6">
-                <DollarSign className="w-5 h-5 text-emerald-600" />
-                <h2 className="text-lg font-black text-uap-azul">
-                  Registrar Cobro en Efectivo (Mostrador)
-                </h2>
+              <div className="flex flex-col gap-4 pb-4 border-b border-slate-100 mb-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-5 h-5 text-emerald-600" />
+                  <h2 className="text-lg font-black text-uap-azul">
+                    Registrar Cobro en Efectivo (Mostrador)
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setContadorBilletesAbierto(true)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-black text-emerald-800 transition hover:bg-emerald-100"
+                >
+                  <Banknote className="h-4 w-4" />
+                  Contar billetes
+                </button>
               </div>
 
               {msgEf && (
@@ -852,6 +884,117 @@ export default function OficinaPage() {
           )}
         </div>
       </div>
+
+      {contadorBilletesAbierto && (
+        <div
+          className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          onClick={() => setContadorBilletesAbierto(false)}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contador-billetes-titulo"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl sm:p-7"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <div className="mb-2 flex items-center gap-2 text-emerald-700">
+                  <Banknote className="h-5 w-5" />
+                  <span className="text-xs font-black uppercase tracking-wider">Caja</span>
+                </div>
+                <h2 id="contador-billetes-titulo" className="text-xl font-black text-uap-azul">
+                  Contador de billetes
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Ingresá la cantidad de billetes de cada denominación.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContadorBilletesAbierto(false)}
+                aria-label="Cerrar contador de billetes"
+                className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-slate-200">
+              <div className="grid grid-cols-[1fr_1fr_1fr] bg-slate-50 px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-600">
+                <span>Billete</span>
+                <span className="text-center">Cantidad</span>
+                <span className="text-right">Subtotal</span>
+              </div>
+              <div className="divide-y divide-slate-100">
+                {DENOMINACIONES_BILLETES.map((denominacion) => {
+                  const cantidad = cantidadesBilletes[denominacion] || 0;
+                  return (
+                    <div
+                      key={denominacion}
+                      className="grid grid-cols-[1fr_1fr_1fr] items-center gap-3 px-4 py-2.5"
+                    >
+                      <span className="text-sm font-bold text-slate-700">
+                        ${denominacion.toLocaleString('es-AR')}
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="999999"
+                        step="1"
+                        inputMode="numeric"
+                        aria-label={`Cantidad de billetes de $${denominacion}`}
+                        value={cantidad || ''}
+                        onChange={(event) =>
+                          setCantidadesBilletes((actual) => ({
+                            ...actual,
+                            [denominacion]: Math.max(0, Number(event.target.value) || 0),
+                          }))
+                        }
+                        className="w-full rounded-lg border border-uap-borde bg-slate-50 px-2.5 py-2 text-center text-sm font-semibold"
+                      />
+                      <span className="text-right text-sm font-semibold text-slate-700">
+                        ${(denominacion * cantidad).toLocaleString('es-AR')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div
+              aria-live="polite"
+              className="mt-4 flex items-center justify-between rounded-2xl border border-emerald-100 bg-emerald-50 p-4"
+            >
+              <span className="text-sm font-bold text-emerald-900">Total contado</span>
+              <span className="text-2xl font-black text-emerald-700">
+                ${totalBilletes.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+
+            <p className="mt-3 text-xs text-slate-500">
+              Este conteo es auxiliar y no registra ingresos ni retiros en la caja.
+            </p>
+
+            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+              <button
+                type="button"
+                onClick={() => setCantidadesBilletes({})}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
+              >
+                Limpiar conteo
+              </button>
+              <button
+                type="button"
+                onClick={() => setContadorBilletesAbierto(false)}
+                className="rounded-xl bg-uap-azul px-5 py-2.5 text-xs font-black text-white transition hover:bg-uap-azul-oscuro"
+              >
+                Cerrar
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
