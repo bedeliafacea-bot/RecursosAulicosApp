@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS public.alumnos (
     telefono TEXT,
     direccion TEXT,
     fecha_nacimiento DATE,
+    foto_path TEXT,
     creado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     actualizado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
@@ -620,6 +621,54 @@ CREATE POLICY "Modificación de estado app"
     TO authenticated
     USING (true)
     WITH CHECK (true);
+
+-- FOTOS PRIVADAS DE ALUMNOS (Supabase Storage)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'fotos-alumnos',
+    'Fotos de alumnos',
+    false,
+    5242880,
+    ARRAY['image/jpeg', 'image/png', 'image/webp']::TEXT[]
+)
+ON CONFLICT (id) DO UPDATE
+SET name = EXCLUDED.name,
+    public = false,
+    file_size_limit = EXCLUDED.file_size_limit,
+    allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+CREATE POLICY "Usuarios autenticados ven fotos de alumnos"
+    ON storage.objects FOR SELECT
+    TO authenticated
+    USING (bucket_id = 'fotos-alumnos');
+
+CREATE POLICY "Admin y Secretario cargan fotos de alumnos"
+    ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        bucket_id = 'fotos-alumnos'
+        AND public.current_user_role() IN ('admin', 'secretario')
+    );
+
+CREATE POLICY "Admin y Secretario actualizan fotos de alumnos"
+    ON storage.objects FOR UPDATE
+    TO authenticated
+    USING (
+        bucket_id = 'fotos-alumnos'
+        AND public.current_user_role() IN ('admin', 'secretario')
+    )
+    WITH CHECK (
+        bucket_id = 'fotos-alumnos'
+        AND public.current_user_role() IN ('admin', 'secretario')
+    );
+
+CREATE POLICY "Admin y Secretario eliminan fotos de alumnos"
+    ON storage.objects FOR DELETE
+    TO authenticated
+    USING (
+        bucket_id = 'fotos-alumnos'
+        AND public.current_user_role() IN ('admin', 'secretario')
+    );
 
 -- ==============================================================================
 -- 19. DATOS SEMILLA INICIALES (SEED DATA)

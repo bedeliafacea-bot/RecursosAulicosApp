@@ -18,6 +18,7 @@ export interface Alumno {
   telefono: string | null;
   direccion: string | null;
   fecha_nacimiento: string | null;
+  foto_path: string | null;
   creado_en: string;
   actualizado_en: string;
 }
