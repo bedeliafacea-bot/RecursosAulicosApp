@@ -1,9 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { obtenerReservasPorDiaAction } from '@/app/actions/reservas';
-import { DiaSemana, ReservaMatriz } from '@/lib/types/database.types';
+import {
+  obtenerReservasEspecialesPorFechaAction,
+  obtenerReservasPorDiaAction,
+} from '@/app/actions/reservas';
+import { DiaSemana } from '@/lib/types/database.types';
 import { createClient } from '@/lib/supabase/client';
+import { fechaHoyAR } from '@/lib/horas';
 import { Bell, X } from 'lucide-react';
 
 // Avisos antes del inicio de cada reserva, de mayor a menor
@@ -11,9 +15,12 @@ const AVISOS_MINUTOS = [15, 10, 5];
 
 interface AlertaItem {
   id: string;
-  profesor: string;
-  aula: string;
-  recurso: string;
+  tipo: 'matriz' | 'especial';
+  profesor?: string;
+  aula?: string;
+  recurso?: string;
+  departamento?: string;
+  equipo?: string;
   minutos: number;
 }
 
@@ -42,7 +49,7 @@ export function AlertasReservasProvider({ children }: { children: React.ReactNod
     }
   };
 
-  const getDiaSemanaActual = (): DiaSemana | null => {
+  const getDiaSemanaActual = (fecha: string): DiaSemana | null => {
     const dias: (DiaSemana | null)[] = [
       null, // Domingo
       'Lunes',
@@ -52,8 +59,69 @@ export function AlertasReservasProvider({ children }: { children: React.ReactNod
       'Viernes',
       null, // Sábado
     ];
-    const index = new Date().getDay();
+    const index = new Date(`${fecha}T00:00:00Z`).getUTCDay();
     return dias[index] || null;
+  };
+
+  const calcularMinutosFaltantesArgentina = (fecha: string, hora: string, ahora: Date) => {
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    const [horaInicio, minutoInicio] = hora.split(':').map(Number);
+    const partesAhora = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(ahora)
+      .reduce<Record<string, number>>((partes, parte) => {
+        if (parte.type !== 'literal') partes[parte.type] = Number(parte.value);
+        return partes;
+      }, {});
+
+    const inicio = Date.UTC(anio, mes - 1, dia, horaInicio, minutoInicio);
+    const ahoraArgentina = Date.UTC(
+      partesAhora.year,
+      partesAhora.month - 1,
+      partesAhora.day,
+      partesAhora.hour,
+      partesAhora.minute,
+      partesAhora.second
+    );
+    return Math.round((inicio - ahoraArgentina) / 60000);
+  };
+
+  const mostrarAlerta = (
+    alerta: Omit<AlertaItem, 'minutos'>,
+    minutos: number,
+    claveReserva: string,
+    texto: string
+  ) => {
+    // Ventanas en lugar de minutos exactos: si una revisión se atrasa no se
+    // pierde el aviso de 15, 10 o 5 minutos.
+    const ventana = AVISOS_MINUTOS.find((v, i) => minutos <= v && minutos > (AVISOS_MINUTOS[i + 1] ?? 0));
+    if (ventana === undefined) return;
+
+    const clave = `${claveReserva}-${ventana}`;
+    if (alertasMostradasRef.current[clave]) return;
+    alertasMostradasRef.current[clave] = true;
+    sonarAviso();
+
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification('🔔 Reserva próxima - Recursos Áulicos UAP', {
+          body: texto,
+          icon: '/img/logo-uap.png',
+        });
+      } catch (e) {
+        console.warn('Error al disparar notificación web:', e);
+      }
+    }
+
+    setAlertaModal({ ...alerta, minutos });
   };
 
   const calcularMinutosFaltantes = (horaInicioStr: string, ahora: Date): number => {
@@ -64,53 +132,57 @@ export function AlertasReservasProvider({ children }: { children: React.ReactNod
   };
 
   const revisarAlertas = async () => {
-    const diaActual = getDiaSemanaActual();
-    if (!diaActual) return;
-
-    const res = await obtenerReservasPorDiaAction(diaActual);
-    if (!res.ok || !res.data) return;
+    const fechaActual = fechaHoyAR();
+    const diaActual = getDiaSemanaActual(fechaActual);
+    const [resMatriz, resEspeciales] = await Promise.all([
+      diaActual ? obtenerReservasPorDiaAction(diaActual) : Promise.resolve(null),
+      obtenerReservasEspecialesPorFechaAction(fechaActual),
+    ]);
+    if (resMatriz && !resMatriz.ok) {
+      console.warn('No se pudieron revisar las alertas de reservas de matriz:', resMatriz.error);
+    }
+    if (!resEspeciales.ok) {
+      console.warn('No se pudieron revisar las alertas de reservas especiales:', resEspeciales.error);
+    }
 
     const ahora = new Date();
 
-    for (const r of res.data) {
+    for (const r of resMatriz?.data || []) {
       if (r.estado !== 'Pendiente') continue;
 
       const minutos = calcularMinutosFaltantes(r.hora_inicio, ahora);
+      mostrarAlerta(
+        {
+          id: r.id,
+          tipo: 'matriz',
+          profesor: r.profesor_nombre,
+          aula: r.aula,
+          recurso: r.recurso,
+        },
+        minutos,
+        `matriz-${r.id}`,
+        `${r.profesor_nombre} - ${r.aula} / ${r.recurso} comienza en ${minutos} minutos`
+      );
+    }
 
-      // Ventanas en lugar de minutos exactos: si una revisión se atrasa no se
-      // pierde el aviso de 15, 10 o 5 minutos.
-      const ventana = AVISOS_MINUTOS.find((v, i) => minutos <= v && minutos > (AVISOS_MINUTOS[i + 1] ?? 0));
+    for (const reserva of resEspeciales.data || []) {
+      if (reserva.entregado || reserva.devuelto) continue;
+      const horaInicio = reserva.horario.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+      if (!horaInicio) continue;
 
-      if (ventana !== undefined) {
-        const clave = `${r.id}-${ventana}`;
-        if (!alertasMostradasRef.current[clave]) {
-          alertasMostradasRef.current[clave] = true;
-          sonarAviso();
-
-          const texto = `${r.profesor_nombre} - ${r.aula} / ${r.recurso} comienza en ${minutos} minutos`;
-
-          // 1. Notificación Nativa del Navegador
-          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-            try {
-              new Notification('🔔 Reserva próxima - Recursos Áulicos UAP', {
-                body: texto,
-                icon: '/img/logo-uap.png',
-              });
-            } catch (e) {
-              console.warn('Error al disparar notificación web:', e);
-            }
-          }
-
-          // 2. Modal Emergente en el DOM
-          setAlertaModal({
-            id: r.id,
-            profesor: r.profesor_nombre,
-            aula: r.aula,
-            recurso: r.recurso,
-            minutos,
-          });
-        }
-      }
+      const hora = `${horaInicio[1].padStart(2, '0')}:${horaInicio[2]}`;
+      const minutos = calcularMinutosFaltantesArgentina(fechaActual, hora, ahora);
+      mostrarAlerta(
+        {
+          id: reserva.id,
+          tipo: 'especial',
+          departamento: reserva.departamento,
+          equipo: reserva.equipo,
+        },
+        minutos,
+        `especial-${reserva.id}`,
+        `${reserva.departamento} - ${reserva.equipo} comienza en ${minutos} minutos`
+      );
     }
   };
 
@@ -158,6 +230,9 @@ export function AlertasReservasProvider({ children }: { children: React.ReactNod
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reservas_matriz' }, () => {
         revisarAlertas();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservas_especiales' }, () => {
+        revisarAlertas();
+      })
       .subscribe();
 
     return () => {
@@ -202,23 +277,38 @@ export function AlertasReservasProvider({ children }: { children: React.ReactNod
             </span>
 
             <h2 className="text-2xl font-black text-uap-azul mb-2">
-              Reserva en {alertaModal.minutos} minutos
+              {alertaModal.tipo === 'especial' ? 'Reserva especial' : 'Reserva'} en {alertaModal.minutos} minutos
             </h2>
 
             <div className="my-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left space-y-1.5">
-              <p className="text-sm font-extrabold text-uap-texto">
-                Profesor: <span className="text-uap-azul">{alertaModal.profesor}</span>
-              </p>
-              <p className="text-xs font-bold text-slate-600">
-                Aula: <span className="text-slate-800">{alertaModal.aula}</span>
-              </p>
-              <p className="text-xs font-bold text-slate-600">
-                Recurso: <span className="text-emerald-700">{alertaModal.recurso}</span>
-              </p>
+              {alertaModal.tipo === 'especial' ? (
+                <>
+                  <p className="text-sm font-extrabold text-uap-texto">
+                    Departamento: <span className="text-uap-azul">{alertaModal.departamento}</span>
+                  </p>
+                  <p className="text-xs font-bold text-slate-600">
+                    Equipo: <span className="text-emerald-700">{alertaModal.equipo}</span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-extrabold text-uap-texto">
+                    Profesor: <span className="text-uap-azul">{alertaModal.profesor}</span>
+                  </p>
+                  <p className="text-xs font-bold text-slate-600">
+                    Aula: <span className="text-slate-800">{alertaModal.aula}</span>
+                  </p>
+                  <p className="text-xs font-bold text-slate-600">
+                    Recurso: <span className="text-emerald-700">{alertaModal.recurso}</span>
+                  </p>
+                </>
+              )}
             </div>
 
             <p className="text-xs text-slate-500 mb-6 font-medium">
-              Por favor prepará y entregá el equipamiento correspondiente en Bedelía.
+              {alertaModal.tipo === 'especial'
+                ? 'Por favor prepará el equipo solicitado para el departamento.'
+                : 'Por favor prepará y entregá el equipamiento correspondiente en Bedelía.'}
             </p>
 
             <button
