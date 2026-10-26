@@ -216,6 +216,23 @@ export async function obtenerReservasEspecialesAction(): Promise<{
   }
 }
 
+export async function obtenerReservasEspecialesPorFechaAction(
+  fecha: string
+): Promise<{ ok: boolean; data?: ReservaEspecial[]; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('reservas_especiales')
+      .select('*')
+      .eq('fecha', fecha);
+
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, data: data as ReservaEspecial[] };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'Error al obtener reservas especiales.' };
+  }
+}
+
 export async function registrarReservaEspecialAction(reserva: {
   fecha: string;
   departamento: string;

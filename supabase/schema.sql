@@ -405,6 +405,7 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 -- Habilitamos la réplica completa para Realtime
 ALTER TABLE public.aulas_plano_secu REPLICA IDENTITY FULL;
 ALTER TABLE public.reservas_matriz REPLICA IDENTITY FULL;
+ALTER TABLE public.reservas_especiales REPLICA IDENTITY FULL;
 ALTER TABLE public.estado_app REPLICA IDENTITY FULL;
 
 -- Agregamos las tablas a la publicación de Realtime de Supabase
@@ -422,6 +423,13 @@ BEGIN
         WHERE pubname = 'supabase_realtime' AND tablename = 'reservas_matriz'
     ) THEN
         ALTER PUBLICATION supabase_realtime ADD TABLE public.reservas_matriz;
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables
+        WHERE pubname = 'supabase_realtime' AND tablename = 'reservas_especiales'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.reservas_especiales;
     END IF;
 
     IF NOT EXISTS (

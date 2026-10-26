@@ -120,3 +120,10 @@ Aplica una vez `supabase/migrations/20261026_student_photos.sql` en el SQL Edito
 Luego, en **Alumnos > Mi Ficha / Progreso**, buscá el legajo y seleccioná **Cargar foto**.
 Se aceptan imágenes JPG, PNG o WebP de hasta 5 MB. Las fotos se guardan en un bucket
 privado; solo administradores y secretarios pueden cargarlas o reemplazarlas.
+
+### Alertas de reservas especiales
+
+Para habilitar las alertas en tiempo real de nuevas reservas especiales, aplica
+`supabase/migrations/20261026_special_reservation_alerts.sql` en el SQL Editor de Supabase.
+La aplicación también revisa las reservas especiales pendientes de entrega cada 30 segundos
+y avisa 15, 10 y 5 minutos antes del primer horario indicado.
