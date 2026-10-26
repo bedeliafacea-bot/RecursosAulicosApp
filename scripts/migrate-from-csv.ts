@@ -80,6 +80,68 @@ async function insertBatch(table: string, records: any[]) {
   console.log(`  ✅ ${records.length} registros insertados en "${table}".`);
 }
 
+async function syncFotocopias(records: Array<{
+  fecha: string;
+  departamento_nombre: string;
+  cantidad: number;
+  valor_unitario: number;
+  total: number;
+}>) {
+  if (records.length === 0) return;
+  if (!supabase) {
+    console.log(`  🔍 [AUDITORÍA LOCAL] ${records.length} registros válidos para "fotocopias".`);
+    return;
+  }
+
+  const signature = (record: typeof records[number]) =>
+    [
+      record.fecha,
+      record.departamento_nombre,
+      record.cantidad,
+      Number(record.valor_unitario).toFixed(2),
+      Number(record.total).toFixed(2),
+    ].join('|');
+  const fechas = records.map(record => record.fecha).sort();
+  const existing: typeof records = [];
+
+  for (let offset = 0; ; offset += 1000) {
+    const { data, error } = await supabase
+      .from('fotocopias')
+      .select('fecha, departamento_nombre, cantidad, valor_unitario, total')
+      .gte('fecha', fechas[0])
+      .lte('fecha', fechas[fechas.length - 1])
+      .range(offset, offset + 999);
+    if (error) throw new Error(`No se pudieron verificar las fotocopias existentes: ${error.message}`);
+    existing.push(...(data || []));
+    if (!data || data.length < 1000) break;
+  }
+
+  const existingCounts = new Map<string, number>();
+  for (const record of existing) {
+    const key = signature(record);
+    existingCounts.set(key, (existingCounts.get(key) || 0) + 1);
+  }
+
+  const missing = records.filter(record => {
+    const key = signature(record);
+    const existingCount = existingCounts.get(key) || 0;
+    if (existingCount === 0) return true;
+    existingCounts.set(key, existingCount - 1);
+    return false;
+  });
+
+  if (missing.length === 0) {
+    console.log(`  ✅ Las ${records.length} fotocopias ya están sincronizadas; no se insertaron duplicados.`);
+    return;
+  }
+
+  for (let offset = 0; offset < missing.length; offset += 100) {
+    const { error } = await supabase.from('fotocopias').insert(missing.slice(offset, offset + 100));
+    if (error) throw new Error(`Error insertando fotocopias: ${error.message}`);
+  }
+  console.log(`  ✅ ${missing.length} fotocopias insertadas; ${records.length - missing.length} ya existían.`);
+}
+
 // Parser CSV robusto con soporte para RFC 4180
 function parseCSV(content: string): Array<Record<string, string>> {
   if (content.charCodeAt(0) === 0xFEFF) {
@@ -203,6 +265,15 @@ function safeParseJSON(str: string, defaultValue: any = null): any {
 }
 
 async function run() {
+  if (process.argv.includes('--fotocopias-only') && !process.argv.includes('--dry-run')) {
+    if (!supabaseUrl || supabaseUrl.includes('placeholder') || supabaseUrl.includes('your-project-id')) {
+      throw new Error('Configura NEXT_PUBLIC_SUPABASE_URL en .env.local antes de sincronizar fotocopias.');
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Configura SUPABASE_SERVICE_ROLE_KEY en .env.local para sincronizar fotocopias.');
+    }
+  }
+
   const csvDir = path.resolve(process.cwd(), 'datos_csv');
   if (!fs.existsSync(csvDir)) {
     console.error(`❌ La carpeta "${csvDir}" no existe.`);
@@ -215,6 +286,12 @@ async function run() {
   console.log(`Archivos detectados: ${allFiles.length}`);
   if (isPlaceholder) {
     console.log(`💡 MODO AUDITORÍA ACTIVO: Analizando y validando estructura e integridad...`);
+    const auditReason = process.argv.includes('--dry-run')
+      ? 'Se solicitó --dry-run.'
+      : !supabaseUrl
+        ? 'No está configurada NEXT_PUBLIC_SUPABASE_URL.'
+        : 'La URL de Supabase es un placeholder.';
+    console.log(`Motivo: ${auditReason}`);
   } else {
     console.log(`🚀 MODO INGESTA ACTIVO: Conectado a ${supabaseUrl}`);
   }
@@ -223,6 +300,31 @@ async function run() {
   const findFile = (keyword: string) => {
     return allFiles.find(f => f.toLowerCase().includes(keyword.toLowerCase()));
   };
+
+  if (process.argv.includes('--fotocopias-only')) {
+    const fotoFile = findFile('fotocopias');
+    if (!fotoFile) throw new Error('No se encontró un archivo CSV de fotocopias.');
+    console.log(`🖨️ Fotocopias Departamentales: "${fotoFile}"`);
+    const content = fs.readFileSync(path.join(csvDir, fotoFile), 'utf-8');
+    const rows = parseCSV(content);
+    const fotocopias = rows.map(r => {
+      const fecha = parseDateToISO(getField(r, 'fecha')) || new Date().toISOString().split('T')[0];
+      const departamento = getField(r, 'departamento') || 'Varios';
+      const cantidad = parseInt(getField(r, 'cantcopias', 'cantidad'), 10) || 1;
+      const valorUnitario = parseFloat(getField(r, 'valorcopia', 'preciounitario').replace(',', '.')) || 150;
+      const total = parseFloat(getField(r, 'valortotal', 'total').replace(',', '.')) || (cantidad * valorUnitario);
+      return {
+        fecha,
+        departamento_nombre: departamento.trim(),
+        cantidad,
+        valor_unitario: valorUnitario,
+        total,
+      };
+    }).filter(record => record.fecha && record.cantidad > 0);
+
+    await syncFotocopias(fotocopias);
+    return;
+  }
 
   // 1. DEPARTAMENTOS
   const deptoFile = findFile('departamentos');
@@ -431,7 +533,7 @@ async function run() {
         total
       };
     }).filter(f => f.fecha && f.cantidad > 0);
-    await insertBatch('fotocopias', fotocopias);
+    await syncFotocopias(fotocopias);
   }
 
   // 9. PAGOS EN EFECTIVO
