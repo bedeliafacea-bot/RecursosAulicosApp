@@ -797,12 +797,12 @@ export default function AlumnosPage() {
 
   const criteriosEvaluacion = [
     'Cumple con los horarios establecidos.',
-    'Presta atención y cumple indicaciones.',
-    'Utiliza herramientas adecuadamente.',
-    'Cumple regla de vestimenta/higiene.',
-    'Colabora en desenvolvimiento de grupo.',
-    'Tiene iniciativa optimizando tiempos.',
-    'Es honesto, respetuoso, solidario.',
+    'Presta atención y cumple con las indicaciones dadas en tiempo y forma.',
+    'Utiliza adecuadamente los productos y/o herramientas asignadas en el departamento.',
+    'Cumple con la regla de vestimenta e higiene para su departamento.',
+    'Colabora en el desenvolvimiento del grupo.',
+    'Tiene iniciativa optimizando los tiempos y los recursos.',
+    'Es honesto, respetuoso, veraz y solidario.',
   ];
 
   const handleBuscarEvaluacion = async () => {
