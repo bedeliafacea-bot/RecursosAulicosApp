@@ -42,7 +42,10 @@ import {
   User,
   ShieldCheck,
   Award,
+  ImagePlus,
+  Upload,
 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import {
   aMinutos,
   diasDelMes,
@@ -59,6 +62,10 @@ import {
 } from '@/lib/horas';
 import './planillas.css';
 import PactarSemanaTipo, { type HorarioDiaPactado } from './PactarSemanaTipo';
+
+const BUCKET_FOTOS_ALUMNOS = 'fotos-alumnos';
+const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024;
+const TIPOS_FOTO_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
 
 function crearPlanillaPactadaVacia(): Record<number, HorarioDiaPactado> {
   return {};
@@ -107,6 +114,10 @@ export default function AlumnosPage() {
   const [horariosFicha, setHorariosFicha] = useState<HorarioPactado[]>([]);
   const [cargandoFicha, setCargandoFicha] = useState(false);
   const [errorFicha, setErrorFicha] = useState('');
+  const [fotoFichaUrl, setFotoFichaUrl] = useState('');
+  const [errorFotoFicha, setErrorFotoFicha] = useState('');
+  const [subiendoFotoFicha, setSubiendoFotoFicha] = useState(false);
+  const inputFotoFichaRef = useRef<HTMLInputElement>(null);
 
   // ============================================================================
   // 2. ESTADO: CARGAR JORNADA
@@ -256,6 +267,18 @@ export default function AlumnosPage() {
     }
 
     setAlumnoFicha(resAl.data);
+    setFotoFichaUrl('');
+    setErrorFotoFicha('');
+    if (resAl.data.foto_path) {
+      const { data: fotoFirmada, error: errorFoto } = await createClient()
+        .storage.from(BUCKET_FOTOS_ALUMNOS)
+        .createSignedUrl(resAl.data.foto_path, 60 * 60);
+      if (errorFoto) {
+        setErrorFotoFicha(`No se pudo cargar la foto: ${errorFoto.message}`);
+      } else {
+        setFotoFichaUrl(fotoFirmada.signedUrl);
+      }
+    }
 
     // Cargar jornadas y horarios del mes/año
     const [resJor, resHor] = await Promise.all([
@@ -267,6 +290,53 @@ export default function AlumnosPage() {
     if (resHor.ok && resHor.data) setHorariosFicha(resHor.data);
 
     setCargandoFicha(false);
+  };
+
+  const handleSubirFotoFicha = async (archivo?: File) => {
+    if (!alumnoFicha || !archivo) return;
+    if (!TIPOS_FOTO_PERMITIDOS.includes(archivo.type)) {
+      setErrorFotoFicha('Elegí una imagen JPG, PNG o WebP.');
+      return;
+    }
+    if (archivo.size > TAMANO_MAXIMO_FOTO) {
+      setErrorFotoFicha('La imagen no puede superar los 5 MB.');
+      return;
+    }
+
+    setSubiendoFotoFicha(true);
+    setErrorFotoFicha('');
+    const supabase = createClient();
+    const rutaFoto = `${encodeURIComponent(alumnoFicha.id)}/foto`;
+
+    try {
+      const { error: errorSubida } = await supabase.storage
+        .from(BUCKET_FOTOS_ALUMNOS)
+        .upload(rutaFoto, archivo, { upsert: true, contentType: archivo.type });
+      if (errorSubida) throw new Error(errorSubida.message);
+
+      const { error: errorActualizacion } = await supabase
+        .from('alumnos')
+        .update({ foto_path: rutaFoto })
+        .eq('id', alumnoFicha.id);
+      if (errorActualizacion) {
+        throw new Error(`La imagen se subió, pero no se pudo asociar al alumno: ${errorActualizacion.message}`);
+      }
+
+      const { data: fotoFirmada, error: errorUrl } = await supabase.storage
+        .from(BUCKET_FOTOS_ALUMNOS)
+        .createSignedUrl(rutaFoto, 60 * 60);
+      if (errorUrl) throw new Error(`La foto se guardó, pero no se pudo mostrar: ${errorUrl.message}`);
+
+      setAlumnoFicha((actual) =>
+        actual?.id === alumnoFicha.id ? { ...actual, foto_path: rutaFoto } : actual
+      );
+      setFotoFichaUrl(fotoFirmada.signedUrl);
+    } catch (error) {
+      setErrorFotoFicha(error instanceof Error ? error.message : 'No se pudo guardar la foto.');
+    } finally {
+      setSubiendoFotoFicha(false);
+      if (inputFotoFichaRef.current) inputFotoFichaRef.current.value = '';
+    }
   };
 
   // Calcular horas acumuladas y meta según plan.
@@ -1180,8 +1250,42 @@ export default function AlumnosPage() {
               <div className="bg-white rounded-3xl p-6 md:p-8 shadow-uap border border-uap-borde space-y-5">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-uap-azul flex items-center justify-center font-black text-lg">
-                      {alumnoFicha.nombre.charAt(0)}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-[72px] h-[88px] rounded-xl bg-blue-50 text-uap-azul border border-slate-200 overflow-hidden flex items-center justify-center font-black text-lg shrink-0">
+                        {fotoFichaUrl ? (
+                          <img
+                            src={fotoFichaUrl}
+                            alt={`Foto de ${alumnoFicha.nombre}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <ImagePlus className="w-6 h-6" />
+                        )}
+                      </div>
+                      {rol !== 'alumno' && (
+                        <>
+                          <input
+                            ref={inputFotoFichaRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={(event) => handleSubirFotoFicha(event.target.files?.[0])}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => inputFotoFichaRef.current?.click()}
+                            disabled={subiendoFotoFicha}
+                            className="text-[10px] font-bold text-uap-azul hover:underline disabled:opacity-50 flex items-center gap-1"
+                          >
+                            {subiendoFotoFicha ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Upload className="w-3 h-3" />
+                            )}
+                            {fotoFichaUrl ? 'Cambiar foto' : 'Cargar foto'}
+                          </button>
+                        </>
+                      )}
                     </div>
                     <div>
                       <h3 className="text-xl font-black text-uap-azul">
@@ -1196,6 +1300,17 @@ export default function AlumnosPage() {
                     Plan {alumnoFicha.plan}
                   </span>
                 </div>
+
+                {errorFotoFicha && (
+                  <p role="alert" className="text-xs font-bold text-red-600">
+                    {errorFotoFicha}
+                  </p>
+                )}
+                {rol !== 'alumno' && (
+                  <p className="text-[10px] text-slate-400">
+                    Foto carnet: JPG, PNG o WebP, máximo 5 MB.
+                  </p>
+                )}
 
                 <div className="grid grid-cols-2 gap-4 text-xs">
                   <div>

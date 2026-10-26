@@ -113,3 +113,10 @@ se pueden seleccionar en los respaldos mensuales.
    - `npm run migrate:fotocopias`: Sincroniza únicamente fotocopias; se puede volver a ejecutar sin duplicar registros y requiere `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en `.env.local`.
    - `npm run migrate:fotocopias -- --dry-run`: Valida las fotocopias localmente sin conectarse ni escribir en Supabase.
    - `npx tsx scripts/set-user-password.ts <usuario> <clave>`: Cambia la clave de un usuario.
+
+### Fotos de alumnos
+
+Aplica una vez `supabase/migrations/20261026_student_photos.sql` en el SQL Editor de Supabase.
+Luego, en **Alumnos > Mi Ficha / Progreso**, buscá el legajo y seleccioná **Cargar foto**.
+Se aceptan imágenes JPG, PNG o WebP de hasta 5 MB. Las fotos se guardan en un bucket
+privado; solo administradores y secretarios pueden cargarlas o reemplazarlas.
