@@ -127,3 +127,8 @@ Para habilitar las alertas en tiempo real de nuevas reservas especiales, aplica
 `supabase/migrations/20261026_special_reservation_alerts.sql` en el SQL Editor de Supabase.
 La aplicación también revisa las reservas especiales pendientes de entrega cada 30 segundos
 y avisa 15, 10 y 5 minutos antes del primer horario indicado.
+
+Los usuarios con rol alumno también pueden crear reservas en la matriz semanal y reservas
+especiales. Solo administración y secretaría pueden modificar reservas existentes, cambiar
+estados o registrar entregas/devoluciones. Para habilitar estos permisos, aplica
+`supabase/migrations/20261026_student_reservation_permissions.sql` en el SQL Editor de Supabase.

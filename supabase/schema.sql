@@ -589,16 +589,38 @@ CREATE POLICY "Admin y Secretario gestionan matriz de reservas"
     USING (public.current_user_role() IN ('admin', 'secretario'))
     WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
 
+CREATE POLICY "Usuarios autenticados pueden crear reservas matriz"
+    ON public.reservas_matriz FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        public.current_user_role() IN ('admin', 'secretario', 'alumno')
+        AND estado = 'Pendiente'
+    );
+
 CREATE POLICY "Lectura de reservas especiales para autenticados"
     ON public.reservas_especiales FOR SELECT
     TO authenticated
     USING (true);
 
-CREATE POLICY "Autenticados pueden gestionar reservas especiales"
-    ON public.reservas_especiales FOR ALL
+CREATE POLICY "Usuarios autenticados pueden crear reservas especiales"
+    ON public.reservas_especiales FOR INSERT
     TO authenticated
-    USING (true)
-    WITH CHECK (true);
+    WITH CHECK (
+        public.current_user_role() IN ('admin', 'secretario', 'alumno')
+        AND NOT entregado
+        AND NOT devuelto
+    );
+
+CREATE POLICY "Admin y Secretario actualizan reservas especiales"
+    ON public.reservas_especiales FOR UPDATE
+    TO authenticated
+    USING (public.current_user_role() IN ('admin', 'secretario'))
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
+
+CREATE POLICY "Admin y Secretario eliminan reservas especiales"
+    ON public.reservas_especiales FOR DELETE
+    TO authenticated
+    USING (public.current_user_role() IN ('admin', 'secretario'));
 
 -- POLÍTICAS: cierres_caja (Solo admin y secretario)
 CREATE POLICY "Admin y Secretario gestionan cierres de caja"

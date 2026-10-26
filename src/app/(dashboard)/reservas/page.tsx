@@ -328,7 +328,7 @@ export default function ReservasPage() {
             <span>Imprimir Horario</span>
           </button>
 
-          {rol !== 'alumno' && (
+          {rol && (rol !== 'alumno' || vistaActiva === 'matriz') && (
             <button
               onClick={handleAbrirCrear}
               className="flex items-center gap-1.5 px-4 py-2.5 bg-uap-azul hover:bg-uap-azul-oscuro text-white text-xs font-black rounded-xl shadow-md transition-all"
@@ -461,7 +461,7 @@ export default function ReservasPage() {
               <h2 className="text-lg font-black text-uap-azul">Registro de Reservas Especiales</h2>
               <p className="text-xs text-slate-500">Préstamo de proyectores portátiles, audio y notebooks para eventos</p>
             </div>
-            {rol !== 'alumno' && (
+            {rol && (
               <button
                 onClick={() => setModalEspecialOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 bg-uap-azul hover:bg-uap-azul-oscuro text-white text-xs font-black rounded-xl shadow-md transition-all"
@@ -504,28 +504,36 @@ export default function ReservasPage() {
                       <td className="py-3.5 px-3 text-slate-500 font-medium">{e.telefono || '—'}</td>
                       <td className="py-3.5 px-3 text-slate-500 italic max-w-xs truncate">{e.observaciones || '—'}</td>
                       <td className="py-3.5 px-3 text-center">
-                        <button
-                          onClick={() => handleToggleEspecial(e.id, 'entregado', e.entregado)}
-                          className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
-                            e.entregado
-                              ? 'bg-emerald-600 text-white shadow-sm'
-                              : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-                          }`}
-                        >
-                          {e.entregado ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4" />}
-                        </button>
+                        {rol === 'alumno' ? (
+                          <span className="text-slate-500">{e.entregado ? 'Sí' : 'No'}</span>
+                        ) : (
+                          <button
+                            onClick={() => handleToggleEspecial(e.id, 'entregado', e.entregado)}
+                            className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
+                              e.entregado
+                                ? 'bg-emerald-600 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                            }`}
+                          >
+                            {e.entregado ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4" />}
+                          </button>
+                        )}
                       </td>
                       <td className="py-3.5 px-3 text-center">
-                        <button
-                          onClick={() => handleToggleEspecial(e.id, 'devuelto', e.devuelto)}
-                          className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
-                            e.devuelto
-                              ? 'bg-emerald-600 text-white shadow-sm'
-                              : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-                          }`}
-                        >
-                          {e.devuelto ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4" />}
-                        </button>
+                        {rol === 'alumno' ? (
+                          <span className="text-slate-500">{e.devuelto ? 'Sí' : 'No'}</span>
+                        ) : (
+                          <button
+                            onClick={() => handleToggleEspecial(e.id, 'devuelto', e.devuelto)}
+                            className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
+                              e.devuelto
+                                ? 'bg-emerald-600 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                            }`}
+                          >
+                            {e.devuelto ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4" />}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
