@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "migrate:csv": "npx tsx scripts/migrate-from-csv.ts",
+    "migrate:fotocopias": "npx tsx scripts/migrate-from-csv.ts --fotocopias-only",
     "migrate:json": "npx tsx scripts/migrate-from-sheets.ts"
   },
   "dependencies": {

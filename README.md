@@ -110,4 +110,6 @@ se pueden seleccionar en los respaldos mensuales.
 
 4. Comandos útiles:
    - `npm run migrate:csv`: Migra los datos desde la carpeta `datos_csv/` a Supabase.
+   - `npm run migrate:fotocopias`: Sincroniza únicamente fotocopias; se puede volver a ejecutar sin duplicar registros y requiere `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en `.env.local`.
+   - `npm run migrate:fotocopias -- --dry-run`: Valida las fotocopias localmente sin conectarse ni escribir en Supabase.
    - `npx tsx scripts/set-user-password.ts <usuario> <clave>`: Cambia la clave de un usuario.
