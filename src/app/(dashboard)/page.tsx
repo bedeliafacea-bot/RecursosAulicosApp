@@ -44,7 +44,7 @@ export default function HomePage() {
       roles: ['admin', 'secretario', 'alumno'],
     },
     {
-      titulo: 'Gestión de Oficina',
+      titulo: 'Fotocopias',
       desc: 'Consumos de fotocopias por departamento, cobros en efectivo e informes.',
       href: '/oficina',
       icono: FileText,
