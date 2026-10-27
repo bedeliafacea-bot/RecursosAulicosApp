@@ -273,10 +273,11 @@ export async function toggleEstadoReservaEspecialAction(
   try {
     const supabase = await createClient();
 
-    const { error } = await supabase
-      .from('reservas_especiales')
-      .update({ [campo]: valor })
-      .eq('id', id);
+    const { error } = await supabase.rpc('actualizar_estado_reserva_especial', {
+      p_id: id,
+      p_campo: campo,
+      p_valor: valor,
+    });
 
     if (error) {
       return { ok: false, error: error.message };
