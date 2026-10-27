@@ -295,7 +295,13 @@ export default function ReservasPage() {
     setReservasEspeciales((prev) =>
       prev.map((e) => (e.id === id ? { ...e, [campo]: nuevo } : e))
     );
-    await toggleEstadoReservaEspecialAction(id, campo, nuevo);
+    const res = await toggleEstadoReservaEspecialAction(id, campo, nuevo);
+    if (!res.ok) {
+      setReservasEspeciales((prev) =>
+        prev.map((e) => (e.id === id ? { ...e, [campo]: actual } : e))
+      );
+      alert(res.error || 'No se pudo actualizar el estado de la reserva especial.');
+    }
   };
 
   // Agrupar profesores únicos con reservas en este día
@@ -504,36 +510,32 @@ export default function ReservasPage() {
                       <td className="py-3.5 px-3 text-slate-500 font-medium">{e.telefono || '—'}</td>
                       <td className="py-3.5 px-3 text-slate-500 italic max-w-xs truncate">{e.observaciones || '—'}</td>
                       <td className="py-3.5 px-3 text-center">
-                        {rol === 'alumno' ? (
-                          <span className="text-slate-500">{e.entregado ? 'Sí' : 'No'}</span>
-                        ) : (
-                          <button
-                            onClick={() => handleToggleEspecial(e.id, 'entregado', e.entregado)}
-                            className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
-                              e.entregado
-                                ? 'bg-emerald-600 text-white shadow-sm'
-                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-                            }`}
-                          >
-                            {e.entregado ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4" />}
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          aria-label={`${e.entregado ? 'Desmarcar' : 'Marcar'} entregado`}
+                          onClick={() => handleToggleEspecial(e.id, 'entregado', e.entregado)}
+                          className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
+                            e.entregado
+                              ? 'bg-emerald-600 text-white shadow-sm'
+                              : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                          }`}
+                        >
+                          {e.entregado ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4" />}
+                        </button>
                       </td>
                       <td className="py-3.5 px-3 text-center">
-                        {rol === 'alumno' ? (
-                          <span className="text-slate-500">{e.devuelto ? 'Sí' : 'No'}</span>
-                        ) : (
-                          <button
-                            onClick={() => handleToggleEspecial(e.id, 'devuelto', e.devuelto)}
-                            className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
-                              e.devuelto
-                                ? 'bg-emerald-600 text-white shadow-sm'
-                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-                            }`}
-                          >
-                            {e.devuelto ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4" />}
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          aria-label={`${e.devuelto ? 'Desmarcar' : 'Marcar'} devuelto`}
+                          onClick={() => handleToggleEspecial(e.id, 'devuelto', e.devuelto)}
+                          className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
+                            e.devuelto
+                              ? 'bg-emerald-600 text-white shadow-sm'
+                              : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                          }`}
+                        >
+                          {e.devuelto ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4" />}
+                        </button>
                       </td>
                     </tr>
                   ))
