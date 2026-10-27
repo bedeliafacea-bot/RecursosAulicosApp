@@ -545,6 +545,11 @@ CREATE POLICY "Admin y Secretario gestionan fotocopias"
     USING (public.current_user_role() IN ('admin', 'secretario'))
     WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
 
+CREATE POLICY "Usuarios autenticados pueden registrar fotocopias"
+    ON public.fotocopias FOR INSERT
+    TO authenticated
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario', 'alumno'));
+
 CREATE POLICY "Lectura de pagos efectivo para autenticados"
     ON public.pagos_efectivo FOR SELECT
     TO authenticated
@@ -555,6 +560,11 @@ CREATE POLICY "Admin y Secretario gestionan pagos en efectivo"
     TO authenticated
     USING (public.current_user_role() IN ('admin', 'secretario'))
     WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
+
+CREATE POLICY "Usuarios autenticados pueden registrar pagos en efectivo"
+    ON public.pagos_efectivo FOR INSERT
+    TO authenticated
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario', 'alumno'));
 
 CREATE POLICY "Lectura de retiros de efectivo para autenticados"
     ON public.retiros_efectivo FOR SELECT
