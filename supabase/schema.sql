@@ -172,6 +172,81 @@ CREATE TABLE IF NOT EXISTS public.profesores (
 
 CREATE INDEX IF NOT EXISTS idx_profesores_nombre ON public.profesores(nombre);
 
+-- ======================================================================
+-- CATÁLOGOS ACADÉMICOS PARA DISTRIBUCIÓN DE AULAS
+-- profesores_universitarios es independiente del padrón profesores
+-- usado por el módulo de reservas.
+-- ======================================================================
+CREATE TABLE IF NOT EXISTS public.profesores_universitarios (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL CHECK (char_length(btrim(nombre)) > 0),
+    activo BOOLEAN NOT NULL DEFAULT true,
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_profesores_universitarios_nombre_normalizado
+    ON public.profesores_universitarios (lower(btrim(nombre)));
+
+CREATE TABLE IF NOT EXISTS public.carreras (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL CHECK (char_length(btrim(nombre)) > 0),
+    sigla TEXT,
+    facultad TEXT,
+    activo BOOLEAN NOT NULL DEFAULT true,
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_carreras_nombre_normalizado
+    ON public.carreras (lower(btrim(nombre)));
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_carreras_sigla_normalizada
+    ON public.carreras (lower(btrim(sigla)))
+    WHERE sigla IS NOT NULL AND btrim(sigla) <> '';
+
+CREATE TABLE IF NOT EXISTS public.carrera_anios (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    carrera_id UUID NOT NULL REFERENCES public.carreras(id) ON DELETE RESTRICT,
+    anio SMALLINT NOT NULL CHECK (anio BETWEEN 1 AND 10),
+    plan_estudio TEXT NOT NULL DEFAULT '',
+    activo BOOLEAN NOT NULL DEFAULT true,
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    CONSTRAINT carrera_anios_unicos UNIQUE (carrera_id, anio, plan_estudio),
+    CONSTRAINT carrera_anios_plan_no_vacio
+        CHECK (plan_estudio = '' OR char_length(btrim(plan_estudio)) > 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_carrera_anios_carrera
+    ON public.carrera_anios (carrera_id);
+
+CREATE TABLE IF NOT EXISTS public.materias (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL CHECK (char_length(btrim(nombre)) > 0),
+    codigo TEXT,
+    activo BOOLEAN NOT NULL DEFAULT true,
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_materias_nombre_normalizado
+    ON public.materias (lower(btrim(nombre)));
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_materias_codigo_normalizado
+    ON public.materias (lower(btrim(codigo)))
+    WHERE codigo IS NOT NULL AND btrim(codigo) <> '';
+
+CREATE TABLE IF NOT EXISTS public.materias_carreras_anios (
+    materia_id UUID NOT NULL REFERENCES public.materias(id) ON DELETE RESTRICT,
+    carrera_anio_id UUID NOT NULL REFERENCES public.carrera_anios(id) ON DELETE RESTRICT,
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    PRIMARY KEY (materia_id, carrera_anio_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_materias_carreras_anios_carrera_anio
+    ON public.materias_carreras_anios (carrera_anio_id);
+
 -- ============================================================================
 -- 10.1 CATÁLOGO DE RECURSOS PARA RESERVAS DE LA MATRIZ
 -- ============================================================================
@@ -461,6 +536,11 @@ ALTER TABLE public.fotocopias ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pagos_efectivo ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.retiros_efectivo ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profesores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profesores_universitarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.carreras ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.carrera_anios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.materias ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.materias_carreras_anios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.recursos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservas_matriz ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservas_especiales ENABLE ROW LEVEL SECURITY;
@@ -582,6 +662,61 @@ CREATE POLICY "Lectura de profesores para autenticados"
     ON public.profesores FOR SELECT
     TO authenticated
     USING (true);
+
+CREATE POLICY "Lectura de profesores universitarios para autenticados"
+    ON public.profesores_universitarios FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "Admin y Secretario gestionan profesores universitarios"
+    ON public.profesores_universitarios FOR ALL
+    TO authenticated
+    USING (public.current_user_role() IN ('admin', 'secretario'))
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
+
+CREATE POLICY "Lectura de carreras para autenticados"
+    ON public.carreras FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "Admin y Secretario gestionan carreras"
+    ON public.carreras FOR ALL
+    TO authenticated
+    USING (public.current_user_role() IN ('admin', 'secretario'))
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
+
+CREATE POLICY "Lectura de años de carrera para autenticados"
+    ON public.carrera_anios FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "Admin y Secretario gestionan años de carrera"
+    ON public.carrera_anios FOR ALL
+    TO authenticated
+    USING (public.current_user_role() IN ('admin', 'secretario'))
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
+
+CREATE POLICY "Lectura de materias para autenticados"
+    ON public.materias FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "Admin y Secretario gestionan materias"
+    ON public.materias FOR ALL
+    TO authenticated
+    USING (public.current_user_role() IN ('admin', 'secretario'))
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
+
+CREATE POLICY "Lectura de relaciones académicas para autenticados"
+    ON public.materias_carreras_anios FOR SELECT
+    TO authenticated
+    USING (true);
+
+CREATE POLICY "Admin y Secretario gestionan relaciones académicas"
+    ON public.materias_carreras_anios FOR ALL
+    TO authenticated
+    USING (public.current_user_role() IN ('admin', 'secretario'))
+    WITH CHECK (public.current_user_role() IN ('admin', 'secretario'));
 
 CREATE POLICY "Lectura de recursos para autenticados"
     ON public.recursos FOR SELECT

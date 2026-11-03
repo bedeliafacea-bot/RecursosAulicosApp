@@ -102,6 +102,19 @@ ingresos por cobros, los retiros y el neto del mes. Para habilitarlo, aplicar un
 `supabase/migrations/20261022_cash_withdrawals.sql` en Supabase. Los retiros también
 se pueden seleccionar en los respaldos mensuales.
 
+### Catálogos académicos para la distribución de aulas
+
+La distribución académica utiliza catálogos separados de los datos operativos:
+`profesores_universitarios`, `materias`, `carreras` y `carrera_anios`. La tabla
+`materias_carreras_anios` permite asociar una misma materia con varios años o carreras,
+incluidos distintos planes de estudio. El padrón `profesores` existente se conserva
+para las reservas de recursos y no se mezcla con los docentes universitarios.
+
+Aplicar una sola vez `supabase/migrations/20261103_academic_catalogs.sql` en el SQL Editor
+de Supabase. Los usuarios autenticados pueden consultar los catálogos; solo administración
+y secretaría pueden gestionarlos. La migración crea las tablas vacías: el prototipo de
+distribución todavía no carga ni guarda datos en estos catálogos.
+
 3. Levantar el servidor de desarrollo:
    ```bash
    npm run dev
