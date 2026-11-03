@@ -2,9 +2,11 @@ import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ArrowUpRight,
+  ArrowRight,
   BookOpen,
   CalendarDays,
   FileSpreadsheet,
+  FlaskConical,
   FolderOpen,
 } from 'lucide-react';
 
@@ -21,6 +23,7 @@ const horarios = [
       { nombre: 'ECONÓMICAS (FACEA)', carpeta: 'ECONÓMICAS (FACEA)' },
     ],
     distribucion: 'DISTRIBUCIÓN DE AULAS (1ºC).xlsm',
+    periodoDemo: '1c',
   },
   {
     cuatrimestre: '2ºC',
@@ -32,6 +35,7 @@ const horarios = [
       { nombre: 'ECONÓMICAS (FACEA)', carpeta: 'ECONÓMICAS' },
     ],
     distribucion: 'DISTRIBUCIÓN DE AULAS (2ºC).xlsm',
+    periodoDemo: '2c',
   },
 ];
 
@@ -158,6 +162,28 @@ export default function BedeliaVirtualPage() {
                     >
                       {horario.distribucion.replace('.xlsm', '')}
                     </Acceso>
+                    <a
+                      href={`/bedelia-virtual/distribucion/${horario.periodoDemo}`}
+                      className="group flex min-h-14 items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 transition-all hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-emerald-700 shadow-sm">
+                          <FlaskConical className="h-[18px] w-[18px]" aria-hidden="true" />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-bold text-uap-texto">
+                            Ver propuesta en la app
+                          </span>
+                          <span className="mt-0.5 block text-[11px] font-semibold text-emerald-700">
+                            Prototipo · datos de ejemplo
+                          </span>
+                        </span>
+                      </span>
+                      <ArrowRight
+                        className="h-4 w-4 shrink-0 text-emerald-700 transition-transform group-hover:translate-x-1"
+                        aria-hidden="true"
+                      />
+                    </a>
                   </div>
                 </section>
               );
