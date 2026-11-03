@@ -114,6 +114,49 @@ export interface Profesor {
   creado_en: string;
 }
 
+export interface ProfesorUniversitario {
+  id: string;
+  nombre: string;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+export interface Carrera {
+  id: string;
+  nombre: string;
+  sigla: string | null;
+  facultad: string | null;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+export interface CarreraAnio {
+  id: string;
+  carrera_id: string;
+  anio: number;
+  plan_estudio: string;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+export interface Materia {
+  id: string;
+  nombre: string;
+  codigo: string | null;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+export interface MateriaCarreraAnio {
+  materia_id: string;
+  carrera_anio_id: string;
+  creado_en: string;
+}
+
 export interface Recurso {
   id: string;
   nombre: string;
