@@ -23,21 +23,27 @@ interface Aula {
   edificio: string;
 }
 
+interface MateriaCompartida {
+  id: string;
+  nombre: string;
+  docentes: string[];
+  carreras: string[];
+}
+
 interface Asignacion {
   id: string;
   dia: number;
-  franja: number;
+  franjaInicio: number;
+  franjaFin: number;
   aula: string;
-  materia: string;
-  carrera: string;
-  docente: string;
+  materias: MateriaCompartida[];
+  observacion: string;
   inscriptos: number;
 }
 
 interface FormularioAsignacion {
-  materia: string;
-  carrera: string;
-  docente: string;
+  materias: MateriaCompartida[];
+  observacion: string;
   inscriptos: string;
 }
 
@@ -75,82 +81,150 @@ const asignacionesIniciales: Asignacion[] = [
   {
     id: 'demo-1',
     dia: 0,
-    franja: 6,
+    franjaInicio: 6,
+    franjaFin: 7,
     aula: 'A5',
-    materia: 'Materia de ejemplo',
-    carrera: '1º ISI',
-    docente: 'Docente de ejemplo A',
+    materias: [
+      {
+        id: 'demo-materia-1',
+        nombre: 'Movimientos religiosos contemporáneos',
+        docentes: ['Pérez, F.'],
+        carreras: ['4º LC', '5º ISI (2017)', '3º LA'],
+      },
+    ],
+    observacion: 'PARLANTE Y MICRO',
     inscriptos: 32,
   },
   {
     id: 'demo-2',
     dia: 0,
-    franja: 6,
+    franjaInicio: 6,
+    franjaFin: 6,
     aula: 'AN 1',
-    materia: 'Taller de laboratorio',
-    carrera: '2º FCS',
-    docente: 'Docente de ejemplo B',
+    materias: [
+      {
+        id: 'demo-materia-2',
+        nombre: 'Taller de laboratorio',
+        docentes: ['Docente de ejemplo C'],
+        carreras: ['2º FCS'],
+      },
+    ],
+    observacion: '',
     inscriptos: 24,
   },
   {
     id: 'demo-3',
     dia: 0,
-    franja: 7,
+    franjaInicio: 8,
+    franjaFin: 8,
     aula: 'A5',
-    materia: 'Seminario de ejemplo',
-    carrera: '3º CP',
-    docente: 'Docente de ejemplo C',
+    materias: [
+      {
+        id: 'demo-materia-3',
+        nombre: 'Seminario de ejemplo',
+        docentes: ['Docente de ejemplo D'],
+        carreras: ['3º CP'],
+      },
+    ],
+    observacion: '',
     inscriptos: 28,
   },
   {
     id: 'demo-4',
     dia: 1,
-    franja: 1,
+    franjaInicio: 1,
+    franjaFin: 1,
     aula: 'AN 2',
-    materia: 'Introducción a la carrera',
-    carrera: '1º AE',
-    docente: 'Docente de ejemplo D',
+    materias: [
+      {
+        id: 'demo-materia-4',
+        nombre: 'Introducción a la carrera',
+        docentes: ['Docente de ejemplo E'],
+        carreras: ['1º AE'],
+      },
+    ],
+    observacion: '',
     inscriptos: 56,
   },
   {
     id: 'demo-5',
     dia: 2,
-    franja: 8,
+    franjaInicio: 8,
+    franjaFin: 8,
     aula: 'LH 2',
-    materia: 'Práctica de ejemplo',
-    carrera: '2º ISI',
-    docente: 'Docente de ejemplo E',
+    materias: [
+      {
+        id: 'demo-materia-5',
+        nombre: 'Práctica de ejemplo',
+        docentes: ['Docente de ejemplo F'],
+        carreras: ['2º ISI'],
+      },
+    ],
+    observacion: '',
     inscriptos: 20,
   },
   {
     id: 'demo-6',
     dia: 3,
-    franja: 9,
+    franjaInicio: 9,
+    franjaFin: 9,
     aula: 'A12',
-    materia: 'Clase de demostración',
-    carrera: '1º FCS',
-    docente: 'Docente de ejemplo F',
+    materias: [
+      {
+        id: 'demo-materia-6',
+        nombre: 'Clase de demostración',
+        docentes: ['Docente de ejemplo G'],
+        carreras: ['1º FCS'],
+      },
+    ],
+    observacion: '',
     inscriptos: 21,
   },
 ];
 
 const formularioVacio: FormularioAsignacion = {
-  materia: '',
-  carrera: '',
-  docente: '',
+  materias: [{ id: 'materia-nueva', nombre: '', docentes: [''], carreras: [''] }],
+  observacion: '',
   inscriptos: '',
 };
 
 const gruposAulas = ['Todas', 'Secundario', 'Aulas nuevas', 'Lincoln Hall'];
 
+function seSuperponen(
+  primera: Pick<Asignacion, 'franjaInicio' | 'franjaFin'>,
+  segunda: Pick<Asignacion, 'franjaInicio' | 'franjaFin'>,
+) {
+  return primera.franjaInicio <= segunda.franjaFin && segunda.franjaInicio <= primera.franjaFin;
+}
+
+function horarioCompleto(inicio: number, fin: number) {
+  const horaInicio = franjas[inicio].horario.split('–')[0].trim();
+  const horaFin = franjas[fin].horario.split('–')[1].trim();
+  return `${horaInicio} – ${horaFin}`;
+}
+
+function nuevaMateria(): MateriaCompartida {
+  return {
+    id: `materia-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    nombre: '',
+    docentes: [''],
+    carreras: [''],
+  };
+}
+
 export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
   const [diaSeleccionado, setDiaSeleccionado] = useState(0);
   const [grupoSeleccionado, setGrupoSeleccionado] = useState('Todas');
   const [asignaciones, setAsignaciones] = useState(asignacionesIniciales);
-  const [celdaNueva, setCeldaNueva] = useState<{ aula: string; franja: number } | null>(null);
-  const [asignacionSeleccionada, setAsignacionSeleccionada] = useState<Asignacion | null>(null);
+  const [celdaNueva, setCeldaNueva] = useState<{ aula: string; franjaInicio: number } | null>(null);
+  const [franjaFin, setFranjaFin] = useState(0);
+  const [diaFormulario, setDiaFormulario] = useState(0);
+  const [aulaFormulario, setAulaFormulario] = useState('');
+  const [franjaInicioFormulario, setFranjaInicioFormulario] = useState(0);
+  const [asignacionEditandoId, setAsignacionEditandoId] = useState<string | null>(null);
   const [formulario, setFormulario] = useState(formularioVacio);
   const [error, setError] = useState('');
+  const asignacionEditando = asignaciones.find((item) => item.id === asignacionEditandoId) ?? null;
 
   const periodoTexto = periodo === '1c' ? '1º cuatrimestre' : '2º cuatrimestre';
   const periodoEtiqueta = periodo === '1c' ? '1ºC' : '2ºC';
@@ -167,72 +241,172 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
     (asignacion) => asignacion.dia === diaSeleccionado,
   );
   const aulasOcupadas = new Set(asignacionesDelDia.map((asignacion) => asignacion.aula)).size;
-  const franjasDisponibles =
-    aulasVisibles.length * franjas.length -
-    asignacionesDelDia.filter((asignacion) =>
-      aulasVisibles.some((aula) => aula.id === asignacion.aula),
-    ).length;
+  const franjasDisponibles = aulasVisibles.reduce(
+    (total, aula) =>
+      total +
+      franjas.filter(
+        (_, franjaIndex) =>
+          !asignacionesDelDia.some(
+            (asignacion) =>
+              asignacion.aula === aula.id &&
+              franjaIndex >= asignacion.franjaInicio &&
+              franjaIndex <= asignacion.franjaFin,
+          ),
+      ).length,
+    0,
+  );
 
-  const abrirNuevaAsignacion = (aula: string, franja: number) => {
-    setCeldaNueva({ aula, franja });
-    setAsignacionSeleccionada(null);
+  const abrirNuevaAsignacion = (aula: string, franjaInicio: number) => {
+    setCeldaNueva({ aula, franjaInicio });
+    setDiaFormulario(diaSeleccionado);
+    setAulaFormulario(aula);
+    setFranjaInicioFormulario(franjaInicio);
+    setFranjaFin(franjaInicio);
+    setAsignacionEditandoId(null);
     setFormulario(formularioVacio);
     setError('');
   };
 
+  const abrirEdicionAsignacion = (asignacion: Asignacion) => {
+    setCeldaNueva(null);
+    setAsignacionEditandoId(asignacion.id);
+    setDiaFormulario(asignacion.dia);
+    setAulaFormulario(asignacion.aula);
+    setFranjaInicioFormulario(asignacion.franjaInicio);
+    setFranjaFin(asignacion.franjaFin);
+    setFormulario({
+      materias: asignacion.materias.map((materia) => ({
+        ...materia,
+        docentes: [...materia.docentes],
+        carreras: [...materia.carreras],
+      })),
+      observacion: asignacion.observacion,
+      inscriptos: String(asignacion.inscriptos),
+    });
+    setError('');
+  };
+
+  const actualizarMateria = (materiaId: string, cambios: Partial<MateriaCompartida>) => {
+    setFormulario((actual) => ({
+      ...actual,
+      materias: actual.materias.map((materia) =>
+        materia.id === materiaId ? { ...materia, ...cambios } : materia,
+      ),
+    }));
+  };
+
   const guardarAsignacion = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!celdaNueva) return;
+    if (!celdaNueva && !asignacionEditandoId) return;
 
-    const aula = aulas.find((item) => item.id === celdaNueva.aula);
+    const aula = aulas.find((item) => item.id === aulaFormulario);
     const inscriptos = Number(formulario.inscriptos);
 
-    if (inscriptos > (aula?.capacidad ?? 0)) {
-      setError(`El aula ${celdaNueva.aula} tiene capacidad para ${aula?.capacidad} personas.`);
+    if (!aula) {
+      setError('Seleccioná un aula válida.');
       return;
     }
 
-    const docenteOcupado = asignaciones.some(
+    if (franjaFin < franjaInicioFormulario || franjas[franjaFin].turno !== franjas[franjaInicioFormulario].turno) {
+      setError('La hora de fin debe ser posterior y pertenecer al mismo turno.');
+      return;
+    }
+
+    if (!Number.isInteger(inscriptos) || inscriptos < 1) {
+      setError('Indicá una cantidad válida de estudiantes.');
+      return;
+    }
+
+    if (inscriptos > aula.capacidad) {
+      setError(`El aula ${aulaFormulario} tiene capacidad para ${aula.capacidad} personas.`);
+      return;
+    }
+
+    const materias = formulario.materias.map((materia) => ({
+      ...materia,
+      nombre: materia.nombre.trim(),
+      docentes: materia.docentes.map((docente) => docente.trim()),
+      carreras: materia.carreras.map((carrera) => carrera.trim()),
+    }));
+    if (
+      !materias.length ||
+      materias.some(
+        (materia) =>
+          !materia.nombre ||
+          !materia.docentes.length ||
+          materia.docentes.some((docente) => !docente) ||
+          !materia.carreras.length ||
+          materia.carreras.some((carrera) => !carrera),
+      )
+    ) {
+      setError('Cada materia debe tener nombre, al menos un docente y una carrera.');
+      return;
+    }
+
+    const docentesNormalizados = materias.flatMap((materia) =>
+      materia.docentes.map((docente) => docente.toLocaleLowerCase()),
+    );
+    const carrerasNormalizadas = materias.flatMap((materia) =>
+      materia.carreras.map((carrera) => carrera.toLocaleLowerCase()),
+    );
+    const nuevaFranja = { franjaInicio: franjaInicioFormulario, franjaFin };
+    const asignacionesEnConflicto = asignaciones.filter(
       (item) =>
-        item.dia === diaSeleccionado &&
-        item.franja === celdaNueva.franja &&
-        item.docente.trim().toLocaleLowerCase() === formulario.docente.trim().toLocaleLowerCase(),
+        item.id !== asignacionEditandoId &&
+        item.dia === diaFormulario &&
+        seSuperponen(item, nuevaFranja),
+    );
+
+    if (asignacionesEnConflicto.some((item) => item.aula === aulaFormulario)) {
+      setError('Esa aula ya tiene una clase asignada en parte de ese horario.');
+      return;
+    }
+
+    const docenteOcupado = asignacionesEnConflicto.some((item) =>
+      item.materias.some((materia) =>
+        materia.docentes.some((docente) => docentesNormalizados.includes(docente.trim().toLocaleLowerCase())),
+      ),
     );
     if (docenteOcupado) {
-      setError('Ese docente ya tiene una clase asignada en esta franja.');
+      setError('Uno de los docentes ya tiene una clase asignada en parte de ese horario.');
       return;
     }
 
-    const carreraOcupada = asignaciones.some(
+    const carreraOcupada = asignacionesEnConflicto.some(
       (item) =>
-        item.dia === diaSeleccionado &&
-        item.franja === celdaNueva.franja &&
-        item.carrera.trim().toLocaleLowerCase() === formulario.carrera.trim().toLocaleLowerCase(),
+        item.materias.some((materia) =>
+          materia.carreras.some((carrera) => carrerasNormalizadas.includes(carrera.trim().toLocaleLowerCase())),
+        ),
     );
     if (carreraOcupada) {
-      setError('Esa carrera o curso ya tiene una clase asignada en esta franja.');
+      setError('Una de las carreras o cursos ya tiene una clase asignada en parte de ese horario.');
       return;
     }
 
-    setAsignaciones((actuales) => [
-      ...actuales,
-      {
-        id: `demo-${Date.now()}`,
-        dia: diaSeleccionado,
-        franja: celdaNueva.franja,
-        aula: celdaNueva.aula,
-        materia: formulario.materia.trim(),
-        carrera: formulario.carrera.trim(),
-        docente: formulario.docente.trim(),
-        inscriptos,
-      },
-    ]);
+    const guardada: Asignacion = {
+      id: asignacionEditandoId ?? `demo-${Date.now()}`,
+      dia: diaFormulario,
+      franjaInicio: franjaInicioFormulario,
+      franjaFin,
+      aula: aulaFormulario,
+      materias,
+      observacion: formulario.observacion.trim(),
+      inscriptos,
+    };
+
+    setAsignaciones((actuales) =>
+      asignacionEditandoId
+        ? actuales.map((item) => (item.id === asignacionEditandoId ? guardada : item))
+        : [...actuales, guardada],
+    );
+    setDiaSeleccionado(diaFormulario);
     setCeldaNueva(null);
+    setAsignacionEditandoId(null);
   };
 
   const cerrarDialogo = () => {
     setCeldaNueva(null);
-    setAsignacionSeleccionada(null);
+    setAsignacionEditandoId(null);
     setError('');
   };
 
@@ -356,7 +530,7 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
                   aria-controls="matriz-aulas"
                   onClick={() => {
                     setDiaSeleccionado(index);
-                    setAsignacionSeleccionada(null);
+                    setAsignacionEditandoId(null);
                   }}
                   className={`min-h-10 shrink-0 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uap-azul ${
                     diaSeleccionado === index
@@ -430,7 +604,8 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
                       const asignacion = asignaciones.find(
                         (item) =>
                           item.dia === diaSeleccionado &&
-                          item.franja === franjaIndex &&
+                          franjaIndex >= item.franjaInicio &&
+                          franjaIndex <= item.franjaFin &&
                           item.aula === aula.id,
                       );
                       return (
@@ -443,19 +618,28 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
                           {asignacion ? (
                             <button
                               type="button"
-                              onClick={() => {
-                                setAsignacionSeleccionada(asignacion);
-                                setCeldaNueva(null);
-                              }}
-                              className="flex min-h-[64px] w-full flex-col items-start justify-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-2 text-left transition-colors hover:border-blue-300 hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-uap-azul"
-                              aria-label={`${asignacion.materia}, ${asignacion.carrera}, aula ${aula.id}. Ver detalles`}
+                              onClick={() => abrirEdicionAsignacion(asignacion)}
+                              className="flex min-h-[82px] w-full flex-col items-center justify-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2 py-2 text-center transition-colors hover:border-blue-300 hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-uap-azul"
+                              aria-label={`${asignacion.materias.map((materia) => materia.nombre).join(', ')}, aula ${aula.id}, editar`}
                             >
-                              <span className="line-clamp-2 text-[11px] font-extrabold leading-tight text-uap-azul">
-                                {asignacion.materia}
-                              </span>
-                              <span className="mt-1 text-[10px] font-semibold text-blue-800">
-                                {asignacion.carrera}
-                              </span>
+                              {asignacion.materias.map((materia) => (
+                                <span key={materia.id} className="block w-full leading-tight">
+                                  <span className="block text-[11px] font-extrabold text-slate-950">
+                                    {materia.nombre}
+                                  </span>
+                                  <span className="mt-0.5 block text-[10px] font-medium text-slate-700">
+                                    ({materia.docentes.join(' / ')})
+                                  </span>
+                                  <span className="mt-0.5 block text-[10px] font-extrabold text-slate-950">
+                                    {materia.carreras.join(', ')}
+                                  </span>
+                                </span>
+                              ))}
+                              {asignacion.observacion && (
+                                <span className="mt-0.5 block w-full text-[10px] font-black uppercase leading-tight text-red-600">
+                                  {asignacion.observacion}
+                                </span>
+                              )}
                             </button>
                           ) : (
                             <button
@@ -483,7 +667,7 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
         </section>
       </div>
 
-      {(celdaNueva || asignacionSeleccionada) && (
+      {(celdaNueva || asignacionEditando) && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4 backdrop-blur-sm"
           onMouseDown={(event) => {
@@ -494,7 +678,7 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="dialogo-aula-titulo"
-            className="my-auto w-full max-w-lg rounded-3xl border border-slate-100 bg-white p-5 shadow-2xl sm:p-7"
+            className="my-auto w-full max-w-3xl rounded-3xl border border-slate-100 bg-white p-5 shadow-2xl sm:p-7"
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
@@ -503,12 +687,10 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
                   Solo para esta demo
                 </span>
                 <h2 id="dialogo-aula-titulo" className="mt-1 text-xl font-black text-uap-azul">
-                  {celdaNueva ? 'Agregar clase' : asignacionSeleccionada?.materia}
+                  {celdaNueva ? 'Agregar clase' : 'Editar distribución'}
                 </h2>
                 <p className="mt-1 text-sm text-uap-gris">
-                  {celdaNueva
-                    ? `${dias[diaSeleccionado]} · ${franjas[celdaNueva.franja].horario} · Aula ${celdaNueva.aula}`
-                    : `${dias[asignacionSeleccionada?.dia ?? 0]} · ${franjas[asignacionSeleccionada?.franja ?? 0].horario} · Aula ${asignacionSeleccionada?.aula}`}
+                  Completá la información que se mostrará en la grilla.
                 </p>
               </div>
               <button
@@ -521,41 +703,206 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
               </button>
             </div>
 
-            {celdaNueva && (
-              <form onSubmit={guardarAsignacion} className="space-y-4">
-                <label className="block">
-                  <span className="mb-1.5 block text-xs font-bold text-uap-texto">Materia</span>
-                  <input
-                    required
-                    autoFocus
-                    value={formulario.materia}
-                    onChange={(event) => setFormulario({ ...formulario, materia: event.target.value })}
-                    className="min-h-11 w-full rounded-xl border border-uap-borde px-3 text-sm text-uap-texto outline-none transition focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
-                    placeholder="Ej.: Materia de ejemplo"
-                  />
-                </label>
-                <div className="grid gap-4 sm:grid-cols-2">
+            <form onSubmit={guardarAsignacion} className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
+              <fieldset className="rounded-2xl border border-uap-borde p-4">
+                <legend className="px-1 text-xs font-bold text-uap-texto">Día, aula y horario</legend>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <label className="block">
-                    <span className="mb-1.5 block text-xs font-bold text-uap-texto">Carrera / curso</span>
-                    <input
-                      required
-                      value={formulario.carrera}
-                      onChange={(event) => setFormulario({ ...formulario, carrera: event.target.value })}
-                      className="min-h-11 w-full rounded-xl border border-uap-borde px-3 text-sm text-uap-texto outline-none transition focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
-                      placeholder="Ej.: 1º ISI"
-                    />
+                    <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-uap-gris">Día</span>
+                    <select
+                      value={diaFormulario}
+                      onChange={(event) => setDiaFormulario(Number(event.target.value))}
+                      className="min-h-11 w-full rounded-xl border border-uap-borde bg-white px-3 text-sm font-bold text-uap-texto outline-none focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
+                    >
+                      {dias.map((dia, index) => <option key={dia} value={index}>{dia}</option>)}
+                    </select>
                   </label>
                   <label className="block">
-                    <span className="mb-1.5 block text-xs font-bold text-uap-texto">Docente</span>
-                    <input
-                      required
-                      value={formulario.docente}
-                      onChange={(event) => setFormulario({ ...formulario, docente: event.target.value })}
-                      className="min-h-11 w-full rounded-xl border border-uap-borde px-3 text-sm text-uap-texto outline-none transition focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
-                      placeholder="Nombre del docente"
-                    />
+                    <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-uap-gris">Aula</span>
+                    <select
+                      value={aulaFormulario}
+                      onChange={(event) => setAulaFormulario(event.target.value)}
+                      className="min-h-11 w-full rounded-xl border border-uap-borde bg-white px-3 text-sm font-bold text-uap-texto outline-none focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
+                    >
+                      {aulas.map((aula) => (
+                        <option key={aula.id} value={aula.id}>{aula.id} · {aula.capacidad} pers.</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-uap-gris">Desde</span>
+                    <select
+                      value={franjaInicioFormulario}
+                      onChange={(event) => {
+                        const inicio = Number(event.target.value);
+                        setFranjaInicioFormulario(inicio);
+                        if (franjaFin < inicio || franjas[franjaFin].turno !== franjas[inicio].turno) {
+                          setFranjaFin(inicio);
+                        }
+                      }}
+                      className="min-h-11 w-full rounded-xl border border-uap-borde bg-white px-3 text-sm font-bold text-uap-texto outline-none focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
+                    >
+                      {franjas.map((franja, index) => (
+                        <option key={index} value={index}>{franja.numero} hora · {franja.horario.split('–')[0].trim()}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-uap-gris">Hasta</span>
+                    <select
+                      value={franjaFin}
+                      onChange={(event) => setFranjaFin(Number(event.target.value))}
+                      className="min-h-11 w-full rounded-xl border border-uap-borde bg-white px-3 text-sm font-bold text-uap-texto outline-none focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
+                    >
+                      {franjas.map((franja, index) => {
+                        if (
+                          index < franjaInicioFormulario ||
+                          franja.turno !== franjas[franjaInicioFormulario].turno
+                        ) return null;
+                        return (
+                          <option key={index} value={index}>{franja.numero} hora · {franja.horario.split('–')[1].trim()}</option>
+                        );
+                      })}
+                    </select>
                   </label>
                 </div>
+                <p className="mt-2 text-[11px] text-uap-gris">
+                  Duración: {franjaFin - franjaInicioFormulario + 1} {franjaFin === franjaInicioFormulario ? 'hora' : 'horas'} · {horarioCompleto(franjaInicioFormulario, franjaFin)}
+                </p>
+              </fieldset>
+
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-extrabold text-uap-texto">Materias, docentes y carreras</h3>
+                  <button
+                    type="button"
+                    onClick={() => setFormulario((actual) => ({ ...actual, materias: [...actual.materias, nuevaMateria()] }))}
+                    className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-uap-azul transition-colors hover:bg-blue-50"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    Agregar otra materia
+                  </button>
+                </div>
+
+                {formulario.materias.map((materia, materiaIndex) => (
+                  <fieldset key={materia.id} className="space-y-3 rounded-2xl border border-uap-borde bg-slate-50/60 p-4">
+                    <legend className="px-1 text-xs font-extrabold text-uap-azul">Materia {materiaIndex + 1}</legend>
+                    <div className="flex items-start gap-2">
+                      <label className="block min-w-0 flex-1">
+                        <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-uap-gris">Materia</span>
+                        <input
+                          required
+                          autoFocus={materiaIndex === 0 && Boolean(celdaNueva)}
+                          aria-label={`Materia ${materiaIndex + 1}`}
+                          value={materia.nombre}
+                          onChange={(event) => actualizarMateria(materia.id, { nombre: event.target.value })}
+                          className="min-h-11 w-full rounded-xl border border-uap-borde bg-white px-3 text-sm text-uap-texto outline-none focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
+                          placeholder="Nombre de la materia"
+                        />
+                      </label>
+                      {formulario.materias.length > 1 && (
+                        <button
+                          type="button"
+                          aria-label={`Quitar materia ${materiaIndex + 1}`}
+                          onClick={() => setFormulario((actual) => ({
+                            ...actual,
+                            materias: actual.materias.filter((item) => item.id !== materia.id),
+                          }))}
+                          className="mt-5 rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                        >
+                          <X className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <fieldset className="space-y-2">
+                        <legend className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-uap-gris">
+                          Docentes
+                        </legend>
+                        {materia.docentes.map((docente, docenteIndex) => (
+                          <div key={docenteIndex} className="flex items-center gap-2">
+                            <input
+                              required
+                              aria-label={`Materia ${materiaIndex + 1}, docente ${docenteIndex + 1}`}
+                              value={docente}
+                              onChange={(event) => {
+                                const docentes = [...materia.docentes];
+                                docentes[docenteIndex] = event.target.value;
+                                actualizarMateria(materia.id, { docentes });
+                              }}
+                              className="min-h-10 min-w-0 flex-1 rounded-lg border border-uap-borde bg-white px-3 text-sm text-uap-texto outline-none focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
+                              placeholder="Apellido, inicial"
+                            />
+                            {materia.docentes.length > 1 && (
+                              <button
+                                type="button"
+                                aria-label={`Quitar docente ${docenteIndex + 1} de materia ${materiaIndex + 1}`}
+                                onClick={() => actualizarMateria(materia.id, {
+                                  docentes: materia.docentes.filter((_, index) => index !== docenteIndex),
+                                })}
+                                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                              >
+                                <X className="h-4 w-4" aria-hidden="true" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => actualizarMateria(materia.id, { docentes: [...materia.docentes, ''] })}
+                          className="inline-flex min-h-8 items-center gap-1 text-xs font-bold text-uap-azul hover:underline"
+                        >
+                          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                          Agregar docente
+                        </button>
+                      </fieldset>
+
+                      <fieldset className="space-y-2">
+                        <legend className="mb-1 text-[10px] font-bold uppercase tracking-wide text-uap-gris">Carreras / años que comparten</legend>
+                        {materia.carreras.map((carrera, carreraIndex) => (
+                          <div key={carreraIndex} className="flex items-center gap-2">
+                            <input
+                              required
+                              aria-label={`Materia ${materiaIndex + 1}, carrera ${carreraIndex + 1}`}
+                              value={carrera}
+                              onChange={(event) => {
+                                const carreras = [...materia.carreras];
+                                carreras[carreraIndex] = event.target.value;
+                                actualizarMateria(materia.id, { carreras });
+                              }}
+                              className="min-h-10 min-w-0 flex-1 rounded-lg border border-uap-borde bg-white px-3 text-sm text-uap-texto outline-none focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
+                              placeholder="Ej.: 2º AE"
+                            />
+                            {materia.carreras.length > 1 && (
+                              <button
+                                type="button"
+                                aria-label={`Quitar carrera ${carreraIndex + 1} de materia ${materiaIndex + 1}`}
+                                onClick={() => actualizarMateria(materia.id, {
+                                  carreras: materia.carreras.filter((_, index) => index !== carreraIndex),
+                                })}
+                                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                              >
+                                <X className="h-4 w-4" aria-hidden="true" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => actualizarMateria(materia.id, { carreras: [...materia.carreras, ''] })}
+                          className="inline-flex min-h-8 items-center gap-1 text-xs font-bold text-uap-azul hover:underline"
+                        >
+                          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                          Agregar carrera / año
+                        </button>
+                      </fieldset>
+                    </div>
+                  </fieldset>
+                ))}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-uap-texto">
                     <Users className="h-3.5 w-3.5 text-uap-gris" aria-hidden="true" />
@@ -569,15 +916,43 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
                     value={formulario.inscriptos}
                     onChange={(event) => setFormulario({ ...formulario, inscriptos: event.target.value })}
                     className="min-h-11 w-full rounded-xl border border-uap-borde px-3 text-sm text-uap-texto outline-none transition focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
-                    placeholder={`Capacidad del aula: ${aulas.find((aula) => aula.id === celdaNueva.aula)?.capacidad}`}
+                    placeholder={`Capacidad del aula: ${aulas.find((aula) => aula.id === aulaFormulario)?.capacidad}`}
                   />
                 </label>
-                {error && (
-                  <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-semibold text-red-700">
-                    {error}
-                  </p>
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-bold text-uap-texto">Observaciones</span>
+                  <textarea
+                    rows={2}
+                    value={formulario.observacion}
+                    onChange={(event) => setFormulario({ ...formulario, observacion: event.target.value })}
+                    className="w-full rounded-xl border border-uap-borde px-3 py-2 text-sm text-uap-texto outline-none transition focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
+                    placeholder="Ej.: PARLANTE Y MICRO"
+                  />
+                  <span className="mt-1 block text-[10px] font-semibold text-red-600">
+                    La observación se mostrará en rojo en la grilla.
+                  </span>
+                </label>
+              </div>
+
+              {error && (
+                <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-semibold text-red-700">
+                  {error}
+                </p>
+              )}
+              <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                {asignacionEditandoId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAsignaciones((actuales) => actuales.filter((item) => item.id !== asignacionEditandoId));
+                      cerrarDialogo();
+                    }}
+                    className="min-h-11 rounded-xl border border-red-200 px-4 text-sm font-bold text-red-700 transition-colors hover:bg-red-50"
+                  >
+                    Quitar de la demo
+                  </button>
                 )}
-                <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+                <div className="flex flex-col-reverse gap-2 sm:ml-auto sm:flex-row">
                   <button
                     type="button"
                     onClick={cerrarDialogo}
@@ -590,55 +965,11 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-uap-azul px-4 text-sm font-bold text-white transition-colors hover:bg-uap-azul-oscuro"
                   >
                     <Check className="h-4 w-4" aria-hidden="true" />
-                    Agregar a la demo
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {asignacionSeleccionada && (
-              <div className="space-y-4">
-                <dl className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
-                  <div>
-                    <dt className="text-[11px] font-bold uppercase tracking-wide text-uap-gris">Carrera / curso</dt>
-                    <dd className="mt-1 font-extrabold text-uap-texto">{asignacionSeleccionada.carrera}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] font-bold uppercase tracking-wide text-uap-gris">Docente</dt>
-                    <dd className="mt-1 font-extrabold text-uap-texto">{asignacionSeleccionada.docente}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] font-bold uppercase tracking-wide text-uap-gris">Horario</dt>
-                    <dd className="mt-1 font-extrabold text-uap-texto">{franjas[asignacionSeleccionada.franja].horario}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] font-bold uppercase tracking-wide text-uap-gris">Inscriptos</dt>
-                    <dd className="mt-1 font-extrabold text-uap-texto">{asignacionSeleccionada.inscriptos} estudiantes</dd>
-                  </div>
-                </dl>
-                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAsignaciones((actuales) =>
-                        actuales.filter((item) => item.id !== asignacionSeleccionada.id),
-                      );
-                      cerrarDialogo();
-                    }}
-                    className="min-h-11 rounded-xl border border-red-200 px-4 text-sm font-bold text-red-700 transition-colors hover:bg-red-50"
-                  >
-                    Quitar de la demo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cerrarDialogo}
-                    className="min-h-11 rounded-xl bg-uap-azul px-4 text-sm font-bold text-white transition-colors hover:bg-uap-azul-oscuro"
-                  >
-                    Cerrar
+                    {asignacionEditandoId ? 'Guardar cambios' : 'Agregar a la demo'}
                   </button>
                 </div>
               </div>
-            )}
+            </form>
           </section>
         </div>
       )}
