@@ -10,6 +10,7 @@ import {
   Tv,
   Users,
   GraduationCap,
+  Building2,
   ShieldCheck,
   ChevronRight,
   Sparkles,
@@ -57,6 +58,14 @@ export default function HomePage() {
       href: '/reservas',
       icono: Calendar,
       color: 'from-sky-600 to-blue-800',
+      roles: ['admin', 'secretario', 'alumno'],
+    },
+    {
+      titulo: 'Bedelia Virtual',
+      desc: 'Horarios por carrera, distribución de aulas, mesas, préstamos e inventario.',
+      href: '/bedelia-virtual',
+      icono: Building2,
+      color: 'from-blue-700 to-sky-900',
       roles: ['admin', 'secretario', 'alumno'],
     },
     {
