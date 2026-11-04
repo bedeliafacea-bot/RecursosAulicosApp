@@ -198,16 +198,32 @@ export default function RespaldoMensualPage() {
   async function handleCleanArchive() {
     if (!archive || !acknowledgedSaved || cleaned) return;
     const selectedLabels = archive.manifest.selectedTables
-      .map((name) => monthTables.find((table) => table.name === name)?.label)
-      .filter(Boolean);
+      .map((name) => monthTables.find((table) => table.name === name))
+      .filter((table) => table?.cleanAfterBackup)
+      .map((table) => table?.label);
+    const retainedLabels = archive.manifest.selectedTables
+      .map((name) => monthTables.find((table) => table.name === name))
+      .filter((table) => table && !table.cleanAfterBackup)
+      .map((table) => table?.label);
     const monthLabel = new Intl.DateTimeFormat('es-AR', {
       month: 'long',
       year: 'numeric',
       timeZone: 'UTC',
     }).format(new Date(`${archive.manifest.period.month}-01T12:00:00Z`));
+    const confirmationDetails = [
+      selectedLabels.length
+        ? `Se eliminarán de Supabase solo los registros del ZIP cargado: ${selectedLabels.join(', ')} de ${monthLabel}.`
+        : `No hay registros para eliminar de ${monthLabel}.`,
+      retainedLabels.length
+        ? `Se conservarán en Supabase: ${retainedLabels.join(', ')}.`
+        : '',
+      'Esta acción no se puede deshacer desde la app. ¿Continuar?',
+    ]
+      .filter(Boolean)
+      .join(' ');
     if (
       !window.confirm(
-        `Se eliminarán de Supabase solo los registros del ZIP cargado: ${selectedLabels.join(', ')} de ${monthLabel}. Esta acción no se puede deshacer desde la app. ¿Continuar?`
+        confirmationDetails
       )
     ) {
       return;
@@ -235,11 +251,14 @@ export default function RespaldoMensualPage() {
         );
       }
       setCleaned(true);
+      const retainedNotice = retainedLabels.length
+        ? ` Se conservaron en Supabase: ${retainedLabels.join(', ')}.`
+        : '';
       setSuccess(
         `Limpieza completada. Se eliminaron ${Object.values(result.deleted || {}).reduce(
           (total, count) => total + count,
           0
-        )} registros que coincidían exactamente con el ZIP.`
+        )} registros que coincidían exactamente con el ZIP.${retainedNotice}`
       );
     } catch (caught) {
       setError(
@@ -360,8 +379,8 @@ export default function RespaldoMensualPage() {
             })}
           </ul>
           <p className="mt-3 text-xs leading-relaxed text-slate-500">
-            Al limpiar más adelante, solo se borrarán las tablas que estén incluidas en el ZIP;
-            las demás quedan intactas.
+            Al limpiar más adelante, solo se borrarán las tablas incluidas en el ZIP. Los pagos
+            en efectivo se respaldan, pero siempre quedan en Supabase.
           </p>
         </fieldset>
 

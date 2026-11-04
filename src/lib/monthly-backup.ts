@@ -1,11 +1,11 @@
 export const MONTHLY_BACKUP_TABLES = [
-  { name: 'jornadas_becuap', label: 'Jornadas de becarios', dateColumn: 'fecha', timestamp: false },
-  { name: 'horarios_pactados', label: 'Horarios pactados', dateColumn: 'fecha', timestamp: false },
-  { name: 'fotocopias', label: 'Fotocopias', dateColumn: 'fecha', timestamp: false },
-  { name: 'pagos_efectivo', label: 'Pagos en efectivo', dateColumn: 'fecha', timestamp: false },
-  { name: 'retiros_efectivo', label: 'Retiros de efectivo', dateColumn: 'fecha', timestamp: false },
-  { name: 'reservas_especiales', label: 'Reservas especiales', dateColumn: 'fecha', timestamp: false },
-  { name: 'cierres_caja', label: 'Cierres de caja', dateColumn: 'fecha', timestamp: true },
+  { name: 'jornadas_becuap', label: 'Jornadas de becarios', dateColumn: 'fecha', timestamp: false, cleanAfterBackup: true },
+  { name: 'horarios_pactados', label: 'Horarios pactados', dateColumn: 'fecha', timestamp: false, cleanAfterBackup: true },
+  { name: 'fotocopias', label: 'Fotocopias', dateColumn: 'fecha', timestamp: false, cleanAfterBackup: true },
+  { name: 'pagos_efectivo', label: 'Pagos en efectivo (se conservan)', dateColumn: 'fecha', timestamp: false, cleanAfterBackup: false },
+  { name: 'retiros_efectivo', label: 'Retiros de efectivo', dateColumn: 'fecha', timestamp: false, cleanAfterBackup: true },
+  { name: 'reservas_especiales', label: 'Reservas especiales', dateColumn: 'fecha', timestamp: false, cleanAfterBackup: true },
+  { name: 'cierres_caja', label: 'Cierres de caja', dateColumn: 'fecha', timestamp: true, cleanAfterBackup: true },
 ] as const;
 
 export type MonthlyBackupTable = (typeof MONTHLY_BACKUP_TABLES)[number];

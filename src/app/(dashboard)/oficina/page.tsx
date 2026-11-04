@@ -82,7 +82,7 @@ export default function OficinaPage() {
   const [msgRetiro, setMsgRetiro] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
 
   // Calculadora Rápida Lateral
-  const [calcCant, setCalcCant] = useState<number | ''>(10);
+  const [calcCant, setCalcCant] = useState<number | ''>('');
   const [calcPrecio, setCalcPrecio] = useState<number>(150);
 
   const totalBilletes = DENOMINACIONES_BILLETES.reduce(
