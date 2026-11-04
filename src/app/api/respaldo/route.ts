@@ -206,6 +206,11 @@ export async function POST(request: NextRequest) {
 
     const supabase = getAdminClient();
     for (const table of selectedTables) {
+      if (!table.cleanAfterBackup) {
+        deleted[table.name] = 0;
+        continue;
+      }
+
       const rows = rowsByTable.get(table.name) || [];
       for (let start = 0; start < rows.length; start += DELETE_BATCH_SIZE) {
         const batch = rows.slice(start, start + DELETE_BATCH_SIZE);
