@@ -37,14 +37,66 @@ import {
   Pencil,
   Save,
   X,
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 type SeccionAdmin = 'usuarios' | 'profesores' | 'departamentos' | 'recursos';
 type ElementoCatalogo = Profesor | Departamento | Recurso;
+const ELEMENTOS_POR_PAGINA = 10;
+
+function Paginacion({
+  pagina,
+  totalElementos,
+  alCambiarPagina,
+}: {
+  pagina: number;
+  totalElementos: number;
+  alCambiarPagina: (pagina: number) => void;
+}) {
+  const totalPaginas = Math.max(1, Math.ceil(totalElementos / ELEMENTOS_POR_PAGINA));
+  const primerElemento = totalElementos === 0 ? 0 : (pagina - 1) * ELEMENTOS_POR_PAGINA + 1;
+  const ultimoElemento = Math.min(pagina * ELEMENTOS_POR_PAGINA, totalElementos);
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 mt-4 border-t border-slate-100">
+      <p className="text-xs text-slate-500">
+        Mostrando <b>{primerElemento}-{ultimoElemento}</b> de <b>{totalElementos}</b>
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => alCambiarPagina(pagina - 1)}
+          disabled={pagina <= 1}
+          aria-label="Página anterior"
+          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold text-uap-azul hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Anterior
+        </button>
+        <span className="text-xs font-bold text-slate-600">
+          Página {pagina} de {totalPaginas}
+        </span>
+        <button
+          type="button"
+          onClick={() => alCambiarPagina(pagina + 1)}
+          disabled={pagina >= totalPaginas}
+          aria-label="Página siguiente"
+          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold text-uap-azul hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Siguiente
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function UsuariosPage() {
   const { rol, isLoading: authLoading, perfil: perfilSesion } = useAuth();
   const [seccionActiva, setSeccionActiva] = useState<SeccionAdmin>('usuarios');
+  const [paginaActual, setPaginaActual] = useState(1);
   const [usuarios, setUsuarios] = useState<PerfilUsuario[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [busqueda, setBusqueda] = useState('');
@@ -102,6 +154,24 @@ export default function UsuariosPage() {
       cargarCatalogos();
     }
   }, [rol]);
+
+  useEffect(() => {
+    const registros =
+      seccionActiva === 'usuarios'
+        ? usuarios.filter(
+            (u) =>
+              u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+              u.usuario.toLowerCase().includes(busqueda.toLowerCase()) ||
+              u.rol.toLowerCase().includes(busqueda.toLowerCase())
+          ).length
+        : seccionActiva === 'profesores'
+          ? profesores.length
+          : seccionActiva === 'departamentos'
+            ? departamentos.length
+            : recursos.length;
+    const paginas = Math.max(1, Math.ceil(registros / ELEMENTOS_POR_PAGINA));
+    if (paginaActual > paginas) setPaginaActual(paginas);
+  }, [paginaActual, seccionActiva, usuarios, profesores, departamentos, recursos, busqueda]);
 
   if (authLoading) {
     return (
@@ -280,6 +350,7 @@ export default function UsuariosPage() {
 
   const cambiarSeccion = (seccion: SeccionAdmin) => {
     setSeccionActiva(seccion);
+    setPaginaActual(1);
     setEditandoCatalogo(null);
     setNombreCatalogo('');
     setErrorCatalogo('');
@@ -291,6 +362,14 @@ export default function UsuariosPage() {
       u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       u.usuario.toLowerCase().includes(busqueda.toLowerCase()) ||
       u.rol.toLowerCase().includes(busqueda.toLowerCase())
+  );
+  const usuariosPagina = usuariosFiltrados.slice(
+    (paginaActual - 1) * ELEMENTOS_POR_PAGINA,
+    paginaActual * ELEMENTOS_POR_PAGINA
+  );
+  const elementosCatalogoPagina = elementosCatalogo.slice(
+    (paginaActual - 1) * ELEMENTOS_POR_PAGINA,
+    paginaActual * ELEMENTOS_POR_PAGINA
   );
 
   return (
@@ -487,7 +566,10 @@ export default function UsuariosPage() {
               <input
                 type="text"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={(e) => {
+                  setBusqueda(e.target.value);
+                  setPaginaActual(1);
+                }}
                 placeholder="Buscar por nombre o rol..."
                 className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-uap-azul-medio"
               />
@@ -515,7 +597,7 @@ export default function UsuariosPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {usuariosFiltrados.map((u) => (
+                  {usuariosPagina.map((u) => (
                     <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3 px-3">
                         <div className="font-extrabold text-uap-texto text-sm">{u.nombre}</div>
@@ -524,7 +606,8 @@ export default function UsuariosPage() {
 
                       <td className="py-3 px-3">
                         <select
-                          value={u.rol}
+                                          id={`rol-${u.id}`}
+                                          value={u.rol}
                           onChange={(e) => handleCambiarRol(u, e.target.value as RolUsuario)}
                           disabled={u.id === perfilSesion?.id}
                           className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 cursor-pointer focus:ring-2 focus:ring-uap-azul-medio"
@@ -536,13 +619,11 @@ export default function UsuariosPage() {
                       </td>
 
                       <td className="py-3 px-3 text-center">
-                        <button
-                          onClick={() => handleCambiarEstado(u)}
-                          disabled={u.id === perfilSesion?.id}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold border transition-all ${
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${
                             u.activo
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                              : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
                           }`}
                         >
                           {u.activo ? (
@@ -556,27 +637,74 @@ export default function UsuariosPage() {
                               <span>Inactivo</span>
                             </>
                           )}
-                        </button>
+                        </span>
                       </td>
 
                       <td className="py-3 px-3 text-right">
-                        <button
-                          onClick={() => {
-                            setUsuarioModalPass(u);
-                            setPasswordNuevaInput('');
-                            setMsgPass('');
-                          }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-uap-azul font-bold rounded-lg transition-colors border border-slate-200"
-                        >
-                          <KeyRound className="w-3.5 h-3.5" />
-                          <span>Contraseña</span>
-                        </button>
+                        <details className="relative inline-block text-left">
+                          <summary
+                            aria-label={`Acciones para ${u.nombre}`}
+                            className="list-none cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uap-azul-medio [&::-webkit-details-marker]:hidden"
+                          >
+                            <MoreHorizontal className="w-5 h-5" />
+                          </summary>
+                          <div className="absolute right-0 z-20 mt-1 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+                            <button
+                              type="button"
+                              disabled={u.id === perfilSesion?.id}
+                              onClick={(event) => {
+                                event.currentTarget.closest('details')?.removeAttribute('open');
+                                document.getElementById(`rol-${u.id}`)?.focus();
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.currentTarget.closest('details')?.removeAttribute('open');
+                                setUsuarioModalPass(u);
+                                setPasswordNuevaInput('');
+                                setMsgPass('');
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                            >
+                              <KeyRound className="w-3.5 h-3.5" />
+                              Cambiar contraseña
+                            </button>
+                            <button
+                              type="button"
+                              disabled={u.id === perfilSesion?.id}
+                              onClick={(event) => {
+                                event.currentTarget.closest('details')?.removeAttribute('open');
+                                handleCambiarEstado(u);
+                              }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed ${
+                                u.activo
+                                  ? 'text-red-700 hover:bg-red-50'
+                                  : 'text-emerald-700 hover:bg-emerald-50'
+                              }`}
+                            >
+                              {u.activo ? <XCircle className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                              {u.activo ? 'Dar de baja' : 'Activar'}
+                            </button>
+                          </div>
+                        </details>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+          )}
+          {!loadingList && usuariosFiltrados.length > 0 && (
+            <Paginacion
+              pagina={paginaActual}
+              totalElementos={usuariosFiltrados.length}
+              alCambiarPagina={setPaginaActual}
+            />
           )}
         </div>
       </div>
@@ -695,7 +823,7 @@ export default function UsuariosPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {elementosCatalogo.map((elemento) => (
+                    {elementosCatalogoPagina.map((elemento) => (
                       <tr key={elemento.id} className="hover:bg-slate-50">
                         <td className="py-3 px-3 font-semibold text-uap-texto">{elemento.nombre}</td>
                         <td className="py-3 px-3 text-center">
@@ -708,36 +836,59 @@ export default function UsuariosPage() {
                           </span>
                         </td>
                         <td className="py-3 px-3 text-right whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => iniciarEdicionCatalogo(elemento)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 mr-2 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-uap-azul font-bold rounded-lg border border-slate-200"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleCambiarEstadoCatalogo(elemento)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-bold rounded-lg border ${
-                              elemento.activo
-                                ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200'
-                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
-                            }`}
-                          >
-                            {elemento.activo ? (
-                              <XCircle className="w-3.5 h-3.5" />
-                            ) : (
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                            )}
-                            {elemento.activo ? 'Dar de baja' : 'Activar'}
-                          </button>
+                          <details className="relative inline-block text-left">
+                            <summary
+                              aria-label={`Acciones para ${elemento.nombre}`}
+                              className="list-none cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uap-azul-medio [&::-webkit-details-marker]:hidden"
+                            >
+                              <MoreHorizontal className="w-5 h-5" />
+                            </summary>
+                            <div className="absolute right-0 z-20 mt-1 w-40 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.currentTarget.closest('details')?.removeAttribute('open');
+                                  iniciarEdicionCatalogo(elemento);
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.currentTarget.closest('details')?.removeAttribute('open');
+                                  handleCambiarEstadoCatalogo(elemento);
+                                }}
+                                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-semibold ${
+                                  elemento.activo
+                                    ? 'text-red-700 hover:bg-red-50'
+                                    : 'text-emerald-700 hover:bg-emerald-50'
+                                }`}
+                              >
+                                {elemento.activo ? (
+                                  <XCircle className="w-3.5 h-3.5" />
+                                ) : (
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                )}
+                                {elemento.activo ? 'Dar de baja' : 'Activar'}
+                              </button>
+                            </div>
+                          </details>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+            )}
+            {!loadingCatalogos && elementosCatalogo.length > 0 && (
+              <Paginacion
+                pagina={paginaActual}
+                totalElementos={elementosCatalogo.length}
+                alCambiarPagina={setPaginaActual}
+              />
             )}
           </section>
         </div>
