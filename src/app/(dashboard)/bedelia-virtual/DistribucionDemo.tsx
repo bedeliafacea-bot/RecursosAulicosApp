@@ -14,6 +14,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import catalogosDemo from './catalogos-demo.json';
 
 type Periodo = '1c' | '2c';
 
@@ -704,6 +705,12 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
             </div>
 
             <form onSubmit={guardarAsignacion} className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
+              <datalist id="materias-demo-sugerencias">
+                {catalogosDemo.materias.map((materia) => <option key={materia} value={materia} />)}
+              </datalist>
+              <datalist id="docentes-demo-sugerencias">
+                {catalogosDemo.docentes.map((docente) => <option key={docente} value={docente} />)}
+              </datalist>
               <fieldset className="rounded-2xl border border-uap-borde p-4">
                 <legend className="px-1 text-xs font-bold text-uap-texto">Día, aula y horario</legend>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -794,6 +801,7 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
                           required
                           autoFocus={materiaIndex === 0 && Boolean(celdaNueva)}
                           aria-label={`Materia ${materiaIndex + 1}`}
+                          list="materias-demo-sugerencias"
                           value={materia.nombre}
                           onChange={(event) => actualizarMateria(materia.id, { nombre: event.target.value })}
                           className="min-h-11 w-full rounded-xl border border-uap-borde bg-white px-3 text-sm text-uap-texto outline-none focus:border-uap-azul focus:ring-2 focus:ring-blue-100"
@@ -825,6 +833,7 @@ export default function DistribucionDemo({ periodo }: { periodo: Periodo }) {
                             <input
                               required
                               aria-label={`Materia ${materiaIndex + 1}, docente ${docenteIndex + 1}`}
+                              list="docentes-demo-sugerencias"
                               value={docente}
                               onChange={(event) => {
                                 const docentes = [...materia.docentes];
