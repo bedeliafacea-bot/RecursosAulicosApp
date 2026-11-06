@@ -24,3 +24,5 @@ Podés descargar cada hoja de tu Google Spreadsheet actual y guardarla directame
 Se conservaron los nombres tal como aparecen y no se fusionaron diferencias de escritura que no pudieran confirmarse con seguridad. Los CSV incluyen cuatrimestre y celdas de referencia; `apariciones` cuenta detecciones en las celdas procesadas. `revisar=true` señala variantes, menciones en formatos menos confiables o materias poco frecuentes.
 
 Revisar y aprobar los nombres antes de cargarlos en los catálogos. La migración de esos catálogos no se aplicó como parte de esta extracción.
+
+El demo de distribución usa [catalogos-demo.json](<../src/app/(dashboard)/bedelia-virtual/catalogos-demo.json>) para sugerir materias y docentes en el formulario. La lista se puede completar con texto libre; estas sugerencias no se guardan ni se cargan a Supabase.
