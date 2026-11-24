@@ -1077,8 +1077,8 @@ export default function AlumnosPage() {
   const saldoPactadoProximoMes =
     saldoMesAnteriorPactado + totalPlanificadoMinutos - metaMensualPactada;
   const metaAnualPactada = alumnoPactar
-    ? Array.from({ length: 12 }, (_, index) =>
-        metaHorasMensual(alumnoPactar.plan, anioActual, index + 1)
+    ? Array.from({ length: 9 }, (_, index) =>
+        metaHorasMensual(alumnoPactar.plan, anioActual, index + 3)
       ).reduce((total, horas) => total + horas, 0) * 60
     : 0;
   const totalMinutosAnioPactar = totalMinutosJornadas(jornadasAnioPactar);
@@ -2044,7 +2044,7 @@ export default function AlumnosPage() {
                       }`}>
                         <p className={`text-[10px] font-black uppercase ${
                           saldoAnualPactar < 0 ? 'text-orange-700' : 'text-cyan-700'
-                        }`}>Contador anual {anioActual}</p>
+                        }`}>Contador marzo-noviembre {anioActual}</p>
                         <p className={`mt-1 text-xl font-black ${
                           saldoAnualPactar < 0 ? 'text-orange-800' : 'text-cyan-900'
                         }`}>

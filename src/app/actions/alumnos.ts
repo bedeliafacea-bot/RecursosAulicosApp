@@ -218,8 +218,8 @@ export async function listarJornadasAlumnoAnioAction(
   try {
     const supabase = await createClient();
 
-    const { inicio } = rangoMes(anio, 1);
-    const { fin } = rangoMes(anio, 12);
+    const { inicio } = rangoMes(anio, 3);
+    const { fin } = rangoMes(anio, 11);
     const { data, error } = await supabase
       .from('jornadas_becuap')
       .select('*')
