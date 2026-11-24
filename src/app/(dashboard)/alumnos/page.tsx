@@ -7,6 +7,7 @@ import {
   buscarInfoAlumnoAction,
   guardarNuevoAlumnoAction,
   listarJornadasAlumnoAction,
+  listarJornadasAlumnoAnioAction,
   registrarJornadasBatchAction,
   actualizarJornadaAction,
   eliminarJornadaAction,
@@ -173,6 +174,7 @@ export default function AlumnosPage() {
   const [msgPactar, setMsgPactar] = useState('');
   const [errorPactar, setErrorPactar] = useState('');
   const [periodoCargadoPactar, setPeriodoCargadoPactar] = useState('');
+  const [jornadasAnioPactar, setJornadasAnioPactar] = useState<JornadaBecuap[]>([]);
   // Vista para cargar lo pactado: "semana" (semana tipo + calendario) o "planilla" (tabla día por día)
   const [vistaPactar, setVistaPactar] = useState<'semana' | 'planilla'>('semana');
   useEffect(() => {
@@ -479,6 +481,7 @@ export default function AlumnosPage() {
       setJornadasInput([
         aplicarPactado({ fecha: fechaHoy, e1: '07:30', s1: '11:30', e2: '', s2: '', obs: '', pactado: '' }),
       ]);
+      await refrescarFichaSiCorresponde(alumnoCarga.id);
     } else {
       alert(res.error || 'Error al guardar jornadas.');
     }
@@ -583,16 +586,18 @@ export default function AlumnosPage() {
       return;
     }
 
-    const [resMes, resHistorial] = await Promise.all([
+    const [resMes, resHistorial, resAnio] = await Promise.all([
       obtenerHorariosPactadosAction(resAlumno.data.id, mesActual, anioActual),
       obtenerHistorialHorariosPactadosAction(resAlumno.data.id, anioActual, mesActual),
+      listarJornadasAlumnoAnioAction(resAlumno.data.id, anioActual),
     ]);
 
-    if (!resMes.ok || !resMes.data || !resHistorial.ok || !resHistorial.data) {
+    if (!resMes.ok || !resMes.data || !resHistorial.ok || !resHistorial.data || !resAnio.ok) {
       setCargandoPactar(false);
       setErrorPactar(
         resMes.error ||
           resHistorial.error ||
+          resAnio.error ||
           'No se pudo consultar el cronograma guardado en Supabase.'
       );
       return;
@@ -626,6 +631,7 @@ export default function AlumnosPage() {
 
     setHorariosDiasPactar(planilla);
     setHorariosGuardadosPactar(normalizarPlanillaPactada(planilla));
+    setJornadasAnioPactar(resAnio.data || []);
     setAlumnoPactar(resAlumno.data);
 
     setSaldoMesAnteriorPactado(
@@ -644,6 +650,10 @@ export default function AlumnosPage() {
     pactadosCargaRef.current = {};
     mesesPactadosRef.current = new Set();
     if (alumnoFicha?.id === alumnoId) await handleBuscarFicha(alumnoId);
+    if (alumnoPactar?.id === alumnoId) {
+      const resAnio = await listarJornadasAlumnoAnioAction(alumnoId, anioActual);
+      if (resAnio.ok) setJornadasAnioPactar(resAnio.data || []);
+    }
   };
 
   const guardarCronogramaPactado = async (): Promise<boolean> => {
@@ -1066,6 +1076,13 @@ export default function AlumnosPage() {
   );
   const saldoPactadoProximoMes =
     saldoMesAnteriorPactado + totalPlanificadoMinutos - metaMensualPactada;
+  const metaAnualPactada = alumnoPactar
+    ? Array.from({ length: 12 }, (_, index) =>
+        metaHorasMensual(alumnoPactar.plan, anioActual, index + 1)
+      ).reduce((total, horas) => total + horas, 0) * 60
+    : 0;
+  const totalMinutosAnioPactar = totalMinutosJornadas(jornadasAnioPactar);
+  const saldoAnualPactar = metaAnualPactada - totalMinutosAnioPactar;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -1874,6 +1891,7 @@ export default function AlumnosPage() {
                       onChange={(event) => {
                         setLegajoPactar(event.target.value);
                         setAlumnoPactar(null);
+                        setJornadasAnioPactar([]);
                         setPeriodoCargadoPactar('');
                         setMsgPactar('');
                       }}
@@ -1972,7 +1990,7 @@ export default function AlumnosPage() {
                         ))}
                       </div>
                     </div>
-                    <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <p className="text-[10px] font-black uppercase text-slate-500">Meta pactada del mes</p>
                         <p className="mt-1 text-xl font-black text-uap-azul">
@@ -2017,6 +2035,27 @@ export default function AlumnosPage() {
                           {totalPlanificadoMinutos > horasDisponiblesPactadas
                             ? `Excedente: ${formatearMinutos(totalPlanificadoMinutos - horasDisponiblesPactadas)}`
                             : `Restan: ${formatearMinutos(horasDisponiblesPactadas - totalPlanificadoMinutos)}`}
+                        </p>
+                      </div>
+                      <div className={`rounded-2xl border p-4 ${
+                        saldoAnualPactar < 0
+                          ? 'border-orange-200 bg-orange-50'
+                          : 'border-cyan-200 bg-cyan-50'
+                      }`}>
+                        <p className={`text-[10px] font-black uppercase ${
+                          saldoAnualPactar < 0 ? 'text-orange-700' : 'text-cyan-700'
+                        }`}>Contador anual {anioActual}</p>
+                        <p className={`mt-1 text-xl font-black ${
+                          saldoAnualPactar < 0 ? 'text-orange-800' : 'text-cyan-900'
+                        }`}>
+                          {saldoAnualPactar < 0
+                            ? `Excedente ${formatearMinutos(Math.abs(saldoAnualPactar))}`
+                            : formatearMinutos(saldoAnualPactar)}
+                        </p>
+                        <p className="text-[10px] text-slate-500">
+                          {saldoAnualPactar < 0
+                            ? 'sobre el total anual del plan'
+                            : `restan de ${formatearMinutos(metaAnualPactada)}`}
                         </p>
                       </div>
                     </div>
