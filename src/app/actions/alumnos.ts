@@ -211,6 +211,30 @@ export async function listarJornadasAlumnoAction(
   }
 }
 
+export async function listarJornadasAlumnoAnioAction(
+  alumnoId: string,
+  anio: number
+): Promise<{ ok: boolean; data?: JornadaBecuap[]; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    const { inicio } = rangoMes(anio, 1);
+    const { fin } = rangoMes(anio, 12);
+    const { data, error } = await supabase
+      .from('jornadas_becuap')
+      .select('*')
+      .eq('alumno_id', alumnoId)
+      .gte('fecha', inicio)
+      .lte('fecha', fin)
+      .order('fecha', { ascending: true });
+
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, data: data as JornadaBecuap[] };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'Error al listar las jornadas del año.' };
+  }
+}
+
 export async function actualizarJornadaAction(datos: {
   id: string;
   fecha: string;
