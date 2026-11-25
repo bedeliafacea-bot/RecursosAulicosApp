@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarDays, Download, Printer } from 'lucide-react';
+import { CalendarDays, Download, Printer, Trash2 } from 'lucide-react';
 import { analizarTextoPegado } from '@/lib/mercado-manual';
 import type { FilaPegada } from '@/lib/mercado-manual';
 
@@ -54,6 +54,11 @@ function formatoFecha(fecha: string) {
     month: 'long',
     year: 'numeric',
   });
+}
+
+function formatoFechaCorta(fecha: string) {
+  const [anio, mes, dia] = fecha.split('-');
+  return `${dia}/${mes}/${anio}`;
 }
 
 export default function MercadoManualPage() {
@@ -158,6 +163,12 @@ export default function MercadoManualPage() {
       setStorageError(`No se pudieron guardar los cambios en este navegador. ${mensajeError(error)}`);
       return false;
     }
+  }
+
+  function borrarRegistro(id: string) {
+    const registro = registros.find((item) => item.id === id);
+    if (!registro || !window.confirm(`¿Borrar la operación ${registro.operacion}?`)) return;
+    guardarRegistros(registros.filter((item) => item.id !== id));
   }
 
   function prepararPegado() {
@@ -440,7 +451,20 @@ export default function MercadoManualPage() {
                 {registrosDelDia.map((registro) => (
                   <tr key={registro.id} className="text-slate-700">
                     <td className="whitespace-nowrap px-4 py-3 font-semibold">{registro.hora}</td>
-                    <td className="px-4 py-3 font-mono text-xs">{registro.operacion}</td>
+                    <td className="px-4 py-3 font-mono text-xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <span>{registro.operacion}</span>
+                        <button
+                          type="button"
+                          onClick={() => borrarRegistro(registro.id)}
+                          aria-label={`Borrar operación ${registro.operacion}`}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-sans text-xs font-bold text-red-600 transition hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                          Borrar
+                        </button>
+                      </div>
+                    </td>
                     <td className="px-4 py-3">{registro.estado}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-right font-bold">
                       {registro.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
@@ -478,7 +502,7 @@ export default function MercadoManualPage() {
         <thead>
           <tr>
             <th>Hora</th>
-            <th>Número de operación</th>
+            <th>Operación</th>
             <th>Estado</th>
             <th>Monto</th>
           </tr>
@@ -486,7 +510,7 @@ export default function MercadoManualPage() {
         <tbody>
           {registrosFormularioPorDia.flatMap(([fechaGrupo, filas]) => [
             <tr key={`fecha-${fechaGrupo}`} className="print-mercado-date-group">
-              <th colSpan={4}>{formatoFecha(fechaGrupo)}</th>
+              <th colSpan={4}>{formatoFechaCorta(fechaGrupo)}</th>
             </tr>,
             ...filas.map((registro) => (
               <tr key={registro.id}>
@@ -494,7 +518,12 @@ export default function MercadoManualPage() {
                 <td>{registro.operacion}</td>
                 <td>{registro.estado}</td>
                 <td className="print-mercado-amount">
-                  {registro.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
+                  {registro.monto.toLocaleString('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  })}
                 </td>
               </tr>
             )),
