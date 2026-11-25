@@ -1,8 +1,8 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarDays, Download, Plus, Printer } from 'lucide-react';
+import { CalendarDays, Download, Printer } from 'lucide-react';
 import { analizarTextoPegado } from '@/lib/mercado-manual';
 import type { FilaPegada } from '@/lib/mercado-manual';
 
@@ -63,10 +63,8 @@ export default function MercadoManualPage() {
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [storageError, setStorageError] = useState('');
   const [fecha, setFecha] = useState('');
-  const [hora, setHora] = useState('');
-  const [operacion, setOperacion] = useState('');
-  const [estado, setEstado] = useState('');
-  const [monto, setMonto] = useState('');
+  const [fechaDesdeFormulario, setFechaDesdeFormulario] = useState('');
+  const [fechaHastaFormulario, setFechaHastaFormulario] = useState('');
   const [textoPegado, setTextoPegado] = useState('');
   const [filasPegadas, setFilasPegadas] = useState<FilaPegada[]>([]);
   const [filasOmitidas, setFilasOmitidas] = useState(0);
@@ -74,7 +72,10 @@ export default function MercadoManualPage() {
   const [avisoImportacion, setAvisoImportacion] = useState('');
 
   useEffect(() => {
-    setFecha((actual) => actual || fechaLocalActual());
+    const hoy = fechaLocalActual();
+    setFecha((actual) => actual || hoy);
+    setFechaDesdeFormulario((actual) => actual || hoy);
+    setFechaHastaFormulario((actual) => actual || hoy);
   }, []);
 
   useEffect(() => {
@@ -109,13 +110,42 @@ export default function MercadoManualPage() {
     [fecha, registros]
   );
   const totalDelDia = registrosDelDia.reduce((total, registro) => total + registro.monto, 0);
-  const registrosImpresion = useMemo(
+  const periodoFormularioValido =
+    Boolean(fechaDesdeFormulario && fechaHastaFormulario) &&
+    fechaDesdeFormulario <= fechaHastaFormulario;
+  const registrosFormulario = useMemo(
     () =>
-      [...registrosDelDia].sort(
-        (a, b) => a.hora.localeCompare(b.hora) || a.id.localeCompare(b.id)
-      ),
-    [registrosDelDia]
+      periodoFormularioValido
+        ? registros
+            .filter(
+              (registro) =>
+                registro.fecha >= fechaDesdeFormulario &&
+                registro.fecha <= fechaHastaFormulario
+            )
+            .sort(
+              (a, b) =>
+                a.fecha.localeCompare(b.fecha) ||
+                a.hora.localeCompare(b.hora) ||
+                a.id.localeCompare(b.id)
+            )
+        : [],
+    [fechaDesdeFormulario, fechaHastaFormulario, periodoFormularioValido, registros]
   );
+  const registrosFormularioPorDia = useMemo(() => {
+    const grupos = new Map<string, RegistroMercado[]>();
+    for (const registro of registrosFormulario) {
+      const grupo = grupos.get(registro.fecha) || [];
+      grupo.push(registro);
+      grupos.set(registro.fecha, grupo);
+    }
+    return Array.from(grupos.entries());
+  }, [registrosFormulario]);
+
+  const textoPeriodoFormulario = !fechaDesdeFormulario || !fechaHastaFormulario
+    ? ''
+    : fechaDesdeFormulario === fechaHastaFormulario
+      ? formatoFecha(fechaDesdeFormulario)
+      : `${formatoFecha(fechaDesdeFormulario)} al ${formatoFecha(fechaHastaFormulario)}`;
 
   function guardarRegistros(nuevosRegistros: RegistroMercado[]) {
     if (!storageKey || !cargado) return false;
@@ -130,36 +160,13 @@ export default function MercadoManualPage() {
     }
   }
 
-  function agregarRegistro(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const montoNumerico = Number(monto);
-    if (!fecha || !Number.isFinite(montoNumerico) || montoNumerico < 0) {
-      setStorageError('Revisá la fecha y el monto antes de guardar.');
-      return;
-    }
-
-    const nuevoRegistro: RegistroMercado = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      fecha,
-      hora,
-      operacion: operacion.trim(),
-      estado: estado.trim(),
-      monto: montoNumerico,
-    };
-    if (!guardarRegistros([...registros, nuevoRegistro])) return;
-    setHora('');
-    setOperacion('');
-    setEstado('');
-    setMonto('');
-  }
-
   function prepararPegado() {
     setErrorPegado('');
     setAvisoImportacion('');
     setFilasPegadas([]);
     setFilasOmitidas(0);
     if (!fecha) {
-      setErrorPegado('Elegí la fecha de la actividad antes de analizar el texto.');
+      setErrorPegado('Elegí la fecha de referencia antes de analizar el texto.');
       return;
     }
 
@@ -203,10 +210,12 @@ export default function MercadoManualPage() {
     }
 
     if (!guardarRegistros([...registros, ...nuevasFilas])) return;
-    const fechaMasReciente = nuevasFilas
+    const fechasImportadas = nuevasFilas
       .map((fila) => fila.fecha)
-      .sort((a, b) => b.localeCompare(a))[0];
-    setFecha(fechaMasReciente);
+      .sort((a, b) => a.localeCompare(b));
+    setFecha(fechasImportadas[fechasImportadas.length - 1]);
+    setFechaDesdeFormulario(fechasImportadas[0]);
+    setFechaHastaFormulario(fechasImportadas[fechasImportadas.length - 1]);
     setAvisoImportacion(
       `Se agregaron ${nuevasFilas.length} operación(es)${duplicadas ? `; ${duplicadas} duplicada(s) no se repitieron` : ''}.`
     );
@@ -239,18 +248,18 @@ export default function MercadoManualPage() {
         <div>
           <div className="mb-2 flex items-center gap-2 text-sm font-bold text-uap-azul-medio">
             <CalendarDays className="h-4 w-4" aria-hidden="true" />
-            Registro manual
+            Carga desde texto copiado
           </div>
           <h1 className="text-3xl font-black tracking-tight text-uap-azul">Actividad de Mercado Pago</h1>
           <p className="mt-2 max-w-2xl text-sm text-uap-gris">
-            Cargá las operaciones que ves en la actividad. Este registro es independiente de Caja y no modifica Mercado Pago.
+            Pegá la actividad de Mercado Pago para ordenar las operaciones. Este registro es independiente de Caja y no modifica Mercado Pago.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => window.print()}
-            disabled={!cargado || registrosDelDia.length === 0}
+            disabled={!cargado || !periodoFormularioValido || registrosFormulario.length === 0}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-uap-azul px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-uap-azul-oscuro disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Printer className="h-4 w-4" aria-hidden="true" />
@@ -269,9 +278,10 @@ export default function MercadoManualPage() {
       </header>
 
       <section className="rounded-2xl border border-uap-borde bg-white p-5 shadow-uap">
-        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-5 space-y-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <label className="flex items-center gap-3 text-sm font-bold text-uap-azul">
-            <span>Fecha del registro</span>
+            <span>Fecha para ver en pantalla</span>
             <input
               type="date"
               required
@@ -289,6 +299,33 @@ export default function MercadoManualPage() {
           <div className="flex gap-5 text-sm">
             <div><span className="text-uap-gris">Operaciones</span><strong className="ml-2 text-uap-azul">{registrosDelDia.length}</strong></div>
             <div><span className="text-uap-gris">Monto cargado</span><strong className="ml-2 text-uap-azul">{totalDelDia.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</strong></div>
+          </div>
+          </div>
+          <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-end">
+            <p className="mr-2 text-sm font-bold text-uap-azul">Días a incluir en el formulario impreso</p>
+            <label className="space-y-1 text-xs font-bold text-slate-600">
+              Desde
+              <input
+                type="date"
+                value={fechaDesdeFormulario}
+                onChange={(event) => setFechaDesdeFormulario(event.target.value)}
+                className="block min-h-10 rounded-lg border border-uap-borde px-3 text-sm font-semibold text-slate-700 focus:border-uap-azul-medio focus:outline-none"
+              />
+            </label>
+            <label className="space-y-1 text-xs font-bold text-slate-600">
+              Hasta
+              <input
+                type="date"
+                value={fechaHastaFormulario}
+                onChange={(event) => setFechaHastaFormulario(event.target.value)}
+                className="block min-h-10 rounded-lg border border-uap-borde px-3 text-sm font-semibold text-slate-700 focus:border-uap-azul-medio focus:outline-none"
+              />
+            </label>
+            {fechaDesdeFormulario && fechaHastaFormulario && !periodoFormularioValido && (
+              <p role="alert" className="text-xs font-semibold text-red-700">
+                La fecha “Desde” no puede ser posterior a “Hasta”.
+              </p>
+            )}
           </div>
         </div>
 
@@ -378,62 +415,6 @@ export default function MercadoManualPage() {
           )}
         </div>
 
-        <form onSubmit={agregarRegistro} className="grid gap-3 border-t border-slate-100 pt-5 sm:grid-cols-2 lg:grid-cols-5">
-          <label className="space-y-1 text-xs font-bold text-slate-600">
-            Hora
-            <input
-              required
-              type="time"
-              value={hora}
-              onChange={(event) => setHora(event.target.value)}
-              className="min-h-11 w-full rounded-lg border border-uap-borde px-3 text-sm font-medium text-slate-800 focus:border-uap-azul-medio focus:outline-none"
-            />
-          </label>
-          <label className="space-y-1 text-xs font-bold text-slate-600">
-            Número de operación
-            <input
-              required
-              type="text"
-              value={operacion}
-              onChange={(event) => setOperacion(event.target.value)}
-              placeholder="Ej. 191553067010"
-              className="min-h-11 w-full rounded-lg border border-uap-borde px-3 text-sm font-medium text-slate-800 focus:border-uap-azul-medio focus:outline-none"
-            />
-          </label>
-          <label className="space-y-1 text-xs font-bold text-slate-600">
-            Estado
-            <input
-              required
-              type="text"
-              value={estado}
-              onChange={(event) => setEstado(event.target.value)}
-              placeholder="Aprobado"
-              className="min-h-11 w-full rounded-lg border border-uap-borde px-3 text-sm font-medium text-slate-800 focus:border-uap-azul-medio focus:outline-none"
-            />
-          </label>
-          <label className="space-y-1 text-xs font-bold text-slate-600">
-            Monto ($)
-            <input
-              required
-              type="number"
-              min="0"
-              step="0.01"
-              value={monto}
-              onChange={(event) => setMonto(event.target.value)}
-              placeholder="0,00"
-              className="min-h-11 w-full rounded-lg border border-uap-borde px-3 text-sm font-medium text-slate-800 focus:border-uap-azul-medio focus:outline-none"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={!cargado}
-            className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-extrabold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Agregar
-          </button>
-        </form>
-
         {storageError && (
           <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
             {storageError}
@@ -469,7 +450,7 @@ export default function MercadoManualPage() {
                 {registrosDelDia.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-10 text-center text-sm text-uap-gris">
-                      No hay operaciones cargadas para esta fecha. Completá el formulario para agregar la primera.
+                      No hay operaciones cargadas para esta fecha. Pegá el listado de actividad para importar operaciones.
                     </td>
                   </tr>
                 )}
@@ -491,7 +472,7 @@ export default function MercadoManualPage() {
       </header>
       <div className="print-mercado-title">
         <h1>Registro Mercado Pago</h1>
-        <p>Mercado Pago · {fecha ? formatoFecha(fecha) : ''}</p>
+        <p>Mercado Pago · {textoPeriodoFormulario}</p>
       </div>
       <table className="print-mercado-table">
         <thead>
@@ -503,16 +484,21 @@ export default function MercadoManualPage() {
           </tr>
         </thead>
         <tbody>
-          {registrosImpresion.map((registro) => (
-            <tr key={registro.id}>
-              <td>{registro.hora}</td>
-              <td>{registro.operacion}</td>
-              <td>{registro.estado}</td>
-              <td className="print-mercado-amount">
-                {registro.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
-              </td>
-            </tr>
-          ))}
+          {registrosFormularioPorDia.flatMap(([fechaGrupo, filas]) => [
+            <tr key={`fecha-${fechaGrupo}`} className="print-mercado-date-group">
+              <th colSpan={4}>{formatoFecha(fechaGrupo)}</th>
+            </tr>,
+            ...filas.map((registro) => (
+              <tr key={registro.id}>
+                <td>{registro.hora}</td>
+                <td>{registro.operacion}</td>
+                <td>{registro.estado}</td>
+                <td className="print-mercado-amount">
+                  {registro.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
+                </td>
+              </tr>
+            )),
+          ])}
         </tbody>
       </table>
     </section>
