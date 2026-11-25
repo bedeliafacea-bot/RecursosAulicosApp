@@ -57,7 +57,7 @@ function formatoFecha(fecha: string) {
 }
 
 export default function MercadoManualPage() {
-  const { user, perfil } = useAuth();
+  const { user } = useAuth();
   const storageKey = user?.id ? `${STORAGE_PREFIX}${user.id}` : null;
   const [registros, setRegistros] = useState<RegistroMercado[]>([]);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
@@ -487,16 +487,11 @@ export default function MercadoManualPage() {
         <img src="/img/logo-uap.png" alt="Logo de la Universidad Adventista del Plata" />
         <div>
           <p className="print-mercado-institution">Universidad Adventista del Plata</p>
-          <p>Recursos Áulicos · Bedelía</p>
         </div>
       </header>
       <div className="print-mercado-title">
-        <h1>Registro manual de actividad</h1>
+        <h1>Registro Mercado Pago</h1>
         <p>Mercado Pago · {fecha ? formatoFecha(fecha) : ''}</p>
-      </div>
-      <div className="print-mercado-summary">
-        <p>Operaciones: <strong>{registrosDelDia.length}</strong></p>
-        <p>Monto total: <strong>{totalDelDia.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</strong></p>
       </div>
       <table className="print-mercado-table">
         <thead>
@@ -520,13 +515,6 @@ export default function MercadoManualPage() {
           ))}
         </tbody>
       </table>
-      <p className="print-mercado-note">
-        Registro manual basado en la actividad visible de Mercado Pago. No constituye un comprobante oficial ni reemplaza los registros de Caja.
-      </p>
-      <footer className="print-mercado-footer">
-        <span>Registrado por: {perfil?.nombre || '____________________________'}</span>
-        <span>Firma: ____________________________</span>
-      </footer>
     </section>
     </>
   );

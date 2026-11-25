@@ -286,19 +286,6 @@ body {
       font-size: 12pt;
     }
 
-    .print-mercado-summary {
-      display: flex;
-      justify-content: space-between;
-      gap: 5mm;
-      margin: 4mm 0;
-      padding: 3mm;
-      border: 0.3mm solid #b8c5d1;
-    }
-
-    .print-mercado-summary p {
-      margin: 0;
-    }
-
     .print-mercado-table {
       width: 100%;
       border-collapse: collapse;
@@ -343,19 +330,4 @@ body {
       white-space: nowrap;
     }
 
-    .print-mercado-note {
-      margin-top: 5mm;
-      color: #555555;
-      font-size: 9pt;
-    }
-
-    .print-mercado-footer {
-      display: flex !important;
-      justify-content: space-between;
-      gap: 10mm;
-      margin-top: 14mm;
-      padding-top: 3mm;
-      border-top: 0.25mm solid #999999;
-      font-size: 9.5pt;
-    }
   }
