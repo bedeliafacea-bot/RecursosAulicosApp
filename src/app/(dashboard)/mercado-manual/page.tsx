@@ -61,6 +61,16 @@ function formatoFechaCorta(fecha: string) {
   return `${dia}/${mes}/${anio}`;
 }
 
+function agruparPorFecha(registros: RegistroMercado[]) {
+  const grupos = new Map<string, RegistroMercado[]>();
+  for (const registro of registros) {
+    const grupo = grupos.get(registro.fecha) || [];
+    grupo.push(registro);
+    grupos.set(registro.fecha, grupo);
+  }
+  return Array.from(grupos.entries());
+}
+
 export default function MercadoManualPage() {
   const { user } = useAuth();
   const storageKey = user?.id ? `${STORAGE_PREFIX}${user.id}` : null;
@@ -70,6 +80,7 @@ export default function MercadoManualPage() {
   const [fecha, setFecha] = useState('');
   const [fechaDesdeFormulario, setFechaDesdeFormulario] = useState('');
   const [fechaHastaFormulario, setFechaHastaFormulario] = useState('');
+  const [registrosSeleccionadosIds, setRegistrosSeleccionadosIds] = useState<Set<string>>(new Set());
   const [textoPegado, setTextoPegado] = useState('');
   const [filasPegadas, setFilasPegadas] = useState<FilaPegada[]>([]);
   const [filasOmitidas, setFilasOmitidas] = useState(0);
@@ -114,7 +125,6 @@ export default function MercadoManualPage() {
         .sort((a, b) => b.hora.localeCompare(a.hora) || b.id.localeCompare(a.id)),
     [fecha, registros]
   );
-  const totalDelDia = registrosDelDia.reduce((total, registro) => total + registro.monto, 0);
   const periodoFormularioValido =
     Boolean(fechaDesdeFormulario && fechaHastaFormulario) &&
     fechaDesdeFormulario <= fechaHastaFormulario;
@@ -136,15 +146,22 @@ export default function MercadoManualPage() {
         : [],
     [fechaDesdeFormulario, fechaHastaFormulario, periodoFormularioValido, registros]
   );
-  const registrosFormularioPorDia = useMemo(() => {
-    const grupos = new Map<string, RegistroMercado[]>();
-    for (const registro of registrosFormulario) {
-      const grupo = grupos.get(registro.fecha) || [];
-      grupo.push(registro);
-      grupos.set(registro.fecha, grupo);
-    }
-    return Array.from(grupos.entries());
-  }, [registrosFormulario]);
+  const registrosFormularioPorDia = useMemo(
+    () => agruparPorFecha(registrosFormulario),
+    [registrosFormulario]
+  );
+  const registrosSeleccionados = useMemo(
+    () => registrosFormulario.filter((registro) => registrosSeleccionadosIds.has(registro.id)),
+    [registrosFormulario, registrosSeleccionadosIds]
+  );
+  const registrosSeleccionadosPorDia = useMemo(
+    () => agruparPorFecha(registrosSeleccionados),
+    [registrosSeleccionados]
+  );
+  const todosLosRegistrosSeleccionados =
+    registrosFormulario.length > 0 &&
+    registrosFormulario.every((registro) => registrosSeleccionadosIds.has(registro.id));
+  const totalFormulario = registrosFormulario.reduce((total, registro) => total + registro.monto, 0);
 
   const textoPeriodoFormulario = !fechaDesdeFormulario || !fechaHastaFormulario
     ? ''
@@ -168,7 +185,33 @@ export default function MercadoManualPage() {
   function borrarRegistro(id: string) {
     const registro = registros.find((item) => item.id === id);
     if (!registro || !window.confirm(`¿Borrar la operación ${registro.operacion}?`)) return;
-    guardarRegistros(registros.filter((item) => item.id !== id));
+    if (!guardarRegistros(registros.filter((item) => item.id !== id))) return;
+    setRegistrosSeleccionadosIds((actuales) => {
+      const nuevos = new Set(actuales);
+      nuevos.delete(id);
+      return nuevos;
+    });
+  }
+
+  function alternarSeleccion(id: string) {
+    setRegistrosSeleccionadosIds((actuales) => {
+      const nuevos = new Set(actuales);
+      if (nuevos.has(id)) nuevos.delete(id);
+      else nuevos.add(id);
+      return nuevos;
+    });
+  }
+
+  function alternarSeleccionDelRango() {
+    setRegistrosSeleccionadosIds((actuales) => {
+      const nuevos = new Set(actuales);
+      if (todosLosRegistrosSeleccionados) {
+        registrosFormulario.forEach((registro) => nuevos.delete(registro.id));
+      } else {
+        registrosFormulario.forEach((registro) => nuevos.add(registro.id));
+      }
+      return nuevos;
+    });
   }
 
   function prepararPegado() {
@@ -227,6 +270,7 @@ export default function MercadoManualPage() {
     setFecha(fechasImportadas[fechasImportadas.length - 1]);
     setFechaDesdeFormulario(fechasImportadas[0]);
     setFechaHastaFormulario(fechasImportadas[fechasImportadas.length - 1]);
+    setRegistrosSeleccionadosIds(new Set());
     setAvisoImportacion(
       `Se agregaron ${nuevasFilas.length} operación(es)${duplicadas ? `; ${duplicadas} duplicada(s) no se repitieron` : ''}.`
     );
@@ -270,11 +314,11 @@ export default function MercadoManualPage() {
           <button
             type="button"
             onClick={() => window.print()}
-            disabled={!cargado || !periodoFormularioValido || registrosFormulario.length === 0}
+            disabled={!cargado || !periodoFormularioValido || registrosSeleccionados.length === 0}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-uap-azul px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-uap-azul-oscuro disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Printer className="h-4 w-4" aria-hidden="true" />
-            Imprimir formulario
+            Imprimir selección ({registrosSeleccionados.length})
           </button>
           <button
             type="button"
@@ -292,7 +336,7 @@ export default function MercadoManualPage() {
         <div className="mb-5 space-y-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <label className="flex items-center gap-3 text-sm font-bold text-uap-azul">
-            <span>Fecha para ver en pantalla</span>
+            <span>Día base si el texto pegado no trae fecha</span>
             <input
               type="date"
               required
@@ -308,8 +352,8 @@ export default function MercadoManualPage() {
             />
           </label>
           <div className="flex gap-5 text-sm">
-            <div><span className="text-uap-gris">Operaciones</span><strong className="ml-2 text-uap-azul">{registrosDelDia.length}</strong></div>
-            <div><span className="text-uap-gris">Monto cargado</span><strong className="ml-2 text-uap-azul">{totalDelDia.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</strong></div>
+            <div><span className="text-uap-gris">Operaciones del rango</span><strong className="ml-2 text-uap-azul">{registrosFormulario.length}</strong></div>
+            <div><span className="text-uap-gris">Monto del rango</span><strong className="ml-2 text-uap-azul">{totalFormulario.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</strong></div>
           </div>
           </div>
           <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-end">
@@ -319,7 +363,10 @@ export default function MercadoManualPage() {
               <input
                 type="date"
                 value={fechaDesdeFormulario}
-                onChange={(event) => setFechaDesdeFormulario(event.target.value)}
+                onChange={(event) => {
+                  setFechaDesdeFormulario(event.target.value);
+                  setRegistrosSeleccionadosIds(new Set());
+                }}
                 className="block min-h-10 rounded-lg border border-uap-borde px-3 text-sm font-semibold text-slate-700 focus:border-uap-azul-medio focus:outline-none"
               />
             </label>
@@ -328,7 +375,10 @@ export default function MercadoManualPage() {
               <input
                 type="date"
                 value={fechaHastaFormulario}
-                onChange={(event) => setFechaHastaFormulario(event.target.value)}
+                onChange={(event) => {
+                  setFechaHastaFormulario(event.target.value);
+                  setRegistrosSeleccionadosIds(new Set());
+                }}
                 className="block min-h-10 rounded-lg border border-uap-borde px-3 text-sm font-semibold text-slate-700 focus:border-uap-azul-medio focus:outline-none"
               />
             </label>
@@ -337,6 +387,21 @@ export default function MercadoManualPage() {
                 La fecha “Desde” no puede ser posterior a “Hasta”.
               </p>
             )}
+          </div>
+          <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <input
+                type="checkbox"
+                checked={todosLosRegistrosSeleccionados}
+                onChange={alternarSeleccionDelRango}
+                disabled={!periodoFormularioValido || registrosFormulario.length === 0}
+                className="h-4 w-4 rounded border-slate-300 text-uap-azul focus:ring-uap-azul"
+              />
+              Seleccionar todas las operaciones del rango
+            </label>
+            <p className="text-xs text-uap-gris">
+              {registrosSeleccionados.length} seleccionada(s). Para dividir un día en recibos, imprimí una selección y luego elegí las restantes.
+            </p>
           </div>
         </div>
 
@@ -448,33 +513,51 @@ export default function MercadoManualPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {registrosDelDia.map((registro) => (
-                  <tr key={registro.id} className="text-slate-700">
-                    <td className="whitespace-nowrap px-4 py-3 font-semibold">{registro.hora}</td>
-                    <td className="px-4 py-3 font-mono text-xs">
-                      <div className="flex items-center justify-between gap-2">
-                        <span>{registro.operacion}</span>
-                        <button
-                          type="button"
-                          onClick={() => borrarRegistro(registro.id)}
-                          aria-label={`Borrar operación ${registro.operacion}`}
-                          className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-sans text-xs font-bold text-red-600 transition hover:bg-red-50"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                          Borrar
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">{registro.estado}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right font-bold">
-                      {registro.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
-                    </td>
-                  </tr>
-                ))}
-                {registrosDelDia.length === 0 && (
+                {registrosFormularioPorDia.flatMap(([fechaGrupo, filas]) => [
+                  <tr key={`fecha-${fechaGrupo}`} className="bg-blue-50">
+                    <th colSpan={4} scope="rowgroup" className="px-4 py-2 text-xs font-extrabold uppercase text-uap-azul">
+                      {formatoFechaCorta(fechaGrupo)}
+                    </th>
+                  </tr>,
+                  ...filas.map((registro) => (
+                    <tr key={registro.id} className="text-slate-700">
+                      <td className="whitespace-nowrap px-4 py-3 font-semibold">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={registrosSeleccionadosIds.has(registro.id)}
+                            onChange={() => alternarSeleccion(registro.id)}
+                            aria-label={`Seleccionar operación ${registro.operacion}`}
+                            className="h-4 w-4 rounded border-slate-300 text-uap-azul focus:ring-uap-azul"
+                          />
+                          {registro.hora}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span>{registro.operacion}</span>
+                          <button
+                            type="button"
+                            onClick={() => borrarRegistro(registro.id)}
+                            aria-label={`Borrar operación ${registro.operacion}`}
+                            className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-sans text-xs font-bold text-red-600 transition hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            Borrar
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">{registro.estado}</td>
+                      <td className="whitespace-nowrap px-4 py-3 text-right font-bold">
+                        {registro.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
+                      </td>
+                    </tr>
+                  )),
+                ])}
+                {registrosFormulario.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-10 text-center text-sm text-uap-gris">
-                      No hay operaciones cargadas para esta fecha. Pegá el listado de actividad para importar operaciones.
+                      No hay operaciones cargadas en este rango. Pegá la actividad para importar operaciones.
                     </td>
                   </tr>
                 )}
@@ -508,7 +591,7 @@ export default function MercadoManualPage() {
           </tr>
         </thead>
         <tbody>
-          {registrosFormularioPorDia.flatMap(([fechaGrupo, filas]) => [
+          {registrosSeleccionadosPorDia.flatMap(([fechaGrupo, filas]) => [
             <tr key={`fecha-${fechaGrupo}`} className="print-mercado-date-group">
               <th colSpan={4}>{formatoFechaCorta(fechaGrupo)}</th>
             </tr>,
