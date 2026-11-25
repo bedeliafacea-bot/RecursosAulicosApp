@@ -311,6 +311,14 @@ body {
       print-color-adjust: exact;
     }
 
+    .print-mercado-date-group th {
+      background: #f1f4f7 !important;
+      color: #333333;
+      text-align: left;
+      break-after: avoid;
+      print-color-adjust: exact;
+    }
+
     .print-mercado-table th:first-child,
     .print-mercado-table td:first-child {
       width: 18%;
