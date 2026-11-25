@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarDays, Download, Plus } from 'lucide-react';
+import { CalendarDays, Download, Plus, Printer } from 'lucide-react';
 import { analizarTextoPegado } from '@/lib/mercado-manual';
 import type { FilaPegada } from '@/lib/mercado-manual';
 
@@ -57,7 +57,7 @@ function formatoFecha(fecha: string) {
 }
 
 export default function MercadoManualPage() {
-  const { user } = useAuth();
+  const { user, perfil } = useAuth();
   const storageKey = user?.id ? `${STORAGE_PREFIX}${user.id}` : null;
   const [registros, setRegistros] = useState<RegistroMercado[]>([]);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
@@ -109,6 +109,13 @@ export default function MercadoManualPage() {
     [fecha, registros]
   );
   const totalDelDia = registrosDelDia.reduce((total, registro) => total + registro.monto, 0);
+  const registrosImpresion = useMemo(
+    () =>
+      [...registrosDelDia].sort(
+        (a, b) => a.hora.localeCompare(b.hora) || a.id.localeCompare(b.id)
+      ),
+    [registrosDelDia]
+  );
 
   function guardarRegistros(nuevosRegistros: RegistroMercado[]) {
     if (!storageKey || !cargado) return false;
@@ -226,7 +233,8 @@ export default function MercadoManualPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <>
+    <div className="no-print-zone mx-auto max-w-5xl space-y-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2 text-sm font-bold text-uap-azul-medio">
@@ -238,15 +246,26 @@ export default function MercadoManualPage() {
             Cargá las operaciones que ves en la actividad. Este registro es independiente de Caja y no modifica Mercado Pago.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={descargarCsv}
-          disabled={!cargado || registrosDelDia.length === 0}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-uap-azul px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-uap-azul-oscuro disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Download className="h-4 w-4" aria-hidden="true" />
-          Descargar CSV del día
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            disabled={!cargado || registrosDelDia.length === 0}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-uap-azul px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-uap-azul-oscuro disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Printer className="h-4 w-4" aria-hidden="true" />
+            Imprimir formulario
+          </button>
+          <button
+            type="button"
+            onClick={descargarCsv}
+            disabled={!cargado || registrosDelDia.length === 0}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-uap-azul bg-white px-4 py-2 text-sm font-bold text-uap-azul shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            Descargar CSV del día
+          </button>
+        </div>
       </header>
 
       <section className="rounded-2xl border border-uap-borde bg-white p-5 shadow-uap">
@@ -463,5 +482,52 @@ export default function MercadoManualPage() {
         </p>
       </section>
     </div>
+    <section className="print-mercado-report">
+      <header className="print-mercado-header">
+        <img src="/img/logo-uap.png" alt="Logo de la Universidad Adventista del Plata" />
+        <div>
+          <p className="print-mercado-institution">Universidad Adventista del Plata</p>
+          <p>Recursos Áulicos · Bedelía</p>
+        </div>
+      </header>
+      <div className="print-mercado-title">
+        <h1>Registro manual de actividad</h1>
+        <p>Mercado Pago · {fecha ? formatoFecha(fecha) : ''}</p>
+      </div>
+      <div className="print-mercado-summary">
+        <p>Operaciones: <strong>{registrosDelDia.length}</strong></p>
+        <p>Monto total: <strong>{totalDelDia.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</strong></p>
+      </div>
+      <table className="print-mercado-table">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Número de operación</th>
+            <th>Estado</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {registrosImpresion.map((registro) => (
+            <tr key={registro.id}>
+              <td>{registro.hora}</td>
+              <td>{registro.operacion}</td>
+              <td>{registro.estado}</td>
+              <td className="print-mercado-amount">
+                {registro.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="print-mercado-note">
+        Registro manual basado en la actividad visible de Mercado Pago. No constituye un comprobante oficial ni reemplaza los registros de Caja.
+      </p>
+      <footer className="print-mercado-footer">
+        <span>Registrado por: {perfil?.nombre || '____________________________'}</span>
+        <span>Firma: ____________________________</span>
+      </footer>
+    </section>
+    </>
   );
 }
