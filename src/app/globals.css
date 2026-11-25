@@ -309,6 +309,7 @@ body {
       color: #003c71;
       font-weight: 800;
       print-color-adjust: exact;
+      text-align: center;
     }
 
     .print-mercado-date-group th {
@@ -321,12 +322,27 @@ body {
 
     .print-mercado-table th:first-child,
     .print-mercado-table td:first-child {
-      width: 18%;
+      width: 20%;
+    }
+
+    .print-mercado-table th:nth-child(2),
+    .print-mercado-table td:nth-child(2) {
+      width: 38%;
+      text-align: right;
+    }
+
+    .print-mercado-table thead th:nth-child(2) {
+      text-align: center;
+    }
+
+    .print-mercado-table th:nth-child(3),
+    .print-mercado-table td:nth-child(3) {
+      width: 24%;
     }
 
     .print-mercado-table th:last-child,
     .print-mercado-table td:last-child {
-      width: 22%;
+      width: 18%;
     }
 
     .print-mercado-table tr {
