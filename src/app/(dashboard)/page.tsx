@@ -16,6 +16,7 @@ import {
   Sparkles,
   X,
   DatabaseBackup,
+  ClipboardList,
 } from 'lucide-react';
 import PlanoSecundario from '@/components/plano/PlanoSecundario';
 import { obtenerCumpleanosProximosAction, Cumpleanero } from '@/app/actions/cumpleanos';
@@ -75,6 +76,14 @@ export default function HomePage() {
       icono: DollarSign,
       color: 'from-amber-600 to-orange-700',
       roles: ['admin', 'secretario'],
+    },
+    {
+      titulo: 'Registro manual de Mercado Pago',
+      desc: 'Anotá por día la hora, número de operación, estado y monto; descargá el listado en CSV.',
+      href: '/mercado-manual',
+      icono: ClipboardList,
+      color: 'from-cyan-600 to-blue-800',
+      roles: ['admin', 'secretario', 'alumno'],
     },
     {
       titulo: 'Próximos Cumpleaños',
