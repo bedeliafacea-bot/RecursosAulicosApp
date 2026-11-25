@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarDays, Download, Plus } from 'lucide-react';
+import { analizarTextoPegado } from '@/lib/mercado-manual';
+import type { FilaPegada } from '@/lib/mercado-manual';
 
 interface RegistroMercado {
   id: string;
@@ -46,6 +48,14 @@ function mensajeError(error: unknown) {
   return error instanceof Error ? error.message : 'Error desconocido.';
 }
 
+function formatoFecha(fecha: string) {
+  return new Date(`${fecha}T00:00:00`).toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 export default function MercadoManualPage() {
   const { user } = useAuth();
   const storageKey = user?.id ? `${STORAGE_PREFIX}${user.id}` : null;
@@ -57,6 +67,11 @@ export default function MercadoManualPage() {
   const [operacion, setOperacion] = useState('');
   const [estado, setEstado] = useState('');
   const [monto, setMonto] = useState('');
+  const [textoPegado, setTextoPegado] = useState('');
+  const [filasPegadas, setFilasPegadas] = useState<FilaPegada[]>([]);
+  const [filasOmitidas, setFilasOmitidas] = useState(0);
+  const [errorPegado, setErrorPegado] = useState('');
+  const [avisoImportacion, setAvisoImportacion] = useState('');
 
   useEffect(() => {
     setFecha((actual) => actual || fechaLocalActual());
@@ -131,6 +146,65 @@ export default function MercadoManualPage() {
     setMonto('');
   }
 
+  function prepararPegado() {
+    setErrorPegado('');
+    setAvisoImportacion('');
+    setFilasPegadas([]);
+    setFilasOmitidas(0);
+    if (!fecha) {
+      setErrorPegado('Elegí la fecha de la actividad antes de analizar el texto.');
+      return;
+    }
+
+    const resultado = analizarTextoPegado(textoPegado, fecha);
+    if (resultado.operacionesDetectadas === 0) {
+      setErrorPegado('No encontré operaciones con el formato “Operación 123…”.');
+      return;
+    }
+    if (resultado.filas.length === 0) {
+      setErrorPegado(`Encontré ${resultado.operacionesDetectadas} operación(es), pero no pude interpretar sus datos completos.`);
+      return;
+    }
+
+    setFilasPegadas(resultado.filas);
+    setFilasOmitidas(resultado.omitidas);
+  }
+
+  function importarPegado() {
+    const existentes = new Set(
+      registros.map((registro) => `${registro.fecha}|${registro.hora}|${registro.operacion}`)
+    );
+    const nuevasFilas: RegistroMercado[] = [];
+    let duplicadas = 0;
+
+    for (const fila of filasPegadas) {
+      const clave = `${fila.fecha}|${fila.hora}|${fila.operacion}`;
+      if (existentes.has(clave)) {
+        duplicadas += 1;
+        continue;
+      }
+      existentes.add(clave);
+      nuevasFilas.push({
+        ...fila,
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      });
+    }
+
+    if (nuevasFilas.length === 0) {
+      setAvisoImportacion(`No se agregaron filas nuevas. ${duplicadas} ya estaban cargadas.`);
+      return;
+    }
+
+    if (!guardarRegistros([...registros, ...nuevasFilas])) return;
+    const fechaMasReciente = nuevasFilas
+      .map((fila) => fila.fecha)
+      .sort((a, b) => b.localeCompare(a))[0];
+    setFecha(fechaMasReciente);
+    setAvisoImportacion(
+      `Se agregaron ${nuevasFilas.length} operación(es)${duplicadas ? `; ${duplicadas} duplicada(s) no se repitieron` : ''}.`
+    );
+  }
+
   function descargarCsv() {
     const filas = [
       ['Hora', 'Número de operación', 'Estado', 'Monto'],
@@ -183,7 +257,13 @@ export default function MercadoManualPage() {
               type="date"
               required
               value={fecha}
-              onChange={(event) => setFecha(event.target.value)}
+              onChange={(event) => {
+                setFecha(event.target.value);
+                setFilasPegadas([]);
+                setFilasOmitidas(0);
+                setErrorPegado('');
+                setAvisoImportacion('');
+              }}
               className="min-h-10 rounded-lg border border-uap-borde px-3 text-sm font-semibold text-slate-700 focus:border-uap-azul-medio focus:outline-none focus:ring-2 focus:ring-uap-azul-medio/20"
             />
           </label>
@@ -191,6 +271,92 @@ export default function MercadoManualPage() {
             <div><span className="text-uap-gris">Operaciones</span><strong className="ml-2 text-uap-azul">{registrosDelDia.length}</strong></div>
             <div><span className="text-uap-gris">Monto cargado</span><strong className="ml-2 text-uap-azul">{totalDelDia.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</strong></div>
           </div>
+        </div>
+
+        <div className="border-t border-slate-100 pt-5">
+          <label htmlFor="mercado-texto-pegado" className="block text-sm font-bold text-uap-azul">
+            Pegá aquí la actividad copiada de Mercado Pago
+          </label>
+          <p className="mt-1 text-xs text-uap-gris">
+            Reconoce la hora, número de operación, estado, monto y encabezados como “24 de noviembre”. Lo que no pueda interpretar se informa antes de guardar.
+          </p>
+          <textarea
+            id="mercado-texto-pegado"
+            rows={7}
+            value={textoPegado}
+            onChange={(event) => {
+              setTextoPegado(event.target.value);
+              setFilasPegadas([]);
+              setErrorPegado('');
+              setAvisoImportacion('');
+            }}
+            placeholder={'Pegá el texto copiado. Por ejemplo:\n10:54\nVenta con código QR\nOperación 123456789\nAprobado\n+\n$\n750'}
+            className="mt-3 w-full rounded-lg border border-uap-borde px-3 py-2 font-mono text-xs leading-5 text-slate-800 focus:border-uap-azul-medio focus:outline-none focus:ring-2 focus:ring-uap-azul-medio/20"
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={prepararPegado}
+              disabled={!cargado}
+              className="min-h-10 rounded-lg border border-uap-azul px-4 py-2 text-sm font-bold text-uap-azul transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Ordenar y revisar
+            </button>
+            {filasPegadas.length > 0 && (
+              <button
+                type="button"
+                onClick={importarPegado}
+                className="min-h-10 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
+              >
+                Guardar {filasPegadas.length} operación(es)
+              </button>
+            )}
+          </div>
+          {errorPegado && <p role="alert" className="mt-3 text-sm font-medium text-red-700">{errorPegado}</p>}
+          {filasOmitidas > 0 && (
+            <p role="status" className="mt-3 text-sm font-medium text-amber-700">
+              No se pudieron interpretar {filasOmitidas} operación(es); revisá el texto antes de importar.
+            </p>
+          )}
+          {avisoImportacion && <p role="status" className="mt-3 text-sm font-medium text-emerald-700">{avisoImportacion}</p>}
+          {filasPegadas.length > 0 && (
+            <div className="mt-4 overflow-x-auto rounded-xl border border-uap-borde">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th scope="col" className="px-4 py-3">Hora</th>
+                    <th scope="col" className="px-4 py-3">Número de operación</th>
+                    <th scope="col" className="px-4 py-3">Estado</th>
+                    <th scope="col" className="px-4 py-3 text-right">Monto</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {Array.from(new Set(filasPegadas.map((fila) => fila.fecha)))
+                    .sort((a, b) => b.localeCompare(a))
+                    .flatMap((fechaGrupo) => [
+                      <tr key={`fecha-${fechaGrupo}`} className="bg-blue-50">
+                        <th colSpan={4} scope="rowgroup" className="px-4 py-2 text-xs font-extrabold uppercase text-uap-azul">
+                          {formatoFecha(fechaGrupo)}
+                        </th>
+                      </tr>,
+                      ...filasPegadas
+                        .filter((fila) => fila.fecha === fechaGrupo)
+                        .sort((a, b) => b.hora.localeCompare(a.hora))
+                        .map((fila) => (
+                          <tr key={`${fila.fecha}-${fila.hora}-${fila.operacion}`} className="text-slate-700">
+                            <td className="whitespace-nowrap px-4 py-3 font-semibold">{fila.hora}</td>
+                            <td className="px-4 py-3 font-mono text-xs">{fila.operacion}</td>
+                            <td className="px-4 py-3">{fila.estado}</td>
+                            <td className="whitespace-nowrap px-4 py-3 text-right font-bold">
+                              {fila.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
+                            </td>
+                          </tr>
+                        )),
+                    ])}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <form onSubmit={agregarRegistro} className="grid gap-3 border-t border-slate-100 pt-5 sm:grid-cols-2 lg:grid-cols-5">
