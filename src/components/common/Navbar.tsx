@@ -17,6 +17,7 @@ import {
   ChevronDown,
   DatabaseBackup,
   X,
+  ClipboardList,
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -61,6 +62,7 @@ export default function Navbar() {
     { label: 'Reservas', href: '/reservas', icon: Calendar, allowedRoles: ['admin', 'secretario', 'alumno'] },
     { label: 'Bedelia Virtual', href: '/bedelia-virtual', icon: Building2, allowedRoles: ['admin', 'secretario', 'alumno'] },
     { label: 'Caja', href: '/facturacion', icon: DollarSign, allowedRoles: ['admin', 'secretario'] },
+    { label: 'Mercado manual', href: '/mercado-manual', icon: ClipboardList, allowedRoles: ['admin', 'secretario', 'alumno'] },
     { label: 'Cumpleaños', href: '/cumpleanos', icon: Calendar, allowedRoles: ['admin', 'secretario', 'alumno'] },
     { label: 'Usuarios', href: '/usuarios', icon: Users, allowedRoles: ['admin'] },
     { label: 'Respaldo', href: '/respaldo', icon: DatabaseBackup, allowedRoles: ['admin'] },
